@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>TACTICAL FITNESS — SETTINGS</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+.shell{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .3s var(--ease-out)}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo-mark{font-family:var(--head);font-size:22px;letter-spacing:4px;color:var(--green);text-shadow:0 0 16px var(--green-glow)}
+.sidebar-logo-sub{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:2px;margin-top:2px}
+.nav-section{padding:16px 12px 4px}
+.nav-label{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:3px;padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;cursor:pointer;text-decoration:none;color:var(--gray);font-family:var(--body);font-size:13px;font-weight:500;letter-spacing:.5px;transition:all .15s;border:1px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--bg3);color:var(--white);border-color:var(--border)}
+.nav-item.active{background:var(--green-dim);color:var(--green);border-color:rgba(0,255,136,.2)}
+.nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border)}
+.sf-rank{font-family:var(--head);font-size:14px;color:var(--green);letter-spacing:1px}
+.sf-callsign{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:2px;margin-top:2px}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column}
+.topbar{height:var(--topbar-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:var(--head);font-size:18px;letter-spacing:3px;color:var(--white)}
+.topbar-title span{color:var(--green)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.topbar-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:4px;background:none;border:none}
+.hamburger span{display:block;width:20px;height:2px;background:var(--gray)}
+.sidebar-overlay{
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.sidebar-overlay.show{display:block}
+
+/* ── LAYOUT ── */
+.content{padding:24px;display:flex;flex-direction:column;gap:20px;max-width:720px}
+.section-header{font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:3px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-header::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── SETTINGS PANEL ── */
+.settings-panel{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;animation:fadeUp .4s var(--ease-out) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.settings-row{
+  display:flex;align-items:center;gap:14px;padding:14px 18px;
+  border-bottom:1px solid var(--border);transition:background .12s;
+}
+.settings-row:last-child{border-bottom:none}
+.settings-row:hover{background:rgba(255,255,255,.015)}
+.settings-row.no-hover:hover{background:transparent}
+
+.settings-icon{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.settings-info{flex:1;min-width:0}
+.settings-label{font-family:var(--body);font-size:14px;font-weight:600;color:var(--white)}
+.settings-sub{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:.5px;margin-top:2px}
+.settings-value{font-family:var(--mono);font-size:11px;color:var(--green);letter-spacing:1px;flex-shrink:0}
+
+/* ── INPUT FIELDS ── */
+.field-input{
+  font-family:var(--mono);font-size:14px;background:var(--bg3);
+  border:1px solid var(--border2);color:var(--white);padding:8px 12px;
+  border-radius:3px;min-height:38px;transition:border-color .15s;
+  -webkit-appearance:none;appearance:none;
+}
+.field-input:focus{outline:none;border-color:var(--green)}
+.field-input.w-sm{width:90px}
+.field-input.w-md{width:140px}
+
+.field-select{
+  font-family:var(--mono);font-size:14px;background:var(--bg3);
+  border:1px solid var(--border2);color:var(--white);padding:8px 12px;
+  border-radius:3px;min-height:38px;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;
+}
+.field-select:focus{outline:none;border-color:var(--green)}
+
+/* ── TOGGLE SWITCH ── */
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{
+  position:absolute;inset:0;background:var(--border2);border-radius:12px;
+  transition:background .2s;border:1px solid var(--border2);
+}
+.toggle input:checked + .toggle-track{background:var(--green);border-color:var(--green);box-shadow:0 0 8px var(--green-glow)}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;width:16px;height:16px;
+  background:var(--gray);border-radius:50%;transition:all .2s;
+}
+.toggle input:checked ~ .toggle-thumb{left:23px;background:var(--black)}
+
+/* ── PROFILE CARD ── */
+.profile-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  padding:20px;display:flex;align-items:center;gap:18px;
+  animation:fadeUp .4s var(--ease-out) both;
+}
+.profile-avatar{
+  width:64px;height:64px;border-radius:8px;background:var(--green-dim);
+  border:1px solid rgba(0,255,136,.25);display:flex;align-items:center;
+  justify-content:center;font-size:32px;flex-shrink:0;
+}
+.profile-name{font-family:var(--head);font-size:24px;letter-spacing:2px;color:var(--green);line-height:1}
+.profile-rank{font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:2px;margin-top:4px}
+.profile-stats{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:1px;margin-top:6px;line-height:1.8}
+
+/* ── FORM GRID ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.form-field{padding:12px 18px;border-bottom:1px solid var(--border)}
+.form-field:nth-child(odd){border-right:1px solid var(--border)}
+.form-field:last-child,.form-field:nth-last-child(2):nth-child(odd){border-bottom:none}
+.form-label{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:2px;margin-bottom:6px;display:block}
+
+/* ── SAVE BUTTON ── */
+.save-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px;background:var(--green-dim);border:1px solid rgba(0,255,136,.3);
+  border-radius:4px;color:var(--green);font-family:var(--head);font-size:15px;
+  letter-spacing:3px;cursor:pointer;transition:all .15s;width:100%;
+}
+.save-btn:hover{background:rgba(0,255,136,.12);box-shadow:0 0 16px var(--green-glow)}
+
+/* ── VERSION INFO ── */
+.version-row{
+  display:flex;align-items:center;justify-content:space-between;padding:12px 18px;
+  border-bottom:1px solid var(--border);
+}
+.version-row:last-child{border-bottom:none}
+.ver-key{font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:2px}
+.ver-val{font-family:var(--mono);font-size:10px;color:var(--white);letter-spacing:1px}
+.ver-val.green{color:var(--green)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg2);border:1px solid var(--green);border-radius:4px;padding:10px 20px;font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--green);z-index:999;opacity:0;transition:all .3s var(--ease-out);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .topbar{padding:0 16px}
+  .content{padding:16px}
+  .hamburger{display:flex}
+  .form-grid{grid-template-columns:1fr}
+  .form-field:nth-child(odd){border-right:none}
+  .form-field{border-bottom:1px solid var(--border)}
+  .form-field:last-child{border-bottom:none}
+}
+@supports(padding:env(safe-area-inset-bottom)){
+  .content{padding-bottom:max(24px,env(safe-area-inset-bottom))}
+}
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+@media(max-width:480px){
+  .settings-row{gap:10px}
+  .settings-label{font-size:11px}
+  .settings-sub{font-size:9px}
+}
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">⬡ TACTICAL</div>
+      <div class="sidebar-logo-sub">FITNESS SYSTEM v1.0</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// COMMAND</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">◈</span> COMMAND CENTER</a>
+      <a href="training.html"  class="nav-item"><span class="nav-icon">⚡</span> TODAY TRAINING</a>
+      <a href="planner.html"   class="nav-item"><span class="nav-icon">◻</span> MONTHLY PLANNER</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// INTEL</div>
+      <a href="performance.html" class="nav-item"><span class="nav-icon">▲</span> PERFORMANCE LOG</a>
+      <a href="rank.html"        class="nav-item"><span class="nav-icon">◆</span> RANK & CAPABILITY</a>
+      <a href="missions.html"    class="nav-item"><span class="nav-icon">⚔</span> MISSIONS</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// SYSTEM</div>
+      <a href="import-export.html" class="nav-item"><span class="nav-icon">⇅</span> IMPORT / EXPORT</a>
+      <a href="settings.html"      class="nav-item active"><span class="nav-icon">◎</span> SETTINGS</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sf-rank" id="sb-rank">—</div>
+      <div class="sf-callsign" id="sb-callsign">LOADING...</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div><div class="topbar-title">SYSTEM <span>SETTINGS</span></div></div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" style="padding:7px 14px;font-size:10px;letter-spacing:2px;min-height:auto" onclick="saveAll()">💾 SAVE</button>
+        <div class="topbar-dot"></div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ── OPERATOR PROFILE ── -->
+      <div>
+        <div class="section-header">// OPERATOR PROFILE</div>
+
+        <div class="profile-card" style="margin-bottom:12px">
+          <div class="profile-avatar" id="profile-avatar">👤</div>
+          <div>
+            <div class="profile-name" id="profile-name">—</div>
+            <div class="profile-rank" id="profile-rank">— TIER · RANK —</div>
+            <div class="profile-stats" id="profile-stats">—</div>
+          </div>
+        </div>
+
+        <div class="settings-panel">
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label">// CALLSIGN</label>
+              <input type="text" class="field-input" id="f-callsign" maxlength="16" placeholder="OPERATOR" style="width:100%;font-size:16px">
+            </div>
+            <div class="form-field">
+              <label class="form-label">// GENDER</label>
+              <select class="field-select" id="f-gender" style="width:100%">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">// AGE</label>
+              <input type="number" class="field-input w-sm" id="f-age" min="10" max="99" style="font-size:16px">
+            </div>
+            <div class="form-field">
+              <label class="form-label">// FITNESS LEVEL</label>
+              <select class="field-select" id="f-fitness" style="width:100%">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">// WEIGHT (KG)</label>
+              <input type="number" class="field-input w-sm" id="f-weight" min="30" max="200" step="0.5" style="font-size:16px">
+            </div>
+            <div class="form-field">
+              <label class="form-label">// HEIGHT (CM)</label>
+              <input type="number" class="field-input w-sm" id="f-height" min="100" max="250" style="font-size:16px">
+            </div>
+            <div class="form-field">
+              <label class="form-label">// TRAINING DAYS / WEEK</label>
+              <select class="field-select" id="f-days" style="width:100%">
+                <option value="2">2 วัน</option>
+                <option value="3">3 วัน</option>
+                <option value="4">4 วัน</option>
+                <option value="5">5 วัน</option>
+                <option value="6">6 วัน</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">// PREFERRED TIME</label>
+              <select class="field-select" id="f-time" style="width:100%">
+                <option value="morning">เช้า (06:00–10:00)</option>
+                <option value="afternoon">บ่าย (12:00–16:00)</option>
+                <option value="evening">เย็น (17:00–21:00)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NOTIFICATIONS ── -->
+      <div>
+        <div class="section-header">// NOTIFICATIONS & REMINDERS</div>
+        <div class="settings-panel">
+          <!-- Phase 1: Dynamic notification UI -->
+          <div id="notif-settings-container">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--gray);padding:10px 0">กำลังโหลด...</div>
+          </div>
+
+          <!-- Fallback toggles (always present, hidden if notif-settings-container populates) -->
+          <div id="fallback-toggles" style="display:none">
+            <div class="settings-row no-hover">
+              <div class="settings-icon">🔔</div>
+              <div class="settings-info"><div class="settings-label">Reminders</div></div>
+              <label class="toggle"><input type="checkbox" id="tog-reminder"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+            </div>
+            <div class="settings-row no-hover">
+              <div class="settings-icon">☁️</div>
+              <div class="settings-info"><div class="settings-label">Auto Backup</div></div>
+              <label class="toggle"><input type="checkbox" id="tog-backup" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+            </div>
+            <div class="settings-row no-hover">
+              <div class="settings-icon">🔊</div>
+              <div class="settings-info"><div class="settings-label">Sound</div></div>
+              <label class="toggle"><input type="checkbox" id="tog-sound" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+            </div>
+            <div class="settings-row no-hover">
+              <div class="settings-icon">📳</div>
+              <div class="settings-info"><div class="settings-label">Haptic</div></div>
+              <label class="toggle"><input type="checkbox" id="tog-haptic" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TRAINING DEFAULTS ── */
+      <div>
+        <div class="section-header">// TRAINING DEFAULTS</div>
+        <div class="settings-panel">
+
+          <div class="settings-row no-hover">
+            <div class="settings-icon">⏱</div>
+            <div class="settings-info">
+              <div class="settings-label">Default Rest Time</div>
+              <div class="settings-sub">เวลาพักระหว่าง set (วินาที)</div>
+            </div>
+            <select class="field-select" id="f-rest" style="width:110px">
+              <option value="30">30s</option>
+              <option value="45">45s</option>
+              <option value="60" selected>60s</option>
+              <option value="90">90s</option>
+              <option value="120">120s</option>
+            </select>
+          </div>
+
+          <div class="settings-row no-hover">
+            <div class="settings-icon">📋</div>
+            <div class="settings-info">
+              <div class="settings-label">Default Sets</div>
+              <div class="settings-sub">จำนวน set default ใน training</div>
+            </div>
+            <select class="field-select" id="f-sets" style="width:90px">
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+
+          <div class="settings-row no-hover">
+            <div class="settings-icon">🎯</div>
+            <div class="settings-info">
+              <div class="settings-label">Auto-Start Rest Timer</div>
+              <div class="settings-sub">เริ่ม rest countdown อัตโนมัติหลัง log set</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tog-autorest" checked>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+
+          <div class="settings-row no-hover">
+            <div class="settings-icon">📱</div>
+            <div class="settings-info">
+              <div class="settings-label">Keep Screen On</div>
+              <div class="settings-sub">ป้องกันหน้าจอดับขณะออกกำลังกาย (WakeLock API)</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tog-wakelock" checked>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── DISPLAY ── -->
+      <div>
+        <div class="section-header">// DISPLAY</div>
+        <div class="settings-panel">
+
+          <div class="settings-row no-hover">
+            <div class="settings-icon">🌐</div>
+            <div class="settings-info">
+              <div class="settings-label">Language</div>
+              <div class="settings-sub">ภาษาของ interface</div>
+            </div>
+            <select class="field-select" id="f-lang" style="width:130px">
+              <option value="th">ภาษาไทย</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+
+          <div class="settings-row no-hover">
+            <div class="settings-icon">📏</div>
+            <div class="settings-info">
+              <div class="settings-label">Units</div>
+              <div class="settings-sub">หน่วยวัดที่ใช้แสดงผล</div>
+            </div>
+            <select class="field-select" id="f-units" style="width:130px">
+              <option value="metric">Metric (kg/km)</option>
+              <option value="imperial">Imperial (lb/mi)</option>
+            </select>
+          </div>
+
+          <div class="settings-row no-hover">
+            <div class="settings-icon">📅</div>
+            <div class="settings-info">
+              <div class="settings-label">Calendar Start Day</div>
+              <div class="settings-sub">วันเริ่มต้นสัปดาห์ใน planner</div>
+            </div>
+            <select class="field-select" id="f-weekstart" style="width:130px">
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── APP INFO ── -->
+      <div>
+        <div class="section-header">// APP INFORMATION</div>
+        <div class="settings-panel">
+          <div class="version-row">
+            <span class="ver-key">VERSION</span>
+            <span class="ver-val green">1.0.0</span>
+          </div>
+          <div class="version-row">
+            <span class="ver-key">SCHEMA</span>
+            <span class="ver-val">1.0</span>
+          </div>
+          <div class="version-row">
+            <span class="ver-key">STORAGE</span>
+            <span class="ver-val green">IndexedDB</span>
+          </div>
+          <div class="version-row">
+            <span class="ver-key">MODE</span>
+            <span class="ver-val green">100% OFFLINE</span>
+          </div>
+          <div class="version-row">
+            <span class="ver-key">PLATFORM</span>
+            <span class="ver-val" id="info-platform">—</span>
+          </div>
+          <div class="version-row">
+            <span class="ver-key">STORAGE USED</span>
+            <span class="ver-val" id="info-storage">—</span>
+          </div>
+          <div class="version-row">
+            <span class="ver-key">TOTAL SESSIONS</span>
+            <span class="ver-val" id="info-sessions">—</span>
+          </div>
+          <div class="version-row">
+            <span class="ver-key">MEMBER SINCE</span>
+            <span class="ver-val" id="info-since">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SAVE BUTTON ── -->
+      <button class="save-btn" onclick="saveAll()">
+        💾 SAVE ALL SETTINGS
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/phase1-notifications.js"></script>
+<script>
+'use strict';
+
+const RANK_ICONS = {civilian:'👤',enlisted:'🪖',nco:'⚙️',officer:'⭐',general:'🌟'};
+let _profile = null;
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');_unlockScroll();}
+
+function toast(msg, ok=true){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.borderColor=ok?'var(--green)':'var(--amber)';
+  el.style.color=ok?'var(--green)':'var(--amber)';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+function fmtDate(ts){
+  if(!ts) return '—';
+  const d=new Date(ts);
+  return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}`;
+}
+
+/* ── LOAD PREFS from localStorage ── */
+function loadPrefs(){
+  const prefs = JSON.parse(localStorage.getItem('tf_prefs')||'{}');
+  // Show fallback toggles if notif-settings-container didn't populate
+  setTimeout(() => {
+    const notifContainer = document.getElementById('notif-settings-container');
+    const fallback = document.getElementById('fallback-toggles');
+    if (fallback && notifContainer) {
+      const isEmpty = notifContainer.querySelector('[id^="notif-"]') === null;
+      if (isEmpty) fallback.style.display = 'block';
+    }
+  }, 500);
+  setToggle('tog-reminder', prefs.reminder??false);
+  setToggle('tog-backup',   prefs.backup??true);
+  setToggle('tog-sound',    prefs.sound??true);
+  setToggle('tog-haptic',   prefs.haptic??true);
+  setToggle('tog-autorest', prefs.autoRest??true);
+  setToggle('tog-wakelock', prefs.wakeLock??true);
+  setVal('f-rest',      prefs.defaultRest||'60');
+  setVal('f-sets',      prefs.defaultSets||'3');
+  setVal('f-lang',      prefs.lang||'th');
+  setVal('f-units',     prefs.units||'metric');
+  setVal('f-weekstart', prefs.weekStart||'1');
+}
+
+function setToggle(id, val){
+  const el=document.getElementById(id);
+  if(el) el.checked=val;
+}
+function setVal(id, val){
+  const el=document.getElementById(id);
+  if(el) el.value=val;
+}
+
+/* ── POPULATE PROFILE FIELDS ── */
+function populateProfile(p){
+  if(!p) return;
+  const rank=RANKS[p.rankIndex||0];
+  document.getElementById('profile-avatar').textContent = RANK_ICONS[rank?.tier]||'👤';
+  document.getElementById('profile-name').textContent   = p.callsign||'OPERATOR';
+  document.getElementById('profile-rank').textContent   = `${(rank?.tier||'').toUpperCase()} TIER · ${rank?.name||'—'}`;
+  document.getElementById('profile-stats').textContent  =
+    `ฝึกรวม ${p.totalDaysActive||0} วัน  ·  Streak ${p.currentStreak||0} วัน  ·  Longest ${p.longestStreak||0} วัน`;
+
+  // Sidebar
+  document.getElementById('sb-rank').textContent     = rank?.name||'—';
+  document.getElementById('sb-callsign').textContent = p.callsign||'OPERATOR';
+
+  // Form fields
+  setVal('f-callsign', p.callsign||'');
+  setVal('f-gender',   p.gender||'male');
+  setVal('f-age',      p.age||25);
+  setVal('f-fitness',  p.fitnessLevel||'beginner');
+  setVal('f-weight',   p.weight||70);
+  setVal('f-height',   p.height||170);
+  setVal('f-days',     p.trainingDaysPerWeek||3);
+  setVal('f-time',     p.preferredTime||'morning');
+}
+
+/* ── SAVE ALL ── */
+async function saveAll(){
+  try {
+    // Profile
+    await Storage.User.update({
+      callsign:           document.getElementById('f-callsign').value.trim().toUpperCase() || 'OPERATOR',
+      gender:             document.getElementById('f-gender').value,
+      age:                parseInt(document.getElementById('f-age').value)||25,
+      fitnessLevel:       document.getElementById('f-fitness').value,
+      weight:             parseFloat(document.getElementById('f-weight').value)||70,
+      height:             parseInt(document.getElementById('f-height').value)||170,
+      trainingDaysPerWeek:parseInt(document.getElementById('f-days').value)||3,
+      preferredTime:      document.getElementById('f-time').value,
+    });
+
+    // Prefs to localStorage
+    const prefs = {
+      reminder:    document.getElementById('tog-reminder')?.checked ?? false,
+      backup:      document.getElementById('tog-backup')?.checked ?? true,
+      sound:       document.getElementById('tog-sound')?.checked ?? true,
+      haptic:      document.getElementById('tog-haptic')?.checked ?? true,
+      autoRest:    document.getElementById('tog-autorest').checked,
+      wakeLock:    document.getElementById('tog-wakelock').checked,
+      defaultRest: document.getElementById('f-rest').value,
+      defaultSets: document.getElementById('f-sets').value,
+      lang:        document.getElementById('f-lang').value,
+      units:       document.getElementById('f-units').value,
+      weekStart:   document.getElementById('f-weekstart').value,
+    };
+    localStorage.setItem('tf_prefs', JSON.stringify(prefs));
+
+    // Refresh profile card
+    _profile = await Storage.User.get();
+    populateProfile(_profile);
+
+    toast('✓ บันทึก settings แล้ว');
+  } catch(err) {
+    toast('บันทึกไม่สำเร็จ: '+err.message, false);
+  }
+}
+
+/* ── APP INFO ── */
+async function loadAppInfo(){
+  // Platform
+  const ua = navigator.userAgent;
+  const platform = /iPhone|iPad/.test(ua) ? 'iOS Safari'
+    : /Android/.test(ua) ? 'Android'
+    : /Mac/.test(ua) ? 'macOS'
+    : 'Desktop';
+  document.getElementById('info-platform').textContent = platform;
+
+  // Sessions
+  const logs = await Storage.Logs.getAll().catch(()=>[]);
+  document.getElementById('info-sessions').textContent = logs.length;
+
+  // Storage
+  if(navigator.storage?.estimate){
+    const {usage,quota} = await navigator.storage.estimate();
+    document.getElementById('info-storage').textContent =
+      `${(usage/1024/1024).toFixed(2)} MB / ${(quota/1024/1024).toFixed(0)} MB`;
+  }
+
+  // Member since
+  if(_profile?.createdAt){
+    document.getElementById('info-since').textContent = fmtDate(_profile.createdAt);
+  }
+}
+
+/* ── BOOTSTRAP ── */
+async function bootstrap(){
+  try {
+    await Storage.init();
+    _profile = await Storage.User.get();
+    if(_profile) populateProfile(_profile);
+    loadPrefs();
+    loadAppInfo();
+    // Phase 1: Render notification settings UI
+    if (window.NotificationSystem) NotificationSystem.renderSettingsUI('notif-settings-container');
+  } catch(err) {
+    console.error('[Settings] Bootstrap:', err);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', bootstrap);
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

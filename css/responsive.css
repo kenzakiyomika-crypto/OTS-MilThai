@@ -1,0 +1,324 @@
+/* ═══════════════════════════════════════════════════
+   TACTICAL FITNESS — RESPONSIVE & MOBILE v1.0
+   Global responsive fixes for all 13 pages
+   Covers: 480px collapse, safe-area, modal scroll,
+           popup backdrop, touch targets, landscape
+═══════════════════════════════════════════════════ */
+
+/* ─── iOS SAFE AREA (all pages) ─── */
+.topbar {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.content {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+.bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Sidebar safe area */
+.sidebar {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Fixed bottom panels */
+.coach-panel,
+.rest-overlay > *,
+.interval-overlay > * {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ─── MODAL / OVERLAY GLOBAL ─── */
+.modal-overlay,
+.modal-bg,
+[id$="-overlay"]:not(#overlay) {
+  padding: 12px;
+}
+
+/* All modals: scrollable on small screens */
+.modal,
+.modal-inner,
+[class*="modal-content"],
+[class*="sheet"] {
+  max-height: 90dvh;
+  max-height: 90vh; /* fallback */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Backdrop darker for legibility */
+.modal-overlay,
+.modal-bg {
+  background: rgba(0, 0, 0, 0.88);
+}
+
+/* Modal centering */
+.modal,
+.modal-inner {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  border-radius: 4px;
+}
+
+/* ─── TOAST / SNACKBAR ─── */
+.toast,
+[class*="toast"] {
+  max-width: calc(100vw - 32px);
+  word-break: break-word;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+}
+
+/* ─── 768px TABLET ─── */
+@media (max-width: 768px) {
+  /* Grids that are too wide */
+  .grid-4 { grid-template-columns: 1fr 1fr !important; }
+  .grid-3 { grid-template-columns: 1fr 1fr !important; }
+  .cols-3,
+  .timeline-grid,
+  .goal-type-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* Modal full-width on tablet */
+  .modal, .modal-inner { max-width: 100%; }
+}
+
+/* ─── 480px MOBILE ─── */
+@media (max-width: 480px) {
+
+  /* Typography scale-down */
+  body { font-size: 14px; }
+
+  /* ── GLOBAL GRID COLLAPSE ── */
+  .grid-2, .grid-3, .grid-4,
+  .cols-2, .cols-3,
+  .aar-metric-row,
+  .pain-form,
+  .backup-info,
+  .preview-stats,
+  .stats-row,
+  .input-row,
+  .path-grid,
+  .goal-type-grid,
+  .timeline-grid,
+  .score-grid { grid-template-columns: 1fr !important; }
+
+  /* ── DASHBOARD ── */
+  .hero-btns { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+  .bottom-stats { grid-template-columns: 1fr 1fr !important; }
+  .pr-strip { gap: 8px; }
+  .pr-chip { min-width: 70px; }
+
+  /* ── MISSIONS ── */
+  .preset-grid { grid-template-columns: 1fr 1fr !important; }
+  .medals-grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+  /* ── RANK ── */
+  .req-grid { grid-template-columns: 1fr 1fr !important; }
+  .career-grid { grid-template-columns: 1fr !important; }
+
+  /* ── PERFORMANCE ── */
+  .chart-row { flex-direction: column !important; }
+  .pr-history-row { flex-wrap: wrap; gap: 8px; }
+
+  /* ── INTEL CENTER ── */
+  .overload-row { grid-template-columns: 1fr 1fr !important; font-size: 11px; }
+  .aar-row { flex-direction: column !important; gap: 8px; }
+
+  /* ── OPS HUB ── */
+  .acft-grid { grid-template-columns: 1fr 1fr !important; }
+  .platoon-grid { grid-template-columns: 1fr 1fr !important; }
+  .sfx-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* ── TRAINING ── */
+  .setup-grid { grid-template-columns: 1fr !important; }
+  .session-mode-row { flex-direction: column; gap: 6px; }
+  .mode-config-row { flex-direction: column; gap: 8px; }
+  .interval-time { font-size: 60px !important; }
+  .set-row { gap: 6px; }
+  .reps-spinner { gap: 4px; }
+
+  /* ── PLANNER ── */
+  .cal-cell { min-height: 52px !important; padding: 4px !important; }
+  .plan-chip { font-size: 7px !important; }
+  .gen-row { flex-direction: column !important; gap: 8px; }
+
+  /* ── SETTINGS ── */
+  .settings-row { gap: 8px; }
+
+  /* ── SCIENCE PLANNER ── */
+  .profile-grid { grid-template-columns: 1fr !important; }
+  .injury-row { flex-wrap: wrap; gap: 8px; }
+
+  /* ── ULTIMATE COACH ── */
+  .sliders-grid { grid-template-columns: 1fr !important; }
+  .feedback-row { flex-direction: row; gap: 6px; }
+
+  /* ── ONBOARDING ── */
+  .ob-grid { grid-template-columns: 1fr 1fr !important; }
+  .activity-grid { grid-template-columns: 1fr 1fr !important; }
+  .path-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* ── IMPORT/EXPORT ── */
+  .export-grid { grid-template-columns: 1fr !important; }
+  .quota-bar { font-size: 10px; }
+
+  /* Modal full screen on mobile */
+  .modal, .modal-inner {
+    max-width: 100% !important;
+    max-height: 95dvh !important;
+    max-height: 95vh !important;
+    margin: 0;
+    border-radius: 4px 4px 0 0;
+  }
+  .modal-overlay, .modal-bg {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  /* Toast full-width */
+  .toast, [class*="toast"] {
+    left: 16px !important;
+    right: 16px !important;
+    transform: none !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px) !important;
+    text-align: center;
+  }
+
+  /* Touch targets min 44px */
+  .btn, button, .nav-item, .tab-btn,
+  .set-done-btn, .spin-btn, .rpe-btn,
+  .career-card, .preset-card, .day-toggle,
+  .sfx-btn, .fb-btn {
+    min-height: 44px;
+  }
+
+  /* Spinner buttons bigger */
+  .spin-btn { width: 36px !important; height: 44px !important; font-size: 20px !important; }
+  .spin-val { min-width: 44px; font-size: 22px !important; }
+
+  /* Section headers smaller */
+  .section-header {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+}
+
+/* ─── 375px SMALL PHONE (iPhone SE) ─── */
+@media (max-width: 375px) {
+  .hero-btns { grid-template-columns: 1fr 1fr !important; gap: 6px; }
+  .medals-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  .preset-grid { grid-template-columns: 1fr !important; }
+  .overload-row { grid-template-columns: 1fr !important; }
+  .interval-time { font-size: 52px !important; }
+  .pr-chip { min-width: 60px; padding: 8px 6px; }
+  .req-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* Stack bottom stats 2x2 */
+  .bottom-stats { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+}
+
+/* ─── LANDSCAPE PHONE ─── */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Training active screen — side-by-side layout */
+  .active-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  /* Interval overlay compact */
+  .interval-time { font-size: 48px !important; }
+  .interval-overlay { gap: 8px !important; }
+
+  /* Sidebar shorter */
+  .sidebar-nav { gap: 2px !important; }
+  .nav-item { padding: 6px 14px !important; }
+
+  /* Modal fits landscape */
+  .modal, .modal-inner {
+    max-height: 85dvh !important;
+    max-height: 85vh !important;
+  }
+}
+
+/* ─── LARGE SCREEN (tablet/desktop) ─── */
+@media (min-width: 768px) {
+  .content-inner {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .modal, .modal-inner {
+    max-width: 520px;
+  }
+}
+
+/* ─── HOVER MICRO-INTERACTIONS (pointer devices only) ─── */
+@media (hover: hover) and (pointer: fine) {
+  /* Dashboard bottom stats */
+  .bstat {
+    transition: border-color 0.15s, background 0.15s;
+    cursor: default;
+  }
+  .bstat:hover {
+    border-color: var(--border2);
+    background: rgba(255,255,255,0.02);
+  }
+
+  /* Performance rows */
+  .pr-row {
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  .pr-row:hover { background: rgba(0,255,136,0.04); }
+
+  .session-row {
+    transition: background 0.15s, border-color 0.15s;
+    cursor: pointer;
+  }
+  .session-row:hover { background: rgba(255,255,255,0.02); border-color: var(--border2); }
+
+  /* Ultimate coach tab buttons */
+  .tab-btn {
+    transition: all 0.15s;
+  }
+  .tab-btn:hover:not(.active) {
+    color: var(--white);
+    border-color: var(--border2);
+  }
+
+  /* Feedback buttons */
+  .feedback-btn {
+    transition: all 0.15s;
+  }
+  .feedback-btn:hover {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-dim);
+  }
+
+  /* Calendar cells */
+  .cal-cell:not(.other-month) {
+    transition: background 0.12s;
+  }
+}
+
+/* ─── TOUCH DEVICE OPTIMISATIONS ─── */
+@media (hover: none) and (pointer: coarse) {
+  /* Disable hover effects that cause sticky states on iOS */
+  .btn:hover { background: inherit; }
+
+  /* Larger tap targets */
+  .nav-item { padding: 10px 14px; }
+  .tab-btn { padding: 10px 16px; }
+
+  /* Remove transition on scroll for perf */
+  .pr-strip { scroll-behavior: auto; }
+}
+
+/* ─── PRINT ─── */
+@media print {
+  .sidebar, .topbar, .bottom-nav,
+  .hamburger-btn, .overlay { display: none !important; }
+  .content { padding: 0 !important; margin: 0 !important; }
+  body { background: white !important; color: black !important; }
+}

@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<title>TACTICAL FITNESS — OPERATIONS HUB</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+/* ═══════════════════════════════════════
+   OPERATIONS HUB — Phase 3
+   ACFT · Audio · Platoon
+═══════════════════════════════════════ */
+.shell { display:flex; min-height:100vh; }
+
+/* ── Sidebar ── */
+.sidebar { width:200px; min-height:100vh; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; transition:transform .3s var(--ease-out); }
+.sidebar-logo { padding:18px 16px 14px; border-bottom:1px solid var(--border); }
+.sidebar-logo-mark { font-family:var(--head); font-size:20px; letter-spacing:4px; color:var(--green); text-shadow:0 0 16px var(--green-glow); }
+.nav-section { padding:10px 10px 4px; }
+.nav-label { font-family:var(--mono); font-size:8px; color:var(--gray2); letter-spacing:3px; padding:0 6px; margin-bottom:3px; }
+.nav-item { display:flex; align-items:center; gap:8px; padding:8px 8px; border-radius:4px; cursor:pointer; text-decoration:none; color:var(--gray); font-family:var(--body); font-size:12px; font-weight:500; transition:all .15s; border:1px solid transparent; margin-bottom:1px; }
+.nav-item:hover { background:var(--bg3); color:var(--white); border-color:var(--border); }
+.nav-item.active { background:var(--green-dim); color:var(--green); border-color:rgba(0,255,136,.2); }
+.nav-icon { font-size:13px; width:16px; text-align:center; }
+.hamburger-btn { background:none; border:none; cursor:pointer; padding:4px; display:flex; flex-direction:column; gap:4px; }
+.hamburger-btn span { display:block; width:18px; height:2px; background:var(--gray); border-radius:1px; }
+
+/* ── Layout ── */
+.topbar { height:52px; background:rgba(8,8,8,.96); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 16px; gap:12px; position:fixed; top:0; left:200px; right:0; z-index:50; }
+.topbar-title { font-family:var(--head); font-size:18px; letter-spacing:3px; color:var(--white); }
+.topbar-title span { color:var(--green); }
+.main { margin-left:200px; padding-top:52px; min-height:100vh; }
+.content { padding:20px 20px 60px; max-width:960px; }
+
+/* ── Tab Nav ── */
+.tab-nav { display:flex; gap:4px; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:4px; margin-bottom:20px; overflow-x:auto; scrollbar-width:none; }
+.tab-nav::-webkit-scrollbar { display:none; }
+.tab-btn { flex-shrink:0; padding:8px 14px; border-radius:7px; border:none; background:none; color:var(--gray); font-family:var(--mono); font-size:10px; letter-spacing:1px; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.tab-btn:hover { color:var(--white); background:var(--bg3); }
+.tab-btn.active { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,255,136,.2); }
+.tab-panel { display:none; }
+.tab-panel.visible { display:block; }
+
+/* ── Sec header ── */
+.sec-h { font-family:var(--mono); font-size:9px; letter-spacing:3px; color:var(--gray2); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.sec-h::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── Card ── */
+.card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:14px; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:14px; }
+
+/* ══════════════════
+   ACFT STYLES
+══════════════════ */
+.acft-std-selector { display:flex; gap:8px; margin-bottom:16px; }
+.std-btn { flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg3); color:var(--gray); font-family:var(--mono); font-size:10px; cursor:pointer; transition:all .15s; text-align:center; }
+.std-btn.active { background:var(--green-dim); border-color:rgba(0,255,136,.3); color:var(--green); }
+
+.event-card {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; padding:14px 16px; margin-bottom:8px;
+  transition:border-color .2s;
+}
+.event-card.graded { border-color:var(--grade-color, rgba(0,255,136,.3)); }
+.event-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.event-name { font-family:var(--body); font-size:14px; font-weight:700; color:var(--white); flex:1; }
+.event-grade-badge {
+  font-family:var(--mono); font-size:10px; letter-spacing:1px;
+  padding:3px 10px; border-radius:4px;
+  background:rgba(68,68,68,.3); color:var(--gray);
+  transition:all .3s;
+}
+.event-grade-badge.lit {
+  background:var(--grade-bg,rgba(0,255,136,.1));
+  border:1px solid var(--grade-border,rgba(0,255,136,.3));
+  color:var(--grade-color,var(--green));
+  text-shadow:0 0 8px var(--grade-color,var(--green));
+}
+.event-desc { font-family:var(--mono); font-size:9px; color:var(--gray); margin-bottom:10px; }
+.event-input-row { display:flex; align-items:center; gap:10px; }
+.event-input {
+  width:120px; background:var(--bg2); border:1px solid var(--border2);
+  color:var(--white); font-family:var(--head); font-size:20px;
+  padding:8px 12px; border-radius:6px; outline:none; text-align:center;
+  transition:border-color .15s;
+}
+.event-input:focus { border-color:rgba(0,255,136,.4); }
+.event-unit { font-family:var(--mono); font-size:10px; color:var(--gray2); }
+.event-time-inputs { display:flex; align-items:center; gap:6px; }
+.event-time-inputs input {
+  width:60px; background:var(--bg2); border:1px solid var(--border2);
+  color:var(--white); font-family:var(--head); font-size:20px;
+  padding:8px 10px; border-radius:6px; outline:none; text-align:center;
+}
+.event-time-inputs input:focus { border-color:rgba(0,255,136,.4); }
+.event-time-sep { font-family:var(--head); font-size:22px; color:var(--gray2); }
+
+.scoring-scale { display:flex; gap:4px; margin-top:8px; }
+.scale-chip { flex:1; text-align:center; padding:4px 2px; border-radius:3px; font-family:var(--mono); font-size:7px; letter-spacing:.5px; }
+
+.acft-summary-card {
+  padding:20px; text-align:center; margin-bottom:16px;
+  border-radius:10px; border:2px solid var(--border);
+  background: linear-gradient(135deg, var(--bg2) 0%, rgba(0,0,0,.8) 100%);
+}
+.acft-total-score { font-family:var(--head); font-size:72px; letter-spacing:4px; line-height:1; }
+.acft-status { font-family:var(--mono); font-size:10px; letter-spacing:3px; margin-top:6px; }
+.acft-detail-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:16px; }
+.acft-detail-cell { text-align:center; background:var(--bg3); border-radius:6px; padding:10px; }
+.acft-detail-val { font-family:var(--head); font-size:20px; }
+.acft-detail-lbl { font-family:var(--mono); font-size:8px; color:var(--gray2); margin-top:2px; }
+
+.save-test-btn {
+  width:100%; padding:14px; border-radius:8px;
+  border:1px solid rgba(0,255,136,.3); background:var(--green-dim);
+  color:var(--green); font-family:var(--head); font-size:16px;
+  letter-spacing:3px; cursor:pointer; transition:all .15s; margin-top:8px;
+}
+.save-test-btn:hover { background:rgba(0,255,136,.12); }
+.save-test-btn:active { transform:scale(.98); }
+
+.hist-row { display:grid; grid-template-columns:100px 1fr 60px 60px; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.hist-date { font-family:var(--mono); font-size:9px; color:var(--gray); }
+.hist-std  { font-family:var(--body); font-size:11px; color:var(--white); }
+.hist-score{ font-family:var(--head); font-size:20px; text-align:center; }
+.hist-pass { font-family:var(--mono); font-size:9px; text-align:center; }
+
+/* ══════════════════
+   AUDIO STYLES
+══════════════════ */
+.sfx-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.sfx-btn {
+  padding:12px 8px; border-radius:8px;
+  border:1px solid var(--border); background:var(--bg3);
+  color:var(--white); font-family:var(--body); font-size:12px;
+  cursor:pointer; transition:all .15s; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+}
+.sfx-btn:hover { border-color:rgba(0,255,136,.2); background:rgba(0,255,136,.04); }
+.sfx-btn:active { transform:scale(.95); border-color:var(--green); }
+.sfx-btn-icon { font-size:22px; }
+.sfx-btn-label { font-family:var(--mono); font-size:8px; letter-spacing:1px; color:var(--gray); }
+
+.drill-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.drill-btn {
+  padding:10px 12px; border-radius:8px;
+  border:1px solid var(--border); background:var(--bg3);
+  color:var(--amber); font-family:var(--mono); font-size:10px;
+  cursor:pointer; transition:all .15s; text-align:left;
+}
+.drill-btn:hover { background:rgba(255,170,0,.06); border-color:rgba(255,170,0,.3); }
+.drill-btn:active { transform:scale(.97); }
+
+.vol-wrap { display:flex; align-items:center; gap:12px; }
+.vol-slider {
+  flex:1; -webkit-appearance:none; height:4px;
+  background:var(--border2); border-radius:2px; outline:none;
+}
+.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance:none; width:16px; height:16px;
+  border-radius:50%; background:var(--green);
+  box-shadow:0 0 8px var(--green-glow); cursor:pointer;
+}
+
+.toggle-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
+.toggle-label { font-family:var(--body); font-size:13px; font-weight:500; color:var(--white); }
+.toggle-sub   { font-family:var(--mono); font-size:9px; color:var(--gray); margin-top:1px; }
+.toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
+.toggle input { display:none; }
+.toggle-track { position:absolute; inset:0; background:var(--border2); border-radius:12px; transition:background .2s; }
+.toggle input:checked ~ .toggle-track { background:var(--green); }
+.toggle-thumb { position:absolute; left:2px; top:2px; width:20px; height:20px; border-radius:50%; background:#000; transition:transform .2s; }
+.toggle input:checked ~ .toggle-thumb { transform:translateX(20px); }
+
+/* ══════════════════
+   PLATOON STYLES
+══════════════════ */
+.platoon-me-card {
+  background:linear-gradient(135deg,rgba(0,255,136,.06),rgba(0,180,255,.03));
+  border:1px solid rgba(0,255,136,.2); border-radius:10px;
+  padding:16px 18px; margin-bottom:14px;
+  position:relative; overflow:hidden;
+}
+.platoon-me-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--green); border-radius:3px 0 0 3px;
+}
+.me-callsign { font-family:var(--head); font-size:28px; letter-spacing:4px; color:var(--green); }
+.me-rank     { font-family:var(--body); font-size:13px; color:var(--gray); margin-top:2px; }
+.me-stats    { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
+.me-stat     { text-align:center; background:rgba(0,0,0,.3); border-radius:6px; padding:8px 4px; }
+.me-stat-val { font-family:var(--head); font-size:18px; color:var(--white); }
+.me-stat-lbl { font-family:var(--mono); font-size:7px; color:var(--gray2); margin-top:2px; }
+
+.share-section { margin-bottom:16px; }
+.share-url-box {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:6px; padding:10px 12px;
+  font-family:var(--mono); font-size:9px; color:var(--gray);
+  word-break:break-all; margin-bottom:10px; line-height:1.5;
+}
+.share-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.share-btn {
+  padding:8px 14px; border-radius:6px; border:none; cursor:pointer;
+  font-family:var(--mono); font-size:10px; transition:all .15s;
+}
+.share-btn.copy { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,255,136,.25); }
+.share-btn.qr   { background:var(--bg3); color:var(--gray); border:1px solid var(--border); }
+.share-btn:hover { filter:brightness(1.2); }
+
+.qr-wrap { text-align:center; margin:12px 0; }
+.qr-wrap canvas { border-radius:8px; border:1px solid var(--border); }
+
+.import-section { margin-bottom:16px; }
+.import-input {
+  width:100%; background:var(--bg3); border:1px solid var(--border);
+  color:var(--white); font-family:var(--mono); font-size:11px;
+  padding:10px 12px; border-radius:6px; margin-bottom:8px; outline:none;
+  transition:border-color .15s;
+}
+.import-input:focus { border-color:rgba(0,255,136,.4); }
+.import-btn {
+  padding:10px 20px; background:var(--green-dim); border:1px solid rgba(0,255,136,.3);
+  color:var(--green); font-family:var(--mono); font-size:10px;
+  border-radius:6px; cursor:pointer; transition:all .15s;
+}
+
+/* Leaderboard */
+.lb-cats { display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; scrollbar-width:none; padding-bottom:4px; }
+.lb-cats::-webkit-scrollbar { display:none; }
+.lb-cat-btn { flex-shrink:0; padding:5px 12px; border-radius:5px; border:1px solid var(--border); background:var(--bg3); color:var(--gray); font-family:var(--mono); font-size:9px; cursor:pointer; white-space:nowrap; }
+.lb-cat-btn.active { background:var(--green-dim); color:var(--green); border-color:rgba(0,255,136,.3); }
+
+.lb-row {
+  display:grid; grid-template-columns:40px 1fr 80px 60px;
+  align-items:center; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--border);
+}
+.lb-rank-num { font-family:var(--head); font-size:22px; text-align:center; }
+.lb-rank-num.gold   { color:#ffd700; text-shadow:0 0 12px rgba(255,215,0,.5); }
+.lb-rank-num.silver { color:#c0c0c0; }
+.lb-rank-num.bronze { color:#cd7f32; }
+.lb-callsign { font-family:var(--body); font-size:14px; font-weight:600; }
+.lb-callsign.me { color:var(--green); }
+.lb-rank-label { font-family:var(--mono); font-size:8px; color:var(--gray); }
+.lb-score { font-family:var(--head); font-size:22px; text-align:center; }
+.lb-unit  { font-family:var(--mono); font-size:8px; color:var(--gray2); text-align:center; }
+.lb-date  { font-family:var(--mono); font-size:8px; color:var(--gray); text-align:center; }
+.member-remove { background:none; border:none; color:var(--gray); cursor:pointer; font-size:14px; padding:2px 6px; }
+.member-remove:hover { color:var(--red); }
+
+/* ── Bottom Nav ── */
+.bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:100; background:rgba(8,8,8,.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); }
+.bnav-inner { display:grid; grid-template-columns:repeat(5,1fr); }
+.bnav-item { display:flex; flex-direction:column; align-items:center; padding:10px 4px 12px; text-decoration:none; color:var(--gray); transition:color .15s; }
+.bnav-item.active { color:var(--green); }
+.bnav-icon { font-size:20px; }
+.bnav-label { font-family:var(--mono); font-size:8px; margin-top:3px; }
+#overlay {
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; }
+
+/* ── Mobile ── */
+@media (max-width:700px) {
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); box-shadow:4px 0 30px rgba(0,0,0,.8); }
+  .main { margin-left:0; }
+  .topbar { left:0; }
+  .grid-2,.grid-3 { grid-template-columns:1fr; }
+  .sfx-grid { grid-template-columns:repeat(2,1fr); }
+  .acft-detail-grid { grid-template-columns:1fr 1fr; }
+  .me-stats { grid-template-columns:1fr 1fr; }
+  .bottom-nav { display:block; }
+  .content { padding-bottom:80px; }
+}
+@media (min-width:701px) {
+  .hamburger-btn { display:none; }
+  .bottom-nav { display:none; }
+}
+
+@keyframes fadeInUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.anim { animation:fadeInUp .35s var(--ease-out) both; }
+.anim-2 { animation:fadeInUp .35s var(--ease-out) .08s both; }
+.anim-3 { animation:fadeInUp .35s var(--ease-out) .16s both; }
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+@media(max-width:480px){
+  .tab-nav{overflow-x:auto;scrollbar-width:none}
+  .tab-nav::-webkit-scrollbar{display:none}
+  .tab-btn{flex-shrink:0;white-space:nowrap;padding:7px 10px}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .acft-std-selector{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">⬡ TACTICAL</div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);letter-spacing:2px;margin-top:2px">FITNESS SYSTEM v3.0</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// COMMAND</div>
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">◈</span> COMMAND CENTER</a>
+    <a href="training.html"  class="nav-item"><span class="nav-icon">⚡</span> TODAY TRAINING</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// INTELLIGENCE</div>
+    <a href="intel-center.html"     class="nav-item"><span class="nav-icon">📊</span> INTEL CENTER</a>
+    <a href="ops-hub.html"          class="nav-item active"><span class="nav-icon">🎖</span> OPS HUB</a>
+    <a href="ultimate-coach.html"   class="nav-item"><span class="nav-icon">🧠</span> ULTIMATE COACH</a>
+    <a href="science-planner.html"  class="nav-item"><span class="nav-icon">⚗</span> SCIENCE PLANNER</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// INTEL</div>
+    <a href="performance.html" class="nav-item"><span class="nav-icon">▲</span> PERFORMANCE</a>
+    <a href="rank.html"        class="nav-item"><span class="nav-icon">◆</span> RANK</a>
+    <a href="missions.html"    class="nav-item"><span class="nav-icon">⚔</span> MISSIONS</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// SYSTEM</div>
+    <a href="settings.html"       class="nav-item"><span class="nav-icon">◎</span> SETTINGS</a>
+    <a href="import-export.html"  class="nav-item"><span class="nav-icon">⇅</span> IMPORT / EXPORT</a>
+  </div>
+</aside>
+
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<div class="shell">
+<div class="main">
+  <header class="topbar">
+    <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+    <div class="topbar-title">OPS <span>HUB</span></div>
+    <div style="margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--gray)" id="tb-date">—</div>
+  </header>
+
+  <div class="content">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('acft')">🎯 ACFT BENCHMARK</button>
+      <button class="tab-btn" onclick="switchTab('audio')">🔊 AUDIO WARFARE</button>
+      <button class="tab-btn" onclick="switchTab('platoon')">🪖 PLATOON MODE</button>
+    </div>
+
+    <!-- ══════════════════════ TAB 1: ACFT ══════════════════════ -->
+    <div class="tab-panel visible" id="tab-acft">
+
+      <div class="anim">
+        <div class="sec-h">// เลือกมาตรฐาน</div>
+        <div class="acft-std-selector">
+          <button class="std-btn active" onclick="selectStandard('thai',this)">🇹🇭 มาตรฐานทหารไทย</button>
+          <button class="std-btn" onclick="selectStandard('us_acft',this)">🇺🇸 US Army ACFT</button>
+        </div>
+      </div>
+
+      <!-- Summary always-visible -->
+      <div class="anim-2">
+        <div class="acft-summary-card" id="acft-summary">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--gray);margin-bottom:8px">// กรอกผลทดสอบด้านล่าง</div>
+          <div class="acft-total-score" style="color:var(--gray)">—</div>
+          <div class="acft-status" style="color:var(--gray)">AWAITING INPUT</div>
+        </div>
+      </div>
+
+      <!-- Events -->
+      <div class="anim-2" id="acft-events">
+        <!-- filled by JS -->
+      </div>
+
+      <div class="anim-3">
+        <input type="text" placeholder="Notes (optional)..." id="acft-notes"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:var(--mono);font-size:11px;padding:10px;border-radius:6px;outline:none;margin-bottom:8px">
+        <button class="save-test-btn" onclick="saveACFTTest()">💾 SAVE TEST RESULT</button>
+      </div>
+
+      <div class="anim-3" style="margin-top:20px">
+        <div class="sec-h">// TEST HISTORY</div>
+        <div class="card" id="acft-history">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">ยังไม่มีประวัติ — บันทึกผลทดสอบด้านบน</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════ TAB 2: AUDIO ══════════════════════ -->
+    <div class="tab-panel" id="tab-audio">
+
+      <!-- Volume & Toggles -->
+      <div class="card anim">
+        <div class="sec-h">// AUDIO SETTINGS</div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">🔊 Sound Effects (SFX)</div><div class="toggle-sub">เสียงประกอบ set complete, PR, rank up</div></div>
+          <label class="toggle"><input type="checkbox" id="tog-sfx" checked onchange="AudioWarfare.setSFX(this.checked);AudioWarfare.savePrefs()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">🎙 Drill Sergeant Voice</div><div class="toggle-sub">เสียงคำสั่งภาษาไทย (TTS)</div></div>
+          <label class="toggle"><input type="checkbox" id="tog-voice" checked onchange="AudioWarfare.setVoice(this.checked);AudioWarfare.savePrefs()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div style="margin-top:14px">
+          <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);margin-bottom:8px">// MASTER VOLUME</div>
+          <div class="vol-wrap">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--gray)">🔇</span>
+            <input type="range" class="vol-slider" id="vol-slider" min="0" max="100" value="70"
+              oninput="AudioWarfare.setVolume(this.value/100);AudioWarfare.savePrefs();document.getElementById('vol-val').textContent=this.value+'%'">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--gray)">🔊</span>
+            <span style="font-family:var(--head);font-size:16px;color:var(--green);width:40px" id="vol-val">70%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SFX Test Board -->
+      <div class="card anim-2">
+        <div class="sec-h">// SFX LIBRARY — กดทดสอบ</div>
+        <div class="sfx-grid">
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.workoutStart()"><div class="sfx-btn-icon">🚀</div><div class="sfx-btn-label">WORKOUT START</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.setComplete()"><div class="sfx-btn-icon">✅</div><div class="sfx-btn-label">SET COMPLETE</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.prAchieved()"><div class="sfx-btn-icon">🏆</div><div class="sfx-btn-label">NEW PR!</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.workoutComplete()"><div class="sfx-btn-icon">🎖</div><div class="sfx-btn-label">MISSION DONE</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.rankUp()"><div class="sfx-btn-icon">⭐</div><div class="sfx-btn-label">RANK UP</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.medalEarned()"><div class="sfx-btn-icon">🥇</div><div class="sfx-btn-label">MEDAL</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.restStart()"><div class="sfx-btn-icon">⏸</div><div class="sfx-btn-label">REST START</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.restEnd()"><div class="sfx-btn-icon">▶</div><div class="sfx-btn-label">REST END</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.riskRed()"><div class="sfx-btn-icon">🔴</div><div class="sfx-btn-label">RISK ALERT</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.missionComplete()"><div class="sfx-btn-icon">⚔</div><div class="sfx-btn-label">MISSION</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.bootUp()"><div class="sfx-btn-icon">💻</div><div class="sfx-btn-label">BOOT UP</div></button>
+          <button class="sfx-btn" onclick="AudioWarfare.SFX.streakMilestone()"><div class="sfx-btn-icon">🔥</div><div class="sfx-btn-label">STREAK!</div></button>
+        </div>
+      </div>
+
+      <!-- Drill Sergeant -->
+      <div class="card anim-3">
+        <div class="sec-h">// DRILL SERGEANT — คำสั่งภาษาไทย</div>
+        <div class="drill-grid">
+          <button class="drill-btn" onclick="AudioWarfare.drill('start')">⚡ เริ่ม!</button>
+          <button class="drill-btn" onclick="AudioWarfare.drill('push')">💪 กดดัน!</button>
+          <button class="drill-btn" onclick="AudioWarfare.drill('pull')">🏋 ดึงข้อ!</button>
+          <button class="drill-btn" onclick="AudioWarfare.drill('core')">🧱 Core!</button>
+          <button class="drill-btn" onclick="AudioWarfare.drill('run')">🏃 วิ่ง!</button>
+          <button class="drill-btn" onclick="AudioWarfare.drill('rest')">💤 พัก</button>
+          <button class="drill-btn" onclick="AudioWarfare.drill('form')">📐 Form!</button>
+          <button class="drill-btn" onclick="AudioWarfare.drill('motivate')">🔥 จุดไฟ!</button>
+          <button class="drill-btn" onclick="AudioWarfare.drill('complete')">🎖 Complete!</button>
+          <button class="drill-btn" onclick="AudioWarfare.drill('pr')">🏆 PR!</button>
+        </div>
+
+        <div style="margin-top:14px">
+          <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);margin-bottom:8px">// CUSTOM MESSAGE</div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="custom-voice-input" placeholder="พิมพ์คำสั่ง..." value="ต่ำลง เร็วเข้า อย่าหยุด!"
+              style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:10px;border-radius:6px;font-family:var(--mono);font-size:11px;outline:none">
+            <button onclick="AudioWarfare.speak(document.getElementById('custom-voice-input').value,1.2,true)"
+              style="padding:10px 16px;background:rgba(255,170,0,.1);border:1px solid rgba(255,170,0,.25);color:var(--amber);border-radius:6px;font-family:var(--mono);font-size:10px;cursor:pointer">▶ SPEAK</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════ TAB 3: PLATOON ══════════════════════ -->
+    <div class="tab-panel" id="tab-platoon">
+
+      <!-- My card -->
+      <div class="anim">
+        <div class="sec-h">// MY OPERATOR CARD</div>
+        <div class="platoon-me-card" id="my-card">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">กำลังโหลด...</div>
+        </div>
+      </div>
+
+      <!-- Share -->
+      <div class="card anim-2">
+        <div class="sec-h">// SHARE TO PLATOON</div>
+        <div class="share-section">
+          <div class="share-url-box" id="share-url">—</div>
+          <div class="share-btns">
+            <button class="share-btn copy" onclick="copyShareURL()">📋 COPY LINK</button>
+            <button class="share-btn qr"   onclick="toggleQR()">📷 SHOW QR</button>
+          </div>
+        </div>
+        <div class="qr-wrap" id="qr-wrap" style="display:none">
+          <canvas id="qr-canvas"></canvas>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:8px">ให้เพื่อนสแกน QR เพื่อเพิ่มข้อมูลลง Platoon</div>
+        </div>
+      </div>
+
+      <!-- Import -->
+      <div class="card anim-2">
+        <div class="sec-h">// ADD PLATOON MEMBER</div>
+        <div class="import-section">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-bottom:10px">วาง link ที่ได้จากเพื่อน หรือ code จาก URL</div>
+          <input type="text" class="import-input" id="import-input" placeholder="วาง link หรือ code ที่นี่...">
+          <button class="import-btn" onclick="importMember()">➕ ADD MEMBER</button>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="card anim-3">
+        <div class="sec-h">// PLATOON LEADERBOARD</div>
+        <div class="lb-cats" id="lb-cats">
+          <!-- filled by JS -->
+        </div>
+        <div id="leaderboard-table">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">กำลังโหลด...</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</div>
+
+<nav class="bottom-nav">
+  <div class="bnav-inner">
+    <a href="dashboard.html"  class="bnav-item"><div class="bnav-icon">◈</div><div class="bnav-label">HOME</div></a>
+    <a href="training.html"   class="bnav-item"><div class="bnav-icon">⚡</div><div class="bnav-label">TRAIN</div></a>
+    <a href="intel-center.html" class="bnav-item"><div class="bnav-icon">📊</div><div class="bnav-label">INTEL</div></a>
+    <a href="ops-hub.html"    class="bnav-item active"><div class="bnav-icon">🎖</div><div class="bnav-label">OPS</div></a>
+    <a href="rank.html"       class="bnav-item"><div class="bnav-icon">◆</div><div class="bnav-label">RANK</div></a>
+  </div>
+</nav>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/phase3-engine.js"></script>
+<script>
+'use strict';
+
+let _profile, _pr, _logs;
+let _currentStdId = 'thai';
+let _acftScores   = {};
+let _lbCategory   = 'score';
+
+/* ── Sidebar ── */
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar'), ov = document.getElementById('overlay');
+  sb.classList.toggle('open');
+  ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').style.display = 'none';
+}
+function switchTab(name) {
+  ['acft','audio','platoon'].forEach((t,i) => {
+    document.querySelectorAll('.tab-btn')[i].classList.toggle('active', t === name);
+    document.getElementById(`tab-${t}`).classList.toggle('visible', t === name);
+  });
+}
+
+/* ══════════════════
+   ACFT
+══════════════════ */
+function selectStandard(id, btn) {
+  _currentStdId = id;
+  _acftScores   = {};
+  document.querySelectorAll('.std-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderACFTEvents();
+  updateACFTSummary();
+  renderACFTHistory();
+}
+
+function renderACFTEvents() {
+  const std = ACFTEngine.getStandard(_currentStdId);
+  const el  = document.getElementById('acft-events');
+  el.innerHTML = std.events.map(ev => {
+    const isTime = ev.unit === 'sec';
+    return `
+      <div class="event-card" id="ec-${ev.id}">
+        <div class="event-header">
+          <div class="event-name">${ev.name}</div>
+          <div class="event-grade-badge" id="eg-${ev.id}">—</div>
+        </div>
+        <div class="event-desc">${ev.description}</div>
+        <div class="event-input-row">
+          ${isTime ? `
+            <div class="event-time-inputs">
+              <input type="number" min="0" max="99" placeholder="MM" id="ei-${ev.id}-m"
+                oninput="onACFTInput('${ev.id}')" style="font-family:var(--head);font-size:20px;color:var(--white);background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;outline:none;width:60px;text-align:center">
+              <span class="event-time-sep">:</span>
+              <input type="number" min="0" max="59" placeholder="SS" id="ei-${ev.id}-s"
+                oninput="onACFTInput('${ev.id}')" style="font-family:var(--head);font-size:20px;color:var(--white);background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;outline:none;width:60px;text-align:center">
+            </div>
+            <span class="event-unit">นาที : วินาที</span>
+          ` : `
+            <input class="event-input" type="number" min="0" max="999" placeholder="0"
+              id="ei-${ev.id}" oninput="onACFTInput('${ev.id}')">
+            <span class="event-unit">${ev.unit}</span>
+          `}
+        </div>
+        <div class="scoring-scale">
+          ${ev.scoring.map(s => `<div class="scale-chip" style="background:${s.color}18;color:${s.color};border:1px solid ${s.color}30">${s.grade}</div>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function onACFTInput(evId) {
+  const ev  = ACFTEngine.getStandard(_currentStdId).events.find(e => e.id === evId);
+  let val   = null;
+  if (ev.unit === 'sec') {
+    const m = parseInt(document.getElementById(`ei-${evId}-m`)?.value) || 0;
+    const s = parseInt(document.getElementById(`ei-${evId}-s`)?.value) || 0;
+    val = m * 60 + s;
+    if (val === 0) val = null;
+  } else {
+    val = parseInt(document.getElementById(`ei-${evId}`)?.value);
+    if (isNaN(val) || val <= 0) val = null;
+  }
+  _acftScores[evId] = val;
+  updateEventGrade(ev, val);
+  updateACFTSummary();
+}
+
+function updateEventGrade(ev, val) {
+  if (val === null) return;
+  const result = ACFTEngine.gradeEvent(ev, val);
+  const badge  = document.getElementById(`eg-${ev.id}`);
+  const card   = document.getElementById(`ec-${ev.id}`);
+  if (!badge) return;
+  badge.textContent = result.grade;
+  badge.classList.add('lit');
+  badge.style.setProperty('--grade-color', result.color);
+  badge.style.setProperty('--grade-bg', result.color + '18');
+  badge.style.setProperty('--grade-border', result.color + '44');
+  card.style.setProperty('--grade-color', result.color);
+  card.classList.add('graded');
+  AudioWarfare.SFX.select();
+}
+
+function updateACFTSummary() {
+  const result = ACFTEngine.calcTotal(_currentStdId, _acftScores);
+  const el     = document.getElementById('acft-summary');
+  const filledCount = Object.values(_acftScores).filter(v => v !== null && v !== undefined).length;
+  if (filledCount === 0) {
+    el.innerHTML = `<div style="font-family:var(--mono);font-size:10px;color:var(--gray);margin-bottom:8px">// กรอกผลทดสอบด้านล่าง</div><div class="acft-total-score" style="color:var(--gray)">—</div><div class="acft-status" style="color:var(--gray)">AWAITING INPUT</div>`;
+    return;
+  }
+  const avgColor = result.average >= 80 ? '#00ff88' : result.average >= 60 ? '#ffaa00' : '#ff2d2d';
+  const status   = result.passed ? 'PASSED ✓' : (filledCount >= 3 ? 'IN PROGRESS' : 'TESTING...');
+  el.innerHTML = `
+    <div style="font-family:var(--mono);font-size:9px;color:var(--gray2);margin-bottom:8px">// ACFT SCORE</div>
+    <div class="acft-total-score" style="color:${avgColor}">${result.average}</div>
+    <div class="acft-status" style="color:${avgColor}">${status}</div>
+    <div class="acft-detail-grid">
+      ${result.results.filter(r => r.value !== null && r.value !== undefined).map(r => `
+        <div class="acft-detail-cell">
+          <div class="acft-detail-val" style="color:${r.color}">${r.score}</div>
+          <div class="acft-detail-lbl">${r.event.name.split(' ').slice(-1)[0]}</div>
+          <div style="font-family:var(--mono);font-size:8px;color:${r.color}">${r.grade}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function saveACFTTest() {
+  const filledCount = Object.values(_acftScores).filter(v => v !== null).length;
+  if (filledCount === 0) { alert('กรอกผลทดสอบอย่างน้อย 1 event'); return; }
+  const notes = document.getElementById('acft-notes').value;
+  const result = ACFTEngine.saveTest(_currentStdId, _acftScores, notes);
+  AudioWarfare.SFX.workoutComplete();
+  AudioWarfare.speak('บันทึกผลทดสอบสำเร็จ!', 1.1, true);
+  renderACFTHistory();
+  alert(`✅ บันทึกแล้ว — Score: ${result.average} / ${result.passed ? 'PASSED' : 'NOT PASSED'}`);
+}
+
+function renderACFTHistory() {
+  const hist = ACFTEngine.getHistory(_currentStdId).slice().reverse().slice(0, 10);
+  const el   = document.getElementById('acft-history');
+  if (!hist.length) {
+    el.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--gray)">ยังไม่มีประวัติ</div>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="hist-row" style="border-bottom:2px solid var(--border2);cursor:default">
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2)">DATE</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2)">STANDARD</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);text-align:center">AVG</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);text-align:center">STATUS</div>
+    </div>
+    ${hist.map(h => `
+      <div class="hist-row">
+        <div class="hist-date">${h.date}</div>
+        <div class="hist-std">${h.standardId === 'thai' ? '🇹🇭 ทหารไทย' : '🇺🇸 US ACFT'}</div>
+        <div class="hist-score" style="color:${h.average>=80?'#00ff88':h.average>=60?'#ffaa00':'#ff2d2d'}">${h.average}</div>
+        <div class="hist-pass" style="color:${h.passed?'var(--green)':'var(--red)'}">${h.passed?'PASS':'FAIL'}</div>
+      </div>`).join('')}
+  `;
+}
+
+/* ══════════════════
+   AUDIO
+══════════════════ */
+function initAudio() {
+  document.getElementById('tog-sfx').checked   = AudioWarfare.isSFXEnabled();
+  document.getElementById('tog-voice').checked = AudioWarfare.isVoiceEnabled();
+  const vol = Math.round(AudioWarfare.getVolume() * 100);
+  document.getElementById('vol-slider').value  = vol;
+  document.getElementById('vol-val').textContent = vol + '%';
+}
+
+/* ══════════════════
+   PLATOON
+══════════════════ */
+let _shareURL = '';
+
+function renderMyCard() {
+  const card = PlatoonMode.buildMyCard(_profile, _pr);
+  const el   = document.getElementById('my-card');
+  const run2 = card.run2km ? `${Math.floor(card.run2km/60)}:${String(card.run2km%60).padStart(2,'0')}` : '—';
+  el.innerHTML = `
+    <div class="me-callsign">${card.callsign}</div>
+    <div class="me-rank">${card.rankName}  •  DAY ${card.totalDays}  •  🔥 ${card.streak} days</div>
+    <div class="me-stats">
+      <div class="me-stat"><div class="me-stat-val">${card.pushup || '—'}</div><div class="me-stat-lbl">PUSH-UP</div></div>
+      <div class="me-stat"><div class="me-stat-val">${card.pullup || '—'}</div><div class="me-stat-lbl">PULL-UP</div></div>
+      <div class="me-stat"><div class="me-stat-val">${run2}</div><div class="me-stat-lbl">RUN 2KM</div></div>
+      <div class="me-stat"><div class="me-stat-val">${card.score}</div><div class="me-stat-lbl">SCORE</div></div>
+    </div>
+  `;
+  _shareURL = PlatoonMode.buildShareURL(card);
+  document.getElementById('share-url').textContent = _shareURL;
+}
+
+function copyShareURL() {
+  if (!_shareURL) return;
+  navigator.clipboard?.writeText(_shareURL).then(() => {
+    const btn = document.querySelector('.share-btn.copy');
+    btn.textContent = '✅ COPIED!';
+    setTimeout(() => btn.textContent = '📋 COPY LINK', 1500);
+    AudioWarfare.SFX.success();
+  }).catch(() => {
+    prompt('Copy link:', _shareURL);
+  });
+}
+
+function toggleQR() {
+  const wrap = document.getElementById('qr-wrap');
+  if (wrap.style.display === 'none') {
+    wrap.style.display = 'block';
+    PlatoonMode.renderQR(_shareURL, 'qr-canvas', 200);
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function importMember() {
+  const input = document.getElementById('import-input').value.trim();
+  if (!input) return;
+  let encoded = input;
+  // Extract from URL
+  const match = input.match(/[?&]op=([A-Za-z0-9_-]+)/);
+  if (match) encoded = match[1];
+  const card = PlatoonMode.decodeCard(encoded);
+  if (!card) { alert('❌ ไม่สามารถอ่านข้อมูลได้ — ตรวจสอบ link อีกครั้ง'); return; }
+  const ok = PlatoonMode.addMember(card);
+  if (!ok) { alert('⚠ Platoon เต็ม (max 10 คน) หรือชื่อซ้ำกัน'); return; }
+  document.getElementById('import-input').value = '';
+  renderLeaderboard();
+  AudioWarfare.SFX.success();
+  AudioWarfare.speak(`เพิ่ม ${card.callsign} เข้า Platoon แล้ว!`, 1.1, true);
+}
+
+function renderLBCats() {
+  const el = document.getElementById('lb-cats');
+  el.innerHTML = PlatoonMode.CATEGORIES.map(c => `
+    <button class="lb-cat-btn ${c.id === _lbCategory ? 'active' : ''}" onclick="setLBCategory('${c.id}')">${c.label}</button>
+  `).join('');
+}
+
+function setLBCategory(cat) {
+  _lbCategory = cat;
+  document.querySelectorAll('.lb-cat-btn').forEach((b,i) =>
+    b.classList.toggle('active', PlatoonMode.CATEGORIES[i].id === cat));
+  renderLeaderboard();
+}
+
+async function renderLeaderboard() {
+  const cat     = PlatoonMode.CATEGORIES.find(c => c.id === _lbCategory);
+  const board   = PlatoonMode.getLeaderboard(_lbCategory);
+  const tableEl = document.getElementById('leaderboard-table');
+
+  if (board.length <= 1 && !PlatoonMode.loadRoster().length) {
+    tableEl.innerHTML = `
+      <div style="text-align:center;padding:24px;font-family:var(--mono);font-size:10px;color:var(--gray)">
+        ยังไม่มีสมาชิก<br><span style="font-size:9px">เพิ่มเพื่อนด้วย link ด้านบน</span>
+      </div>`;
+    return;
+  }
+
+  const fmtVal = (m) => {
+    if (_lbCategory === 'run2km' && m.run2km) {
+      return `${Math.floor(m.run2km/60)}:${String(m.run2km%60).padStart(2,'0')}`;
+    }
+    return (m[cat.field] ?? '—').toString();
+  };
+
+  const rankColors = ['gold','silver','bronze'];
+
+  tableEl.innerHTML = board.map(m => `
+    <div class="lb-row">
+      <div class="lb-rank-num ${rankColors[m.rank-1]||''}">${m.rank}</div>
+      <div>
+        <div class="lb-callsign ${m.isMe?'me':''}">${m.callsign}${m.isMe?' 👤':''}</div>
+        <div class="lb-rank-label">${m.rankName}  •  ${m.updatedAt||'—'}</div>
+      </div>
+      <div>
+        <div class="lb-score" style="color:${m.rank===1?'#ffd700':m.rank===2?'#c0c0c0':m.rank===3?'#cd7f32':'var(--white)'}">${fmtVal(m)}</div>
+        <div class="lb-unit">${cat.unit}</div>
+      </div>
+      ${!m.isMe ? `<button class="member-remove" title="Remove" onclick="PlatoonMode.removeMember('${m.callsign}');renderLeaderboard()">✕</button>` : '<div></div>'}
+    </div>
+  `).join('');
+}
+
+/* ══════════════════
+   BOOTSTRAP
+══════════════════ */
+(async () => {
+  const now  = new Date();
+  const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
+  document.getElementById('tb-date').textContent =
+    `// ${days[now.getDay()]} ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()+543}`;
+  try {
+    await Storage.init();
+    [_profile, _pr, _logs] = await Promise.all([
+      Storage.User.get(), Storage.PR.get(), Storage.Logs.getAll(),
+    ]);
+    if (!_profile || !_profile.onboardingComplete) {
+      window.location.href = 'onboarding.html'; return;
+    }
+    // ACFT
+    renderACFTEvents();
+    updateACFTSummary();
+    renderACFTHistory();
+    // Audio
+    initAudio();
+    // Platoon
+    renderMyCard();
+    renderLBCats();
+    renderLeaderboard();
+    // Boot sound
+    setTimeout(() => AudioWarfare.SFX.bootUp(), 300);
+  } catch(err) {
+    console.error('[OpsHub] Bootstrap error', err);
+  }
+})();
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,3071 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>TACTICAL FITNESS — INIT</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+
+/* ─── ONBOARDING LAYOUT ─── */
+.ob-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── STEP INDICATOR ─── */
+.step-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 40px;
+}
+
+.step-dot {
+  width: 28px; height: 28px;
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gray2);
+  position: relative;
+  transition: all 0.3s;
+}
+
+.step-dot.active {
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 12px rgba(0,255,136,0.3);
+}
+
+.step-dot.done {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--black);
+}
+
+.step-dot.done::after { content: '✓'; font-size: 11px; }
+
+.step-line {
+  width: 32px; height: 1px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+
+.step-line.done { background: var(--green); }
+
+/* ─── CARD CONTAINER ─── */
+.ob-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ob-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+}
+
+/* Corner decorations */
+.ob-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 40px; height: 40px;
+  border-bottom: 1px solid var(--green);
+  border-right: 1px solid var(--green);
+  opacity: 0.4;
+}
+
+.ob-corner-tl {
+  position: absolute;
+  top: 0; left: 0;
+  width: 40px; height: 40px;
+  border-top: 1px solid var(--green);
+  border-left: 1px solid var(--green);
+  opacity: 0.4;
+}
+
+/* ─── STEP CONTENT ─── */
+.step-panel {
+  display: none;
+}
+
+.step-panel.active {
+  display: block;
+  animation: fadeInUp 0.35s var(--ease-out) both;
+}
+
+/* ─── LOGO / HEADER ─── */
+.ob-logo {
+  font-family: var(--head);
+  font-size: 13px;
+  letter-spacing: 6px;
+  color: var(--green);
+  text-shadow: 0 0 20px var(--green);
+  margin-bottom: 4px;
+}
+
+.ob-step-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gray);
+  letter-spacing: 3px;
+  margin-bottom: 24px;
+}
+
+.ob-title {
+  font-family: var(--head);
+  font-size: 36px;
+  letter-spacing: 3px;
+  color: var(--white);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.ob-title span { color: var(--green); text-shadow: 0 0 20px var(--green); }
+
+.ob-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 1px;
+  margin-bottom: 28px;
+  line-height: 1.7;
+}
+
+/* ─── OPTION CARDS (choice buttons) ─── */
+.option-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.option-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.option-grid.cols-1 { grid-template-columns: 1fr; }
+
+.opt-card {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 44px;
+  width: 100%;
+}
+
+.opt-card:hover {
+  border-color: var(--border);
+  background: var(--bg2);
+}
+
+.opt-card.selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+}
+
+.opt-card.selected::before {
+  content: '▶';
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 8px;
+  color: var(--green);
+}
+
+.opt-icon {
+  font-size: 22px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.opt-title {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--white);
+  margin-bottom: 3px;
+}
+
+.opt-card.selected .opt-title { color: var(--green); }
+
+.opt-desc {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gray);
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+}
+
+/* ─── NUMERIC INPUT PAIR ─── */
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ─── INITIAL TEST (PR entry) ─── */
+.pr-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pr-row {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+}
+
+.pr-label {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.pr-unit {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gray);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.pr-input {
+  font-family: var(--mono);
+  font-size: 20px;
+  color: var(--green);
+  text-align: center;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  padding: 6px 8px;
+  width: 100%;
+  min-height: 44px;
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+.pr-input:focus {
+  outline: none;
+  border-color: var(--green);
+}
+
+/* ─── PATH CARDS (step 3) ─── */
+.path-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.path-card {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  padding: 14px 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  -webkit-appearance: none;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.path-card:hover { border-color: var(--border); }
+
+.path-card.selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+}
+
+.path-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 10px;
+  color: var(--green);
+  font-family: var(--mono);
+}
+
+.path-icon { font-size: 20px; margin-bottom: 6px; display: block; line-height: 1; }
+.path-name { font-weight: 700; font-size: 13px; letter-spacing: 0.5px; margin-bottom: 3px; color: var(--white); }
+.path-card.selected .path-name { color: var(--green); }
+.path-desc { font-family: var(--mono); font-size: 9px; color: var(--gray); line-height: 1.5; margin-bottom: 8px; }
+
+.path-pr-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.pr-tag {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  padding: 2px 5px;
+  border: 1px solid var(--border2);
+  color: var(--gray2);
+}
+.path-card.selected .pr-tag { border-color: rgba(0,255,136,0.3); color: rgba(0,255,136,0.6); }
+
+.path-hint {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gray2);
+  letter-spacing: 1px;
+  text-align: center;
+  margin-bottom: 16px;
+  min-height: 16px;
+}
+
+/* ─── PR TABS (step 4) ─── */
+.pr-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.pr-tabs::-webkit-scrollbar { display: none; }
+
+.pr-tab {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border: 1px solid var(--border2);
+  border-bottom: none;
+  background: var(--bg3);
+  color: var(--gray);
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.pr-tab.active {
+  border-color: var(--green);
+  background: var(--bg2);
+  color: var(--green);
+  border-bottom: 1px solid var(--bg2);
+  margin-bottom: -1px;
+  position: relative;
+  z-index: 1;
+}
+
+.pr-panels {
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  padding: 16px;
+  margin-bottom: 12px;
+  min-height: 120px;
+}
+
+.pr-panel { display: none; }
+.pr-panel.active {
+  display: block;
+  animation: fadeIn 0.2s ease both;
+}
+
+/* reuse .pr-row + .pr-input from before but now inside panels */
+
+/* ─── SECTION LABEL ─── */
+.section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gray);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* ─── GOAL CHIPS (step 5) ─── */
+.goal-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.goal-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--gray);
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  text-align: left;
+  transition: all 0.15s;
+  min-height: 44px;
+}
+
+.goal-chip:hover { border-color: var(--border); color: var(--white); }
+
+.goal-chip.selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.goal-chip-icon { font-size: 16px; flex-shrink: 0; }
+
+/* ─── NUMERIC TARGETS (step 5) ─── */
+.target-grid { display: flex; flex-direction: column; gap: 8px; }
+
+.target-row {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+}
+
+.target-label { font-size: 13px; font-weight: 600; letter-spacing: 0.5px; }
+.target-unit  { font-family: var(--mono); font-size: 9px; color: var(--gray); margin-top: 2px; }
+
+/* ─── TIMELINE (step 5) ─── */
+.timeline-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.timeline-btn {
+  padding: 10px 6px;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--gray);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-align: center;
+  -webkit-appearance: none;
+  min-height: 44px;
+  transition: all 0.15s;
+}
+
+.timeline-btn.selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+
+/* ─── UNIT TOGGLE ─── */
+.unit-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--border2);
+}
+.unit-btn {
+  padding: 10px 8px;
+  background: var(--bg3);
+  border: none;
+  border-right: 1px solid var(--border2);
+  color: var(--gray);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  min-height: 44px;
+  transition: all 0.15s;
+}
+.unit-btn:last-child { border-right: none; }
+.unit-btn.selected { background: var(--green-dim); color: var(--green); }
+.unit-sub { font-size: 9px; opacity: 0.7; }
+
+/* ─── GENDER ROW ─── */
+.gender-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--border2); height: 44px; }
+.gender-btn {
+  background: var(--bg3);
+  border: none;
+  border-right: 1px solid var(--border2);
+  color: var(--gray);
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+  transition: all 0.15s;
+}
+.gender-btn:last-child { border-right: none; }
+.gender-btn.selected { background: var(--green-dim); color: var(--green); }
+
+/* ─── IMPERIAL HEIGHT ─── */
+.imperial-height-row { display: flex; align-items: center; gap: 8px; }
+.imperial-sep { font-family: var(--mono); font-size: 12px; color: var(--gray); flex-shrink: 0; }
+
+/* ─── BMI BAR ─── */
+.bmi-bar {
+  padding: 12px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease both;
+}
+.bmi-label-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.bmi-title { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 2px; }
+.bmi-value { font-family: var(--head); font-size: 28px; color: var(--white); letter-spacing: 2px; }
+.bmi-category { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; margin-left: auto; }
+.bmi-track {
+  height: 4px;
+  background: var(--border2);
+  position: relative;
+  margin-bottom: 6px;
+}
+.bmi-fill { height: 100%; width: 0; transition: width 0.4s var(--ease-out); }
+.bmi-marker {
+  position: absolute;
+  top: -4px;
+  width: 12px; height: 12px;
+  border: 2px solid var(--white);
+  background: var(--bg3);
+  transform: translateX(-50%);
+  transition: left 0.4s var(--ease-out);
+}
+.bmi-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--gray2);
+  letter-spacing: 0.5px;
+}
+
+/* ─── ACTIVITY GRID ─── */
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.activity-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  cursor: pointer;
+  -webkit-appearance: none;
+  min-height: 72px;
+  transition: all 0.15s;
+}
+.activity-btn.selected { border-color: var(--green); background: var(--green-dim); }
+.act-icon  { font-size: 18px; line-height: 1; }
+.act-label { font-family: var(--body); font-size: 10px; font-weight: 700; color: var(--white); text-align: center; line-height: 1.3; }
+.activity-btn.selected .act-label { color: var(--green); }
+.act-desc  { font-family: var(--mono); font-size: 8px; color: var(--gray2); }
+
+/* ─── MEDICAL CHIPS ─── */
+.medical-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.med-chip {
+  padding: 7px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--gray);
+  font-family: var(--body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+  min-height: 36px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.med-chip.selected { border-color: var(--amber); background: rgba(255,170,0,0.1); color: var(--amber); }
+#med-none.selected { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+
+/* ─── TRAINING TIME (step 2) ─── */
+.time-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.time-preset {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  padding: 10px 8px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  text-align: center;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 72px;
+}
+
+.time-preset:hover { border-color: var(--border); }
+
+.time-preset.selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+}
+
+.tp-icon  { font-size: 18px; line-height: 1; }
+.tp-label {
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.5px;
+}
+.time-preset.selected .tp-label { color: var(--green); }
+.tp-time  {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gray2);
+  letter-spacing: 0.5px;
+}
+.time-preset.selected .tp-time { color: rgba(0,255,136,0.6); }
+
+/* custom time row */
+.time-custom-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.time-dash {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--gray);
+  padding-bottom: 10px;
+  flex-shrink: 0;
+}
+
+/* override for time input on iOS */
+.time-input {
+  font-size: 18px !important;
+  color: var(--green) !important;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+/* summary bar */
+.time-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  margin-top: 8px;
+  min-height: 36px;
+}
+
+.ts-slot {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--green);
+  letter-spacing: 1px;
+}
+
+.ts-dur {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gray);
+  letter-spacing: 1px;
+}
+
+/* duration buttons */
+.dur-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.dur-btn {
+  padding: 8px 4px;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--gray);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  text-align: center;
+  -webkit-appearance: none;
+  min-height: 36px;
+  transition: all 0.15s;
+}
+
+.dur-btn.selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+/* ─── MIXED BADGE ─── */
+.mixed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--amber);
+  background: var(--amber-dim);
+  color: var(--amber);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+
+.skip-note {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gray2);
+  letter-spacing: 1px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ─── PLAN PREVIEW ─── */
+.plan-preview {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.plan-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.plan-preview-row:last-child { border-bottom: none; }
+
+.plan-preview-key { color: var(--gray); letter-spacing: 1px; }
+.plan-preview-val { color: var(--green); }
+
+/* ─── WEEK DAY PICKER ─── */
+.day-picker {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.day-btn {
+  aspect-ratio: 1;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gray);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transition: all 0.15s;
+  -webkit-appearance: none;
+  min-height: 44px;
+}
+
+.day-btn:hover { border-color: var(--border); }
+
+.day-btn.selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.day-btn .day-abbr { font-size: 8px; letter-spacing: 1px; }
+.day-btn .day-dot  { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* ─── NAV BUTTONS ─── */
+.ob-nav {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ob-nav .btn-back {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 9px 16px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--gray);
+  cursor: pointer;
+  text-transform: uppercase;
+  min-height: 44px;
+  -webkit-appearance: none;
+}
+
+.ob-nav .btn-next {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 3px;
+  padding: 12px 20px;
+  border: 1px solid var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+  cursor: pointer;
+  text-transform: uppercase;
+  text-align: center;
+  min-height: 44px;
+  -webkit-appearance: none;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ob-nav .btn-next:hover {
+  background: var(--green-mid);
+  box-shadow: 0 0 20px rgba(0,255,136,0.2);
+}
+
+.ob-nav .btn-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── WELCOME (step 0) ─── */
+.welcome-hex {
+  font-size: 56px;
+  text-align: center;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 20px var(--green));
+  animation: pulse-green 3s ease-in-out infinite;
+}
+
+.welcome-features {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 0.5px;
+}
+
+.feature-row::before {
+  content: '▶';
+  font-size: 8px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+/* ─── FINAL (step 4) ─── */
+.rank-reveal {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.rank-reveal-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gray);
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+
+.rank-reveal-name {
+  font-family: var(--head);
+  font-size: 48px;
+  color: var(--green);
+  text-shadow: 0 0 30px var(--green);
+  letter-spacing: 4px;
+  animation: fadeInUp 0.6s var(--ease-out) 0.2s both;
+}
+
+.rank-reveal-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 2px;
+  margin-top: 6px;
+}
+
+.init-items {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.init-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 0.5px;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.init-item.loaded {
+  opacity: 1;
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.init-item .init-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gray2);
+  flex-shrink: 0;
+}
+
+.init-item.loaded .init-dot {
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+}
+
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="ob-wrap">
+
+  <!-- Step Indicator -->
+  <div class="step-track" id="stepTrack">
+    <div class="step-dot active" id="dot-0">1</div>
+    <div class="step-line"      id="line-0"></div>
+    <div class="step-dot"       id="dot-1">2</div>
+    <div class="step-line"      id="line-1"></div>
+    <div class="step-dot"       id="dot-2">3</div>
+    <div class="step-line"      id="line-2"></div>
+    <div class="step-dot"       id="dot-3">4</div>
+    <div class="step-line"      id="line-3"></div>
+    <div class="step-dot"       id="dot-4">5</div>
+    <div class="step-line"      id="line-4"></div>
+    <div class="step-dot"       id="dot-5">6</div>
+    <div class="step-line"      id="line-5"></div>
+    <div class="step-dot"       id="dot-6">7</div>
+  </div>
+
+  <!-- Card -->
+  <div class="ob-card">
+    <div class="ob-corner-tl"></div>
+
+    <!-- ══ STEP 0: WELCOME ══ -->
+    <div class="step-panel active" id="step-0">
+      <div class="ob-logo">⬡ TACTICAL FITNESS</div>
+      <div class="ob-step-label">// SYSTEM INITIALIZATION</div>
+
+      <div class="welcome-hex">⬡</div>
+
+      <div class="ob-title">MISSION<br><span>BRIEFING</span></div>
+      <div class="ob-sub">
+        ระบบติดตามสมรรถภาพแบบทหาร<br>
+        Offline 100% · ข้อมูลอยู่ในเครื่องคุณเท่านั้น
+      </div>
+
+      <div class="welcome-features">
+        <div class="feature-row">ระบบยศทหาร 21 ระดับ — เลื่อนขั้นด้วยผลจริง</div>
+        <div class="feature-row">ตารางฝึกอัตโนมัติ + Progressive Overload</div>
+        <div class="feature-row">Fatigue Engine — วิเคราะห์ความล้าแบบ Real-time</div>
+        <div class="feature-row">ภารกิจ + เหรียญเกียรติยศ</div>
+        <div class="feature-row">ไม่ต้องใช้อินเทอร์เน็ต — ทำงานได้ทุกที่</div>
+      </div>
+
+      <div class="ob-nav">
+        <button class="btn-next" onclick="nextStep()">
+          เริ่มต้นระบบ &nbsp;▶
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 1: IDENTITY ══ -->
+    <div class="step-panel" id="step-1">
+      <div class="ob-logo">⬡ TACTICAL FITNESS</div>
+      <div class="ob-step-label">// STEP 01 — OPERATOR IDENTITY</div>
+
+      <div class="ob-title">ระบุ<br><span>ตัวตน</span></div>
+      <div class="ob-sub">ข้อมูลนี้ใช้คำนวณ BMI · TDEE · VO2Max<br>ไม่ถูกส่งออกนอกเครื่อง</div>
+
+      <!-- CALLSIGN -->
+      <div class="form-group">
+        <label class="form-label" for="callsign">CALLSIGN / ชื่อที่ใช้ในระบบ</label>
+        <input class="input" type="text" id="callsign" placeholder="OPERATOR" maxlength="20"
+          style="font-family:var(--head);font-size:20px;letter-spacing:3px;"
+          autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+      </div>
+
+      <!-- UNIT TOGGLE -->
+      <div class="form-group mb-12">
+        <label class="form-label">หน่วยที่ใช้</label>
+        <div class="unit-toggle">
+          <button class="unit-btn selected" id="unit-metric" onclick="selectUnit('metric')">
+            เมตริก &nbsp;<span class="unit-sub">kg · cm</span>
+          </button>
+          <button class="unit-btn" id="unit-imperial" onclick="selectUnit('imperial')">
+            อิมพีเรียล &nbsp;<span class="unit-sub">lbs · ft/in</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- AGE + GENDER row -->
+      <div class="input-row mb-12">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" for="age">อายุ (ปี)</label>
+          <input class="input" type="number" id="age" placeholder="25" min="14" max="80" inputmode="numeric">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">เพศ</label>
+          <div class="gender-row">
+            <button class="gender-btn selected" id="opt-male" onclick="selectGender('male')">♂ ชาย</button>
+            <button class="gender-btn" id="opt-female" onclick="selectGender('female')">♀ หญิง</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEIGHT + HEIGHT row -->
+      <div class="input-row mb-8">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" id="labelWeight">น้ำหนัก (kg)</label>
+          <input class="input" type="number" id="weight" placeholder="70" min="30" max="450"
+            step="0.1" inputmode="decimal" oninput="updateBMI()">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" id="labelHeight">ส่วนสูง (cm)</label>
+          <input class="input" type="number" id="height" placeholder="170" min="100" max="250"
+            step="0.1" inputmode="decimal" oninput="updateBMI()">
+        </div>
+      </div>
+
+      <!-- Imperial sub-inputs (hidden by default) -->
+      <div id="imperialHeightWrap" style="display:none;" class="mb-8">
+        <div class="form-group mb-0">
+          <label class="form-label">ส่วนสูง (ft / in)</label>
+          <div class="imperial-height-row">
+            <input class="input" type="number" id="heightFt" placeholder="5" min="3" max="8"
+              inputmode="numeric" oninput="updateBMIFromImperial()">
+            <span class="imperial-sep">ft</span>
+            <input class="input" type="number" id="heightIn" placeholder="8" min="0" max="11"
+              inputmode="numeric" oninput="updateBMIFromImperial()">
+            <span class="imperial-sep">in</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BMI readout -->
+      <div class="bmi-bar" id="bmiBar" style="display:none;">
+        <div class="bmi-label-row">
+          <span class="bmi-title">BMI</span>
+          <span class="bmi-value" id="bmiValue">—</span>
+          <span class="bmi-category" id="bmiCategory"></span>
+        </div>
+        <div class="bmi-track">
+          <div class="bmi-fill" id="bmiFill"></div>
+          <div class="bmi-marker" id="bmiMarker"></div>
+        </div>
+        <div class="bmi-scale-labels">
+          <span>ผอม</span><span>ปกติ</span><span>อ้วน</span><span>อ้วนมาก</span>
+        </div>
+      </div>
+
+      <!-- ACTIVITY LEVEL (TDEE) -->
+      <div class="form-group mb-12">
+        <label class="form-label">ระดับกิจกรรมในชีวิตประจำวัน <span style="color:var(--gray2)">(นอกจากออกกำลังกาย)</span></label>
+        <div class="activity-grid">
+          <button class="activity-btn" id="act-sedentary"  onclick="selectActivity('sedentary')">
+            <span class="act-icon">🪑</span>
+            <span class="act-label">นั่งทำงาน</span>
+            <span class="act-desc">×1.2</span>
+          </button>
+          <button class="activity-btn" id="act-light"      onclick="selectActivity('light')">
+            <span class="act-icon">🚶</span>
+            <span class="act-label">เดินบ้าง</span>
+            <span class="act-desc">×1.375</span>
+          </button>
+          <button class="activity-btn selected" id="act-moderate" onclick="selectActivity('moderate')">
+            <span class="act-icon">🏃</span>
+            <span class="act-label">ปานกลาง</span>
+            <span class="act-desc">×1.55</span>
+          </button>
+          <button class="activity-btn" id="act-active"     onclick="selectActivity('active')">
+            <span class="act-icon">⚡</span>
+            <span class="act-label">งานหนัก</span>
+            <span class="act-desc">×1.725</span>
+          </button>
+          <button class="activity-btn" id="act-veryactive" onclick="selectActivity('veryactive')">
+            <span class="act-icon">🪖</span>
+            <span class="act-label">ทหาร/ใช้แรง</span>
+            <span class="act-desc">×1.9</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- MEDICAL CONDITIONS -->
+      <div class="form-group mb-16">
+        <label class="form-label">โรคประจำตัว / ข้อจำกัดร่างกาย <span style="color:var(--gray2)">(เลือกได้หลายอย่าง)</span></label>
+        <div class="medical-grid">
+          <button class="med-chip" id="med-none"    onclick="toggleMedical('none')">✓ ไม่มี</button>
+          <button class="med-chip" id="med-heart"   onclick="toggleMedical('heart')">❤️ หัวใจ</button>
+          <button class="med-chip" id="med-bp"      onclick="toggleMedical('bp')">🩺 ความดัน</button>
+          <button class="med-chip" id="med-diabetes" onclick="toggleMedical('diabetes')">💉 เบาหวาน</button>
+          <button class="med-chip" id="med-knee"    onclick="toggleMedical('knee')">🦵 เข่า/ข้อ</button>
+          <button class="med-chip" id="med-back"    onclick="toggleMedical('back')">🔩 หลัง/กระดูกสันหลัง</button>
+          <button class="med-chip" id="med-shoulder" onclick="toggleMedical('shoulder')">💪 ไหล่/แขน</button>
+          <button class="med-chip" id="med-other"   onclick="toggleMedical('other')">⚠️ อื่นๆ</button>
+        </div>
+        <div id="medicalOtherWrap" style="display:none;margin-top:8px;">
+          <input class="input" type="text" id="medicalOtherText"
+            placeholder="ระบุข้อจำกัด..." maxlength="100">
+        </div>
+      </div>
+
+      <div class="ob-nav">
+        <button class="btn-back" onclick="prevStep()">◀ BACK</button>
+        <button class="btn-next" onclick="nextStep()">NEXT &nbsp;▶</button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 2: FITNESS LEVEL ══ -->
+    <div class="step-panel" id="step-2">
+      <div class="ob-logo">⬡ TACTICAL FITNESS</div>
+      <div class="ob-step-label">// STEP 02 — ASSESS FITNESS LEVEL</div>
+
+      <div class="ob-title">ระดับ<br><span>ร่างกาย</span></div>
+      <div class="ob-sub">ระบบจะสร้างโปรแกรมที่เหมาะสมให้อัตโนมัติ</div>
+
+      <div class="option-grid cols-1 mb-16">
+        <button class="opt-card selected" id="lvl-beginner" onclick="selectLevel('beginner')">
+          <span class="opt-icon">🪖</span>
+          <span class="opt-title">มือใหม่ — Recruit</span>
+          <div class="opt-desc">เพิ่งเริ่มออกกำลังกาย / Push-up &lt; 20 ครั้ง / วิ่ง 1km ยาก</div>
+        </button>
+        <button class="opt-card" id="lvl-intermediate" onclick="selectLevel('intermediate')">
+          <span class="opt-icon">⚔</span>
+          <span class="opt-title">ระดับกลาง — Soldier</span>
+          <div class="opt-desc">ออกกำลังกายสม่ำเสมอ / Push-up 20–50 / วิ่ง 3km ได้</div>
+        </button>
+        <button class="opt-card" id="lvl-advanced" onclick="selectLevel('advanced')">
+          <span class="opt-icon">🎖</span>
+          <span class="opt-title">ขั้นสูง — Veteran</span>
+          <div class="opt-desc">ฟิตมาก / Push-up 50+ / Pull-up 15+ / วิ่ง 5km &lt; 25 นาที</div>
+        </button>
+      </div>
+
+      <div class="form-group mb-24">
+        <label class="form-label">วันออกกำลังกายต่อสัปดาห์</label>
+        <div class="day-picker" id="dayPicker">
+          <button class="day-btn" data-day="1" onclick="toggleDay(1)">
+            <span class="day-abbr">MON</span><div class="day-dot"></div>
+          </button>
+          <button class="day-btn" data-day="2" onclick="toggleDay(2)">
+            <span class="day-abbr">TUE</span><div class="day-dot"></div>
+          </button>
+          <button class="day-btn" data-day="3" onclick="toggleDay(3)">
+            <span class="day-abbr">WED</span><div class="day-dot"></div>
+          </button>
+          <button class="day-btn" data-day="4" onclick="toggleDay(4)">
+            <span class="day-abbr">THU</span><div class="day-dot"></div>
+          </button>
+          <button class="day-btn" data-day="5" onclick="toggleDay(5)">
+            <span class="day-abbr">FRI</span><div class="day-dot"></div>
+          </button>
+          <button class="day-btn" data-day="6" onclick="toggleDay(6)">
+            <span class="day-abbr">SAT</span><div class="day-dot"></div>
+          </button>
+          <button class="day-btn" data-day="0" onclick="toggleDay(0)">
+            <span class="day-abbr">SUN</span><div class="day-dot"></div>
+          </button>
+        </div>
+        <div class="form-hint" id="dayHint">เลือก 0 วัน — แนะนำ 3 วัน/สัปดาห์ขึ้นไป</div>
+      </div>
+
+      <!-- TRAINING TIME -->
+      <div class="form-group mb-24">
+        <label class="form-label">ช่วงเวลาออกกำลังกาย</label>
+
+        <!-- Quick presets -->
+        <div class="time-preset-grid mb-12">
+          <button class="time-preset" id="tp-morning"   onclick="selectTimePreset('morning')">
+            <span class="tp-icon">🌅</span>
+            <span class="tp-label">เช้า</span>
+            <span class="tp-time">05:00–07:00</span>
+          </button>
+          <button class="time-preset" id="tp-noon"      onclick="selectTimePreset('noon')">
+            <span class="tp-icon">☀️</span>
+            <span class="tp-label">เที่ยง</span>
+            <span class="tp-time">11:30–13:00</span>
+          </button>
+          <button class="time-preset" id="tp-afternoon" onclick="selectTimePreset('afternoon')">
+            <span class="tp-icon">🌤</span>
+            <span class="tp-label">บ่าย</span>
+            <span class="tp-time">15:00–17:00</span>
+          </button>
+          <button class="time-preset" id="tp-evening"   onclick="selectTimePreset('evening')">
+            <span class="tp-icon">🌆</span>
+            <span class="tp-label">เย็น</span>
+            <span class="tp-time">17:00–19:00</span>
+          </button>
+          <button class="time-preset" id="tp-night"     onclick="selectTimePreset('night')">
+            <span class="tp-icon">🌙</span>
+            <span class="tp-label">กลางคืน</span>
+            <span class="tp-time">20:00–22:00</span>
+          </button>
+          <button class="time-preset" id="tp-custom"    onclick="selectTimePreset('custom')">
+            <span class="tp-icon">✏️</span>
+            <span class="tp-label">กำหนดเอง</span>
+            <span class="tp-time">กรอกเอง</span>
+          </button>
+        </div>
+
+        <!-- Custom time input (shown when custom selected) -->
+        <div id="customTimeWrap" style="display:none;">
+          <div class="time-custom-row">
+            <div class="form-group" style="margin-bottom:0;flex:1">
+              <label class="form-label" for="timeStart">เริ่ม</label>
+              <input class="input time-input" type="time" id="timeStart" value="17:00"
+                oninput="updateCustomTime()">
+            </div>
+            <div class="time-dash">—</div>
+            <div class="form-group" style="margin-bottom:0;flex:1">
+              <label class="form-label" for="timeEnd">จบ</label>
+              <input class="input time-input" type="time" id="timeEnd" value="18:30"
+                oninput="updateCustomTime()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Duration display -->
+        <div class="time-summary" id="timeSummary">
+          <span class="ts-slot" id="tsSlot">—</span>
+          <span class="ts-dur"  id="tsDur"></span>
+        </div>
+
+        <!-- Duration selector -->
+        <div class="form-group" style="margin-bottom:0;margin-top:10px">
+          <label class="form-label">ระยะเวลาต่อครั้ง</label>
+          <div class="dur-grid">
+            <button class="dur-btn" id="dur-30"  onclick="selectDuration(30)">30 นาที</button>
+            <button class="dur-btn selected" id="dur-45"  onclick="selectDuration(45)">45 นาที</button>
+            <button class="dur-btn" id="dur-60"  onclick="selectDuration(60)">1 ชั่วโมง</button>
+            <button class="dur-btn" id="dur-90"  onclick="selectDuration(90)">1.5 ชม.</button>
+            <button class="dur-btn" id="dur-120" onclick="selectDuration(120)">2 ชั่วโมง</button>
+            <button class="dur-btn" id="dur-0"   onclick="selectDuration(0)">ไม่จำกัด</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ob-nav">
+        <button class="btn-back" onclick="prevStep()">◀ BACK</button>
+        <button class="btn-next" onclick="nextStep()">NEXT &nbsp;▶</button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 3: TRAINING PATH ══ -->
+    <div class="step-panel" id="step-3">
+      <div class="ob-logo">⬡ TACTICAL FITNESS</div>
+      <div class="ob-step-label">// STEP 03 — TRAINING PATH</div>
+
+      <div class="ob-title">เลือก<br><span>สาย</span></div>
+      <div class="ob-sub">เลือกได้หลายสาย — ระบบจะผสมโปรแกรมให้<br>หรือเลือก "ผสม" เพื่อ Balanced Program</div>
+
+      <div class="path-grid" id="pathGrid">
+
+        <button class="path-card" id="path-tactical" onclick="togglePath('tactical')">
+          <div class="path-icon">🪖</div>
+          <div class="path-name">ทหาร / Tactical</div>
+          <div class="path-desc">Push-up · Pull-up · วิ่ง · Plank<br>มุ่งสอบ + เลื่อนยศ</div>
+          <div class="path-pr-tags"><span class="pr-tag">Push-up</span><span class="pr-tag">Pull-up</span><span class="pr-tag">Plank</span><span class="pr-tag">วิ่ง 2km</span><span class="pr-tag">วิ่ง 5km</span></div>
+        </button>
+
+        <button class="path-card" id="path-bodybuilding" onclick="togglePath('bodybuilding')">
+          <div class="path-icon">💪</div>
+          <div class="path-name">นักกล้าม / Bodybuilding</div>
+          <div class="path-desc">Hypertrophy · Volume สูง<br>เพิ่มขนาดกล้ามเนื้อ</div>
+          <div class="path-pr-tags"><span class="pr-tag">Bench Press</span><span class="pr-tag">Squat</span><span class="pr-tag">Deadlift</span><span class="pr-tag">Overhead Press</span></div>
+        </button>
+
+        <button class="path-card" id="path-powerlifting" onclick="togglePath('powerlifting')">
+          <div class="path-icon">🏋️</div>
+          <div class="path-name">ยกเวท / Powerlifting</div>
+          <div class="path-desc">1RM Strength · Big 3<br>แรงสูงสุด</div>
+          <div class="path-pr-tags"><span class="pr-tag">Squat 1RM</span><span class="pr-tag">Bench 1RM</span><span class="pr-tag">Deadlift 1RM</span></div>
+        </button>
+
+        <button class="path-card" id="path-endurance" onclick="togglePath('endurance')">
+          <div class="path-icon">🏃</div>
+          <div class="path-name">นักวิ่ง / Endurance</div>
+          <div class="path-desc">VO2Max · วิ่งระยะไกล<br>ความทนทาน</div>
+          <div class="path-pr-tags"><span class="pr-tag">วิ่ง 5km</span><span class="pr-tag">วิ่ง 10km</span><span class="pr-tag">Half Marathon</span></div>
+        </button>
+
+        <button class="path-card" id="path-calisthenics" onclick="togglePath('calisthenics')">
+          <div class="path-icon">🤸</div>
+          <div class="path-name">Calisthenics</div>
+          <div class="path-desc">Bodyweight Mastery<br>Muscle-up · Handstand · Planche</div>
+          <div class="path-pr-tags"><span class="pr-tag">Pull-up</span><span class="pr-tag">Dip</span><span class="pr-tag">L-Sit</span><span class="pr-tag">Muscle-up</span></div>
+        </button>
+
+        <button class="path-card" id="path-general" onclick="togglePath('general')">
+          <div class="path-icon">⚡</div>
+          <div class="path-name">ทั่วไป / General</div>
+          <div class="path-desc">สุขภาพดี · มีพลังงาน<br>ตาม WHO Guidelines</div>
+          <div class="path-pr-tags"><span class="pr-tag">Push-up</span><span class="pr-tag">Plank</span><span class="pr-tag">วิ่ง</span></div>
+        </button>
+
+      </div>
+
+      <div class="path-hint" id="pathHint">เลือก 0 สาย</div>
+
+      <div class="ob-nav">
+        <button class="btn-back" onclick="prevStep()">◀ BACK</button>
+        <button class="btn-next" id="btnPath" onclick="nextStep()" disabled>NEXT &nbsp;▶</button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 4: BASELINE PR ══ -->
+    <div class="step-panel" id="step-4">
+      <div class="ob-logo">⬡ TACTICAL FITNESS</div>
+      <div class="ob-step-label">// STEP 04 — BASELINE PERFORMANCE</div>
+
+      <div class="ob-title">ค่า<br><span>ปัจจุบัน</span></div>
+      <div class="ob-sub">กรอกค่าสูงสุดที่ทำได้ตอนนี้<br>ข้ามได้ถ้าไม่รู้ — กรอกทีหลังได้เสมอ</div>
+
+      <div class="pr-tabs" id="prTabs"><!-- generated by JS --></div>
+      <div class="pr-panels" id="prPanels"><!-- generated by JS --></div>
+
+      <div class="skip-note">ข้ามได้ทั้งหมด — ระบบจะเริ่มจากค่า 0</div>
+
+      <div class="ob-nav">
+        <button class="btn-back" onclick="prevStep()">◀ BACK</button>
+        <button class="btn-next" onclick="nextStep()">NEXT &nbsp;▶</button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 5: GOALS ══ -->
+    <div class="step-panel" id="step-5">
+      <div class="ob-logo">⬡ TACTICAL FITNESS</div>
+      <div class="ob-step-label">// STEP 05 — MISSION OBJECTIVES</div>
+
+      <div class="ob-title">ตั้ง<br><span>เป้าหมาย</span></div>
+      <div class="ob-sub">เลือกได้หลายอย่าง — ระบบจะปรับโปรแกรมให้<br>กดเลือกทุกอัน = Balanced Mode</div>
+
+      <!-- Goal Type multi-select -->
+      <div class="section-label mb-8">// ประเภทเป้าหมาย (เลือกได้หลายอัน)</div>
+      <div class="goal-type-grid mb-16" id="goalTypeGrid">
+        <button class="goal-chip" id="goal-strength"   onclick="toggleGoalType('strength')">
+          <span class="goal-chip-icon">💪</span> เพิ่มกล้าม / Strength
+        </button>
+        <button class="goal-chip" id="goal-endurance"  onclick="toggleGoalType('endurance')">
+          <span class="goal-chip-icon">🏃</span> ความทนทาน / Endurance
+        </button>
+        <button class="goal-chip" id="goal-fatloss"    onclick="toggleGoalType('fatloss')">
+          <span class="goal-chip-icon">🔥</span> ลดไขมัน / Fat Loss
+        </button>
+        <button class="goal-chip" id="goal-military"   onclick="toggleGoalType('military')">
+          <span class="goal-chip-icon">🪖</span> ผ่านมาตรฐานทหาร
+        </button>
+        <button class="goal-chip" id="goal-performance" onclick="toggleGoalType('performance')">
+          <span class="goal-chip-icon">📈</span> เพิ่ม Performance
+        </button>
+        <button class="goal-chip" id="goal-health"     onclick="toggleGoalType('health')">
+          <span class="goal-chip-icon">❤️</span> สุขภาพทั่วไป
+        </button>
+      </div>
+
+      <!-- Numeric targets (shown based on path) -->
+      <div id="numericTargets">
+        <div class="section-label mb-8">// เป้าหมายตัวเลข (ไม่บังคับ)</div>
+        <div class="target-grid" id="targetGrid"><!-- generated by JS --></div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="section-label mb-8 mt-16">// ระยะเวลาเป้าหมาย</div>
+      <div class="timeline-grid">
+        <button class="timeline-btn" id="tl-30"  onclick="selectTimeline(30)">30 วัน</button>
+        <button class="timeline-btn selected" id="tl-60"  onclick="selectTimeline(60)">60 วัน</button>
+        <button class="timeline-btn" id="tl-90"  onclick="selectTimeline(90)">90 วัน</button>
+        <button class="timeline-btn" id="tl-120" onclick="selectTimeline(120)">4 เดือน</button>
+        <button class="timeline-btn" id="tl-180" onclick="selectTimeline(180)">6 เดือน</button>
+        <button class="timeline-btn" id="tl-270" onclick="selectTimeline(270)">9 เดือน</button>
+        <button class="timeline-btn" id="tl-365" onclick="selectTimeline(365)">1 ปี</button>
+        <button class="timeline-btn" id="tl-0"   onclick="openCustomTimeline()">กำหนดเอง</button>
+      </div>
+      <div id="customTimelineWrap" style="display:none;margin-top:10px;">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" for="customDays">จำนวนวัน (1–365)</label>
+          <input class="input" type="number" id="customDays" placeholder="เช่น 150"
+            min="1" max="365" inputmode="numeric"
+            oninput="applyCustomTimeline(this.value)">
+        </div>
+      </div>
+
+      <div class="ob-nav" style="margin-top:20px;">
+        <button class="btn-back" onclick="prevStep()">◀ BACK</button>
+        <button class="btn-next" onclick="nextStep()">คำนวณยศ &nbsp;▶</button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 6 (was 4): RANK REVEAL + CONFIRM ══ -->
+    <div class="step-panel" id="step-6">
+      <div class="ob-logo">⬡ TACTICAL FITNESS</div>
+      <div class="ob-step-label">// STEP 06 — RANK ASSIGNMENT</div>
+
+      <div class="rank-reveal">
+        <div class="rank-reveal-label">// INITIAL RANK ASSIGNED</div>
+        <div class="rank-reveal-name" id="revealRank">พลเรือน</div>
+        <div class="rank-reveal-sub" id="revealSub">RANK 0 / 20</div>
+      </div>
+
+      <div class="plan-preview" id="planPreview">
+        <div class="plan-preview-row">
+          <span class="plan-preview-key">TRAINING LEVEL</span>
+          <span class="plan-preview-val" id="pvLevel">—</span>
+        </div>
+        <div class="plan-preview-row">
+          <span class="plan-preview-key">DAYS / WEEK</span>
+          <span class="plan-preview-val" id="pvDays">—</span>
+        </div>
+        <div class="plan-preview-row">
+          <span class="plan-preview-key">INITIAL PROGRAM</span>
+          <span class="plan-preview-val" id="pvProgram">—</span>
+        </div>
+        <div class="plan-preview-row">
+          <span class="plan-preview-key">NEXT RANK TARGET</span>
+          <span class="plan-preview-val" id="pvTarget">—</span>
+        </div>
+      </div>
+
+      <div class="init-items" id="initItems">
+        <div class="init-item" id="init-profile">
+          <div class="init-dot"></div>
+          <span>สร้าง Profile ในเครื่อง...</span>
+        </div>
+        <div class="init-item" id="init-pr">
+          <div class="init-dot"></div>
+          <span>บันทึก Baseline Performance...</span>
+        </div>
+        <div class="init-item" id="init-plan">
+          <div class="init-dot"></div>
+          <span>สร้างตารางฝึกประจำเดือน...</span>
+        </div>
+        <div class="init-item" id="init-missions">
+          <div class="init-dot"></div>
+          <span>ติดตั้ง Mission System...</span>
+        </div>
+        <div class="init-item" id="init-done">
+          <div class="init-dot"></div>
+          <span>ระบบพร้อมใช้งาน ✓</span>
+        </div>
+      </div>
+
+      <div class="ob-nav">
+        <button class="btn-back" id="btnBack6" onclick="prevStep()">◀ BACK</button>
+        <button class="btn-next" id="btnLaunch" onclick="launchApp()">
+          <span id="launchLabel">เข้าสู่ระบบ</span> &nbsp;▶
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /ob-card -->
+
+</div><!-- /ob-wrap -->
+
+<!-- Dependencies inlined for iOS Safari compatibility -->
+<script>
+/**
+ * TACTICAL FITNESS — DATA SCHEMA v1.0
+ * Single source of truth for all data structures
+ * Used by Storage, Engines, and UI layers
+ */
+
+'use strict';
+
+const Schema = {
+
+  /* ─────────────────────────────────────────
+     USER PROFILE
+  ───────────────────────────────────────── */
+  createUserProfile: (data = {}) => ({
+    id: 'user_profile',
+    version: '1.0',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+
+    // Identity
+    callsign: data.callsign || 'OPERATOR',
+    gender: data.gender || 'male',           // 'male' | 'female'
+    age: data.age || 25,
+    weight: data.weight || 70,               // kg
+    height: data.height || 170,             // cm
+
+    // Fitness Level
+    fitnessLevel: data.fitnessLevel || 'beginner', // 'beginner' | 'intermediate' | 'advanced'
+    trainingDaysPerWeek: data.trainingDaysPerWeek || 3,
+    preferredTime: data.preferredTime || 'morning', // 'morning' | 'afternoon' | 'evening'
+
+    // Rank System
+    currentRank: data.currentRank || 'พลเรือน',
+    rankIndex: data.rankIndex || 0,          // 0–20
+    prestigeStars: data.prestigeStars || 0,
+
+    // Career Path (unlocked at ร้อยตรี)
+    careerPath: data.careerPath || null,     // 'assault' | 'recon' | 'tactical' | 'instructor'
+
+    // Stats tracking
+    totalDaysActive: data.totalDaysActive || 0,
+    currentStreak: data.currentStreak || 0,
+    longestStreak: data.longestStreak || 0,
+    lastTrainedDate: data.lastTrainedDate || null,
+
+    // Onboarding
+    onboardingComplete: data.onboardingComplete || false,
+    onboardingStep: data.onboardingStep || 0,
+  }),
+
+  /* ─────────────────────────────────────────
+     PERFORMANCE RECORDS (PR)
+  ───────────────────────────────────────── */
+  createPRRecord: () => ({
+    id: 'pr_record',
+    updatedAt: Date.now(),
+
+    pushup: { value: 0, date: null, history: [] },
+    pullup: { value: 0, date: null, history: [] },
+    plank:  { value: 0, date: null, history: [] },   // seconds
+    situp:  { value: 0, date: null, history: [] },
+    run2km: { value: null, date: null, history: [] }, // seconds (lower = better)
+    run5km: { value: null, date: null, history: [] }, // seconds
+
+    // Calculated scores
+    strengthScore:  0,
+    enduranceScore: 0,
+    coreScore:      0,
+    totalScore:     0,
+  }),
+
+  /* ─────────────────────────────────────────
+     WORKOUT LOG (per session)
+  ───────────────────────────────────────── */
+  createWorkoutLog: (data = {}) => ({
+    id: `log_${Date.now()}`,
+    date: data.date || new Date().toISOString().split('T')[0], // YYYY-MM-DD
+    dayOfWeek: data.dayOfWeek || new Date().getDay(),
+    sessionType: data.sessionType || 'full',  // 'full' | 'quick'
+    focus: data.focus || 'Full Body',
+
+    startTime: data.startTime || null,
+    endTime: data.endTime || null,
+    durationMinutes: data.durationMinutes || 0,
+
+    exercises: data.exercises || [],          // array of ExerciseLog
+    completionPct: data.completionPct || 0,
+    notes: data.notes || '',
+
+    // Fatigue snapshot at time of session
+    fatigueAtStart: data.fatigueAtStart || 0,
+    volumeLoad: data.volumeLoad || 0,         // Sets × Reps × WeightFactor
+  }),
+
+  /* ─────────────────────────────────────────
+     EXERCISE LOG (inside WorkoutLog)
+  ───────────────────────────────────────── */
+  createExerciseLog: (data = {}) => ({
+    name: data.name || '',
+    type: data.type || 'repetition',         // 'repetition' | 'timed' | 'distance'
+    sets: data.sets || 0,
+    reps: data.reps || 0,                    // per set (repetition type)
+    duration: data.duration || 0,            // seconds (timed type)
+    distance: data.distance || 0,            // meters (distance type)
+    rest: data.rest || 60,                   // seconds between sets
+    completed: data.completed || false,
+    actualReps: data.actualReps || [],       // actual reps per set [15,14,13]
+    actualDuration: data.actualDuration || 0,
+  }),
+
+  /* ─────────────────────────────────────────
+     FATIGUE SNAPSHOT (daily)
+  ───────────────────────────────────────── */
+  createFatigueSnapshot: (data = {}) => ({
+    id: `fatigue_${data.date || new Date().toISOString().split('T')[0]}`,
+    date: data.date || new Date().toISOString().split('T')[0],
+    index: data.index || 0,                  // 0–100
+    label: data.label || 'fresh',            // 'fresh' | 'moderate' | 'overload'
+    weeklyLoad: data.weeklyLoad || 0,
+    consecutiveDays: data.consecutiveDays || 0,
+    restHours: data.restHours || 8,
+  }),
+
+  /* ─────────────────────────────────────────
+     MONTHLY PLAN (one month)
+  ───────────────────────────────────────── */
+  createMonthlyPlan: (data = {}) => ({
+    id: `plan_${data.year}_${data.month}`,
+    year: data.year || new Date().getFullYear(),
+    month: data.month || new Date().getMonth() + 1, // 1–12
+    createdAt: Date.now(),
+
+    weeks: data.weeks || [],                 // array of WeekPlan
+    totalSessions: data.totalSessions || 0,
+    completedSessions: data.completedSessions || 0,
+  }),
+
+  /* ─────────────────────────────────────────
+     WEEK PLAN (inside MonthlyPlan)
+  ───────────────────────────────────────── */
+  createWeekPlan: (data = {}) => ({
+    weekNumber: data.weekNumber || 1,
+    days: {
+      0: data.days?.[0] || null, // Sun
+      1: data.days?.[1] || null, // Mon
+      2: data.days?.[2] || null, // Tue
+      3: data.days?.[3] || null, // Wed
+      4: data.days?.[4] || null, // Thu
+      5: data.days?.[5] || null, // Fri
+      6: data.days?.[6] || null, // Sat
+    },
+  }),
+
+  /* ─────────────────────────────────────────
+     DAY SESSION (inside WeekPlan.days)
+     null = rest day
+  ───────────────────────────────────────── */
+  createDaySession: (data = {}) => ({
+    focus: data.focus || 'Full Body',
+    exercises: data.exercises || [],         // array of Exercise template
+    isRest: data.isRest || false,
+    isCompleted: data.isCompleted || false,
+    volumeMultiplier: data.volumeMultiplier || 1.0, // for progressive overload
+  }),
+
+  /* ─────────────────────────────────────────
+     EXERCISE TEMPLATE (in plan, not log)
+  ───────────────────────────────────────── */
+  createExercise: (data = {}) => ({
+    name: data.name || '',
+    type: data.type || 'repetition',
+    sets: data.sets || 3,
+    reps: data.reps || 10,
+    duration: data.duration || 60,          // seconds
+    rest: data.rest || 60,
+    muscleGroup: data.muscleGroup || 'full', // 'upper'|'lower'|'core'|'full'|'cardio'
+  }),
+
+  /* ─────────────────────────────────────────
+     MISSION
+  ───────────────────────────────────────── */
+  createMission: (data = {}) => ({
+    id: data.id || `mission_${Date.now()}`,
+    name: data.name || '',
+    description: data.description || '',
+    type: data.type || 'streak',            // 'streak' | 'performance' | 'volume' | 'test'
+    icon: data.icon || '⚔',
+
+    target: data.target || 30,              // depends on type
+    current: data.current || 0,
+    startDate: data.startDate || new Date().toISOString().split('T')[0],
+    endDate: data.endDate || null,
+
+    isActive: data.isActive || true,
+    isCompleted: data.isCompleted || false,
+    completedDate: data.completedDate || null,
+    rewardMedal: data.rewardMedal || null,
+  }),
+
+  /* ─────────────────────────────────────────
+     MEDAL
+  ───────────────────────────────────────── */
+  createMedal: (data = {}) => ({
+    id: data.id || '',
+    name: data.name || '',
+    description: data.description || '',
+    icon: data.icon || '🏅',
+    earnedDate: data.earnedDate || null,
+    isEarned: data.isEarned || false,
+  }),
+
+  /* ─────────────────────────────────────────
+     APP STATE (meta, not user data)
+  ───────────────────────────────────────── */
+  createAppState: () => ({
+    id: 'app_state',
+    version: '1.0',
+    firstLaunch: Date.now(),
+    lastOpened: Date.now(),
+    activeScreen: 'onboarding',
+    theme: 'dark',
+  }),
+
+};
+
+/* ─────────────────────────────────────────
+   RANK TABLE (21 levels)
+───────────────────────────────────────── */
+const RANKS = [
+  { index: 0,  name: 'พลเรือน',              tier: 'civilian',    pushup: 0,   pullup: 0,  plank: 0,    run2km: null,  run5km: null,  extra: 'เริ่มต้นระบบ' },
+  { index: 1,  name: 'พลทหาร',              tier: 'enlisted',    pushup: 15,  pullup: 0,  plank: 60,   run2km: 840,   run5km: null,  extra: 'ฝึกครบ 7 วัน' },
+  { index: 2,  name: 'สิบตรี',               tier: 'enlisted',    pushup: 20,  pullup: 3,  plank: 90,   run2km: 780,   run5km: null,  extra: null },
+  { index: 3,  name: 'สิบโท',               tier: 'enlisted',    pushup: 30,  pullup: 5,  plank: 120,  run2km: 720,   run5km: null,  extra: null },
+  { index: 4,  name: 'สิบเอก',              tier: 'enlisted',    pushup: 40,  pullup: 8,  plank: 150,  run2km: 660,   run5km: null,  extra: null },
+  { index: 5,  name: 'จ่าสิบตรี',            tier: 'nco',         pushup: 50,  pullup: 10, plank: 180,  run2km: null,  run5km: 1560,  extra: null },
+  { index: 6,  name: 'จ่าสิบโท',            tier: 'nco',         pushup: 55,  pullup: 12, plank: 200,  run2km: null,  run5km: 1440,  extra: null },
+  { index: 7,  name: 'จ่าสิบเอก',           tier: 'nco',         pushup: 60,  pullup: 15, plank: 240,  run2km: null,  run5km: 1380,  extra: null },
+  { index: 8,  name: 'จ่าสิบเอกพิเศษ',      tier: 'nco',         pushup: 65,  pullup: 18, plank: 260,  run2km: null,  run5km: 1320,  extra: null },
+  { index: 9,  name: 'จ่าสิบเอกพิเศษ (อาวุโส)', tier: 'nco',    pushup: 70,  pullup: 20, plank: 300,  run2km: null,  run5km: 1260,  extra: 'ฝึกครบ 180 วัน' },
+  { index: 10, name: 'ร้อยตรี',             tier: 'officer',     pushup: 75,  pullup: 22, plank: 320,  run2km: null,  run5km: 1200,  extra: 'ผ่าน Tactical Test' },
+  { index: 11, name: 'ร้อยโท',             tier: 'officer',     pushup: 80,  pullup: 25, plank: 350,  run2km: null,  run5km: 1140,  extra: null },
+  { index: 12, name: 'ร้อยเอก',            tier: 'officer',     pushup: 85,  pullup: 28, plank: 400,  run2km: null,  run5km: 1080,  extra: null },
+  { index: 13, name: 'พันตรี',             tier: 'officer',     pushup: 90,  pullup: 30, plank: 420,  run2km: null,  run5km: 1020,  extra: null },
+  { index: 14, name: 'พันโท',             tier: 'officer',     pushup: 95,  pullup: 32, plank: 450,  run2km: null,  run5km: 960,   extra: null },
+  { index: 15, name: 'พันเอก',            tier: 'officer',     pushup: 100, pullup: 35, plank: 480,  run2km: null,  run5km: 900,   extra: null },
+  { index: 16, name: 'พันเอกพิเศษ',       tier: 'officer',     pushup: 110, pullup: 38, plank: 500,  run2km: null,  run5km: 840,   extra: null },
+  { index: 17, name: 'พลตรี',            tier: 'general',     pushup: 120, pullup: 40, plank: 520,  run2km: null,  run5km: 780,   extra: 'Consistency 300 วัน' },
+  { index: 18, name: 'พลโท',            tier: 'general',     pushup: 130, pullup: 42, plank: 550,  run2km: null,  run5km: 720,   extra: null },
+  { index: 19, name: 'พลเอก',           tier: 'general',     pushup: 140, pullup: 45, plank: 600,  run2km: null,  run5km: 660,   extra: 'Elite Test' },
+  { index: 20, name: 'พลเอกพิเศษ',      tier: 'general',     pushup: 150, pullup: 50, plank: 720,  run2km: null,  run5km: 600,   extra: 'Master Evaluation' },
+];
+
+/* ─────────────────────────────────────────
+   DEFAULT EXERCISE LIBRARY
+───────────────────────────────────────── */
+const EXERCISE_LIBRARY = {
+  upper: [
+    { name: 'Push-up',         type: 'repetition', sets: 4, reps: 15, rest: 60,  muscleGroup: 'upper' },
+    { name: 'Pike Push-up',    type: 'repetition', sets: 3, reps: 12, rest: 60,  muscleGroup: 'upper' },
+    { name: 'Diamond Push-up', type: 'repetition', sets: 3, reps: 10, rest: 60,  muscleGroup: 'upper' },
+    { name: 'Dip',             type: 'repetition', sets: 3, reps: 10, rest: 90,  muscleGroup: 'upper' },
+  ],
+  pull: [
+    { name: 'Pull-up',         type: 'repetition', sets: 4, reps: 8,  rest: 90,  muscleGroup: 'upper' },
+    { name: 'Chin-up',         type: 'repetition', sets: 3, reps: 8,  rest: 90,  muscleGroup: 'upper' },
+    { name: 'Inverted Row',    type: 'repetition', sets: 3, reps: 12, rest: 60,  muscleGroup: 'upper' },
+  ],
+  core: [
+    { name: 'Plank',           type: 'timed',      sets: 3, duration: 60,  rest: 60,  muscleGroup: 'core' },
+    { name: 'Sit-up',          type: 'repetition', sets: 3, reps: 20, rest: 45,  muscleGroup: 'core' },
+    { name: 'Leg Raise',       type: 'repetition', sets: 3, reps: 15, rest: 45,  muscleGroup: 'core' },
+    { name: 'Mountain Climber',type: 'timed',      sets: 3, duration: 30,  rest: 30,  muscleGroup: 'core' },
+  ],
+  lower: [
+    { name: 'Squat',           type: 'repetition', sets: 4, reps: 15, rest: 60,  muscleGroup: 'lower' },
+    { name: 'Lunge',           type: 'repetition', sets: 3, reps: 12, rest: 60,  muscleGroup: 'lower' },
+    { name: 'Step-up',         type: 'repetition', sets: 3, reps: 12, rest: 45,  muscleGroup: 'lower' },
+    { name: 'Calf Raise',      type: 'repetition', sets: 3, reps: 20, rest: 30,  muscleGroup: 'lower' },
+  ],
+  cardio: [
+    { name: 'วิ่ง 2km',         type: 'distance',   sets: 1, distance: 2000, rest: 0, muscleGroup: 'cardio' },
+    { name: 'วิ่ง 3km',         type: 'distance',   sets: 1, distance: 3000, rest: 0, muscleGroup: 'cardio' },
+    { name: 'วิ่ง 5km',         type: 'distance',   sets: 1, distance: 5000, rest: 0, muscleGroup: 'cardio' },
+    { name: 'Burpee',           type: 'repetition', sets: 3, reps: 10, rest: 60,  muscleGroup: 'cardio' },
+  ],
+};
+
+/* ─────────────────────────────────────────
+   DEFAULT MISSIONS
+───────────────────────────────────────── */
+const DEFAULT_MISSIONS = [
+  {
+    id: 'iron_discipline_30',
+    name: '30-Day Iron Discipline',
+    description: 'ฝึกต่อเนื่อง 30 วัน ขาดได้ไม่เกิน 2 วัน',
+    type: 'streak', icon: '⚔', target: 30, rewardMedal: 'iron_discipline',
+  },
+  {
+    id: 'endurance_5km',
+    name: '5KM Endurance Push',
+    description: 'วิ่ง 5km ให้ได้ภายใต้ 22 นาที',
+    type: 'performance', icon: '🏃', target: 1320, rewardMedal: 'medal_of_endurance',
+  },
+  {
+    id: 'iron_core',
+    name: 'Iron Core',
+    description: 'ค้าง Plank ได้นานกว่า 5 นาที',
+    type: 'performance', icon: '🧱', target: 300, rewardMedal: 'iron_core_badge',
+  },
+];
+
+/* ─────────────────────────────────────────
+   DEFAULT MEDALS
+───────────────────────────────────────── */
+const DEFAULT_MEDALS = [
+  { id: 'iron_discipline',    name: 'Iron Discipline',          icon: '🎖', description: 'ฝึกครบ 30 วัน' },
+  { id: 'medal_of_endurance', name: 'Medal of Endurance',       icon: '🏅', description: 'วิ่ง 5km < 22 นาที' },
+  { id: 'iron_core_badge',    name: 'Iron Core Badge',          icon: '🛡', description: 'Plank > 5 นาที' },
+  { id: 'ribbon_365',         name: '365 Days Discipline Ribbon', icon: '🎀', description: 'ฝึกครบ 365 วัน' },
+  { id: 'tactical_star',      name: 'Tactical Excellence Star', icon: '⭐', description: 'ผ่าน Tactical Test ระดับพันตรี' },
+];
+
+
+</script>
+<script>
+/**
+ * TACTICAL FITNESS — STORAGE MODULE v1.0
+ * Handles all IndexedDB operations with LocalStorage fallback
+ * iOS Safari safe: checks quota, handles eviction gracefully
+ */
+
+'use strict';
+
+const Storage = (() => {
+
+  const DB_NAME    = 'TacticalFitnessDB';
+  const DB_VERSION = 1;
+  let   _db        = null;
+
+  /* ─────────────────────────────────────────
+     STORE NAMES
+  ───────────────────────────────────────── */
+  const STORES = {
+    USER:    'user_profile',
+    PR:      'pr_record',
+    LOGS:    'workout_logs',
+    FATIGUE: 'fatigue_snapshots',
+    PLANS:   'monthly_plans',
+    MISSIONS:'missions',
+    MEDALS:  'medals',
+    APP:     'app_state',
+  };
+
+  /* ─────────────────────────────────────────
+     INIT — open / upgrade IndexedDB
+  ───────────────────────────────────────── */
+  function init() {
+    return new Promise((resolve, reject) => {
+      if (_db) return resolve(_db);
+
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+
+        // user_profile — single record
+        if (!db.objectStoreNames.contains(STORES.USER))
+          db.createObjectStore(STORES.USER, { keyPath: 'id' });
+
+        // pr_record — single record
+        if (!db.objectStoreNames.contains(STORES.PR))
+          db.createObjectStore(STORES.PR, { keyPath: 'id' });
+
+        // workout_logs — keyed by id, indexed by date
+        if (!db.objectStoreNames.contains(STORES.LOGS)) {
+          const ls = db.createObjectStore(STORES.LOGS, { keyPath: 'id' });
+          ls.createIndex('by_date', 'date', { unique: false });
+        }
+
+        // fatigue_snapshots — keyed by id (= fatigue_YYYY-MM-DD)
+        if (!db.objectStoreNames.contains(STORES.FATIGUE))
+          db.createObjectStore(STORES.FATIGUE, { keyPath: 'id' });
+
+        // monthly_plans — keyed by id (= plan_YYYY_M)
+        if (!db.objectStoreNames.contains(STORES.PLANS))
+          db.createObjectStore(STORES.PLANS, { keyPath: 'id' });
+
+        // missions
+        if (!db.objectStoreNames.contains(STORES.MISSIONS))
+          db.createObjectStore(STORES.MISSIONS, { keyPath: 'id' });
+
+        // medals
+        if (!db.objectStoreNames.contains(STORES.MEDALS))
+          db.createObjectStore(STORES.MEDALS, { keyPath: 'id' });
+
+        // app_state
+        if (!db.objectStoreNames.contains(STORES.APP))
+          db.createObjectStore(STORES.APP, { keyPath: 'id' });
+      };
+
+      req.onsuccess = (e) => {
+        _db = e.target.result;
+
+        // Handle unexpected DB close (iOS eviction)
+        _db.onversionchange = () => { _db.close(); _db = null; };
+        _db.onclose = () => { _db = null; };
+
+        resolve(_db);
+      };
+
+      req.onerror = (e) => {
+        console.error('[Storage] IndexedDB open error:', e.target.error);
+        reject(e.target.error);
+      };
+
+      req.onblocked = () => {
+        console.warn('[Storage] DB open blocked — another tab may have it open');
+      };
+    });
+  }
+
+  /* ─────────────────────────────────────────
+     CORE HELPERS
+  ───────────────────────────────────────── */
+  async function _tx(storeName, mode, fn) {
+    const db = await init();
+    return new Promise((resolve, reject) => {
+      const tx    = db.transaction(storeName, mode);
+      const store = tx.objectStore(storeName);
+      const req   = fn(store);
+
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => reject(req.error);
+      tx.onerror    = () => reject(tx.error);
+    });
+  }
+
+  async function _get(storeName, key) {
+    return _tx(storeName, 'readonly', s => s.get(key));
+  }
+
+  async function _put(storeName, record) {
+    record.updatedAt = Date.now();
+    return _tx(storeName, 'readwrite', s => s.put(record));
+  }
+
+  async function _delete(storeName, key) {
+    return _tx(storeName, 'readwrite', s => s.delete(key));
+  }
+
+  async function _getAll(storeName) {
+    return _tx(storeName, 'readonly', s => s.getAll());
+  }
+
+  /* Get all by date index (for logs) */
+  async function _getByDateRange(storeName, indexName, startDate, endDate) {
+    const db = await init();
+    return new Promise((resolve, reject) => {
+      const tx    = db.transaction(storeName, 'readonly');
+      const store = tx.objectStore(storeName);
+      const index = store.index(indexName);
+      const range = IDBKeyRange.bound(startDate, endDate);
+      const req   = index.getAll(range);
+
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => reject(req.error);
+    });
+  }
+
+  /* ─────────────────────────────────────────
+     USER PROFILE
+  ───────────────────────────────────────── */
+  const User = {
+    get:    ()       => _get(STORES.USER, 'user_profile'),
+    save:   (profile) => _put(STORES.USER, { ...profile, id: 'user_profile' }),
+    update: async (changes) => {
+      const existing = await User.get() || Schema.createUserProfile();
+      return User.save({ ...existing, ...changes });
+    },
+  };
+
+  /* ─────────────────────────────────────────
+     PERSONAL RECORDS
+  ───────────────────────────────────────── */
+  const PR = {
+    get: () => _get(STORES.PR, 'pr_record'),
+
+    update: async (exercise, value, date = new Date().toISOString().split('T')[0]) => {
+      const pr = await PR.get() || Schema.createPRRecord();
+
+      if (!pr[exercise]) return;
+
+      const prev = pr[exercise].value;
+      const isBetter = exercise.startsWith('run')
+        ? (value < prev || prev === null)  // lower time = better
+        : (value > prev);
+
+      if (isBetter) {
+        pr[exercise].history.push({ value: prev, date: pr[exercise].date });
+        pr[exercise].value = value;
+        pr[exercise].date  = date;
+      }
+
+      // Recalculate scores
+      pr.strengthScore  = pr.pushup.value + (pr.pullup.value * 2);
+      pr.coreScore      = Math.round(pr.plank.value / 10);
+      pr.enduranceScore = pr.run5km.value
+        ? Math.round(30000 / pr.run5km.value)  // distance/time proxy
+        : 0;
+      pr.totalScore = pr.strengthScore + pr.enduranceScore + pr.coreScore;
+
+      return _put(STORES.PR, { ...pr, id: 'pr_record' });
+    },
+  };
+
+  /* ─────────────────────────────────────────
+     WORKOUT LOGS
+  ───────────────────────────────────────── */
+  const Logs = {
+    save:        (log)                     => _put(STORES.LOGS, log),
+    get:         (id)                      => _get(STORES.LOGS, id),
+    getAll:      ()                        => _getAll(STORES.LOGS),
+    delete:      (id)                      => _delete(STORES.LOGS, id),
+    getByRange:  (start, end)              => _getByDateRange(STORES.LOGS, 'by_date', start, end),
+
+    getThisWeek: () => {
+      const now   = new Date();
+      const day   = now.getDay();
+      const mon   = new Date(now); mon.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+      const sun   = new Date(mon); sun.setDate(mon.getDate() + 6);
+      const fmt   = d => d.toISOString().split('T')[0];
+      return Logs.getByRange(fmt(mon), fmt(sun));
+    },
+
+    getToday: () => {
+      const today = new Date().toISOString().split('T')[0];
+      return Logs.getByRange(today, today);
+    },
+  };
+
+  /* ─────────────────────────────────────────
+     FATIGUE SNAPSHOTS
+  ───────────────────────────────────────── */
+  const Fatigue = {
+    save:   (snap)  => _put(STORES.FATIGUE, snap),
+    getAll: ()      => _getAll(STORES.FATIGUE),
+    getLatest: async () => {
+      const all = await _getAll(STORES.FATIGUE);
+      if (!all.length) return null;
+      return all.sort((a, b) => b.date.localeCompare(a.date))[0];
+    },
+  };
+
+  /* ─────────────────────────────────────────
+     MONTHLY PLANS
+  ───────────────────────────────────────── */
+  const Plans = {
+    save:       (plan)          => _put(STORES.PLANS, plan),
+    get:        (year, month)   => _get(STORES.PLANS, `plan_${year}_${month}`),
+    getCurrent: ()              => {
+      const n = new Date();
+      return Plans.get(n.getFullYear(), n.getMonth() + 1);
+    },
+    getAll:     ()              => _getAll(STORES.PLANS),
+  };
+
+  /* ─────────────────────────────────────────
+     MISSIONS
+  ───────────────────────────────────────── */
+  const Missions = {
+    save:    (mission)  => _put(STORES.MISSIONS, mission),
+    get:     (id)       => _get(STORES.MISSIONS, id),
+    getAll:  ()         => _getAll(STORES.MISSIONS),
+    getActive: async () => {
+      const all = await _getAll(STORES.MISSIONS);
+      return all.filter(m => m.isActive && !m.isCompleted);
+    },
+  };
+
+  /* ─────────────────────────────────────────
+     MEDALS
+  ───────────────────────────────────────── */
+  const Medals = {
+    save:     (medal)  => _put(STORES.MEDALS, medal),
+    get:      (id)     => _get(STORES.MEDALS, id),
+    getAll:   ()       => _getAll(STORES.MEDALS),
+    getEarned: async () => {
+      const all = await _getAll(STORES.MEDALS);
+      return all.filter(m => m.isEarned);
+    },
+  };
+
+  /* ─────────────────────────────────────────
+     APP STATE
+  ───────────────────────────────────────── */
+  const App = {
+    get:    ()       => _get(STORES.APP, 'app_state'),
+    save:   (state)  => _put(STORES.APP, { ...state, id: 'app_state' }),
+    update: async (changes) => {
+      const existing = await App.get() || Schema.createAppState();
+      return App.save({ ...existing, ...changes });
+    },
+  };
+
+  /* ─────────────────────────────────────────
+     EXPORT / IMPORT (JSON backup)
+  ───────────────────────────────────────── */
+  const Backup = {
+    export: async () => {
+      const [user, pr, logs, fatigue, plans, missions, medals, app] = await Promise.all([
+        User.get(), PR.get(), Logs.getAll(), Fatigue.getAll(),
+        Plans.getAll(), Missions.getAll(), Medals.getAll(), App.get(),
+      ]);
+      return JSON.stringify({
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        user, pr, logs, fatigue, plans, missions, medals, app,
+      }, null, 2);
+    },
+
+    import: async (jsonString) => {
+      let data;
+      try { data = JSON.parse(jsonString); }
+      catch { throw new Error('Invalid JSON'); }
+
+      if (!data.version) throw new Error('Invalid backup format');
+
+      const ops = [];
+      if (data.user)     ops.push(User.save(data.user));
+      if (data.pr)       ops.push(_put(STORES.PR, data.pr));
+      if (data.logs)     ops.push(...data.logs.map(l => Logs.save(l)));
+      if (data.fatigue)  ops.push(...data.fatigue.map(f => Fatigue.save(f)));
+      if (data.plans)    ops.push(...data.plans.map(p => Plans.save(p)));
+      if (data.missions) ops.push(...data.missions.map(m => Missions.save(m)));
+      if (data.medals)   ops.push(...data.medals.map(m => Medals.save(m)));
+
+      await Promise.all(ops);
+      return true;
+    },
+  };
+
+  /* ─────────────────────────────────────────
+     RESET (wipe everything)
+  ───────────────────────────────────────── */
+  async function reset(keepProfile = false) {
+    const db = await init();
+    const storesToClear = keepProfile
+      ? [STORES.LOGS, STORES.FATIGUE, STORES.PLANS, STORES.MISSIONS, STORES.MEDALS]
+      : Object.values(STORES);
+
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storesToClear, 'readwrite');
+      storesToClear.forEach(name => tx.objectStore(name).clear());
+      tx.oncomplete = () => resolve(true);
+      tx.onerror    = () => reject(tx.error);
+    });
+  }
+
+  /* ─────────────────────────────────────────
+     STORAGE ESTIMATE (iOS quota check)
+  ───────────────────────────────────────── */
+  async function getQuota() {
+    if (!navigator.storage?.estimate) return null;
+    const { usage, quota } = await navigator.storage.estimate();
+    return {
+      usedMB: (usage / 1024 / 1024).toFixed(2),
+      quotaMB: (quota / 1024 / 1024).toFixed(0),
+      pct: Math.round((usage / quota) * 100),
+    };
+  }
+
+  /* ─────────────────────────────────────────
+     PUBLIC API
+  ───────────────────────────────────────── */
+  return { init, User, PR, Logs, Fatigue, Plans, Missions, Medals, App, Backup, reset, getQuota, STORES };
+
+})();
+
+</script>
+
+<script>
+/* ═════════════════════════════════════════
+   ONBOARDING STATE
+═════════════════════════════════════════ */
+let currentStep = 0;
+const TOTAL_STEPS = 7; // 0=welcome 1=identity 2=level 3=path 4=PR 5=goals 6=rank
+
+const state = {
+  callsign:     '',
+  gender:       'male',
+  age:          25,
+  weight:       70,       // always stored in kg
+  heightCm:     170,
+  bmi:          null,
+  unit:         'metric', // 'metric' | 'imperial'
+  activityLevel: 'moderate',
+  medicalConditions: [],
+  fitnessLevel: 'beginner',
+  trainingDays: [],
+
+  // new
+  paths:        [],
+  pr:           {},   // keyed by field id, value = number|null
+  goalTypes:    [],
+  goalTargets:  {},
+  timeline:     60,
+  trainingTime: {
+    preset:       'evening',
+    startTime:    '17:00',
+    endTime:      '19:00',
+    durationMins: 45,
+  },
+
+  assignedRank:  null,
+  assignedIndex: 0,
+};
+
+/* ─── PR FIELDS PER PATH ─── */
+const PATH_PR = {
+  tactical: [
+    { id: 'pushup',    label: 'Push-up',         unit: 'ครั้ง (max)',   type: 'number', min:0, max:300 },
+    { id: 'pullup',    label: 'Pull-up',          unit: 'ครั้ง (max)',   type: 'number', min:0, max:100 },
+    { id: 'situp',     label: 'Sit-up (2 นาที)',  unit: 'ครั้ง',         type: 'number', min:0, max:200 },
+    { id: 'plank',     label: 'Plank',            unit: 'วินาที',        type: 'number', min:0, max:2000 },
+    { id: 'run2km',    label: 'วิ่ง 2km',          unit: 'นาที (เช่น 10.5)', type: 'decimal', min:0, max:60, step:0.1 },
+    { id: 'run5km',    label: 'วิ่ง 5km',          unit: 'นาที (เช่น 25.0)', type: 'decimal', min:0, max:120, step:0.1 },
+  ],
+  bodybuilding: [
+    { id: 'bench',      label: 'Bench Press',     unit: 'kg (1 RM หรือ Working Weight)',   type: 'number', min:0, max:300 },
+    { id: 'squat_bb',   label: 'Squat',           unit: 'kg',           type: 'number', min:0, max:400 },
+    { id: 'deadlift',   label: 'Deadlift',        unit: 'kg',           type: 'number', min:0, max:500 },
+    { id: 'ohp',        label: 'Overhead Press',  unit: 'kg',           type: 'number', min:0, max:200 },
+    { id: 'pushup',     label: 'Push-up (max)',   unit: 'ครั้ง',         type: 'number', min:0, max:300 },
+    { id: 'pullup',     label: 'Pull-up (max)',   unit: 'ครั้ง',         type: 'number', min:0, max:100 },
+  ],
+  powerlifting: [
+    { id: 'squat_1rm',   label: 'Squat 1RM',     unit: 'kg',           type: 'number', min:0, max:500 },
+    { id: 'bench_1rm',   label: 'Bench Press 1RM', unit: 'kg',         type: 'number', min:0, max:400 },
+    { id: 'deadlift_1rm', label: 'Deadlift 1RM', unit: 'kg',           type: 'number', min:0, max:600 },
+    { id: 'total',       label: 'Total (S+B+D)',  unit: 'kg (กรอกถ้ารู้)', type: 'number', min:0, max:1500 },
+  ],
+  endurance: [
+    { id: 'run5km',    label: 'วิ่ง 5km',         unit: 'นาที (เช่น 25.0)', type: 'decimal', min:0, max:120, step:0.1 },
+    { id: 'run10km',   label: 'วิ่ง 10km',        unit: 'นาที',         type: 'decimal', min:0, max:200, step:0.1 },
+    { id: 'run_half',  label: 'Half Marathon',   unit: 'นาที',         type: 'decimal', min:0, max:400, step:1 },
+    { id: 'vo2max',    label: 'VO2Max (ถ้ารู้)',  unit: 'ml/kg/min',    type: 'decimal', min:0, max:90,  step:0.1 },
+  ],
+  calisthenics: [
+    { id: 'pullup',    label: 'Pull-up (max)',   unit: 'ครั้ง',         type: 'number', min:0, max:100 },
+    { id: 'pushup',    label: 'Push-up (max)',   unit: 'ครั้ง',         type: 'number', min:0, max:300 },
+    { id: 'dip',       label: 'Dip (max)',       unit: 'ครั้ง',         type: 'number', min:0, max:100 },
+    { id: 'lsit',      label: 'L-Sit Hold',     unit: 'วินาที',        type: 'number', min:0, max:120 },
+    { id: 'muscleup',  label: 'Muscle-up',      unit: 'ครั้ง (0 ถ้าทำไม่ได้)', type: 'number', min:0, max:50 },
+    { id: 'plank',     label: 'Plank',          unit: 'วินาที',        type: 'number', min:0, max:2000 },
+  ],
+  general: [
+    { id: 'pushup',    label: 'Push-up',         unit: 'ครั้ง (max)',   type: 'number', min:0, max:300 },
+    { id: 'plank',     label: 'Plank',           unit: 'วินาที',        type: 'number', min:0, max:2000 },
+    { id: 'run5km',    label: 'วิ่ง 5km',         unit: 'นาที (ประมาณ)',  type: 'decimal', min:0, max:120, step:0.1 },
+  ],
+};
+
+/* ─── TARGET FIELDS PER PATH ─── */
+const PATH_TARGETS = {
+  tactical:     ['pushup','pullup','plank','run2km','run5km'],
+  bodybuilding: ['bench','squat_bb','deadlift','ohp'],
+  powerlifting: ['squat_1rm','bench_1rm','deadlift_1rm'],
+  endurance:    ['run5km','run10km'],
+  calisthenics: ['pullup','muscleup'],
+  general:      ['pushup','run5km'],
+};
+
+/* ─── PATH CONFIG ─── */
+const PATH_LABELS = {
+  tactical:     { icon:'🪖', name:'ทหาร' },
+  bodybuilding: { icon:'💪', name:'กล้าม' },
+  powerlifting: { icon:'🏋️', name:'ยกเวท' },
+  endurance:    { icon:'🏃', name:'วิ่ง' },
+  calisthenics: { icon:'🤸', name:'Calis' },
+  general:      { icon:'⚡', name:'ทั่วไป' },
+};
+
+/* ─── STEP NAVIGATION ─── */
+function goToStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`step-${n}`).classList.add('active');
+
+  for (let i = 0; i < TOTAL_STEPS; i++) {
+    const dot  = document.getElementById(`dot-${i}`);
+    const line = document.getElementById(`line-${i}`);
+    if (!dot) continue;
+    if (i < n)        { dot.className = 'step-dot done';   dot.textContent = ''; }
+    else if (i === n)  { dot.className = 'step-dot active'; dot.textContent = i + 1; }
+    else               { dot.className = 'step-dot';        dot.textContent = i + 1; }
+    if (line) line.className = i < n ? 'step-line done' : 'step-line';
+  }
+
+  if (n === 4) buildPRTabs();
+  if (n === 5) buildTargetGrid();
+  if (n === TOTAL_STEPS - 1) { computeRankAndPreview(); }  // runInitSequence called only on launchApp click
+}
+
+function nextStep() {
+  if (!validateStep(currentStep)) return;
+  collectStep(currentStep);
+  currentStep = Math.min(currentStep + 1, TOTAL_STEPS - 1);
+  goToStep(currentStep);
+}
+
+function prevStep() {
+  currentStep = Math.max(currentStep - 1, 0);
+  goToStep(currentStep);
+}
+
+/* ─── VALIDATION ─── */
+function validateStep(n) {
+  if (n === 1) {
+    const age = parseInt(document.getElementById('age').value);
+    const wt  = parseFloat(document.getElementById('weight').value);
+    if (!age || age < 14 || age > 80) { flashError('age', 'กรอกอายุ 14–80 ปี'); return false; }
+    if (!wt  || wt  < 20)             { flashError('weight', state.unit === 'imperial' ? 'กรอกน้ำหนัก 44–440 lbs' : 'กรอกน้ำหนัก 30–200 kg'); return false; }
+    if (state.unit === 'metric') {
+      const ht = parseFloat(document.getElementById('height').value);
+      if (!ht || ht < 100 || ht > 250) { flashError('height', 'กรอกส่วนสูง 100–250 cm'); return false; }
+    }
+  }
+  if (n === 2 && state.trainingDays.length === 0) {
+    const h = document.getElementById('dayHint');
+    h.style.color = 'var(--red)'; h.textContent = '⚠ เลือกอย่างน้อย 1 วัน';
+    setTimeout(() => { h.style.color = ''; updateDayHint(); }, 2000);
+    return false;
+  }
+  if (n === 3 && state.paths.length === 0) {
+    const h = document.getElementById('pathHint');
+    h.style.color = 'var(--red)'; h.textContent = '⚠ เลือกอย่างน้อย 1 สาย';
+    setTimeout(() => { h.style.color = ''; updatePathHint(); }, 2000);
+    return false;
+  }
+  return true;
+}
+
+function flashError(id, msg) {
+  const el = document.getElementById(id);
+  el.style.borderColor = 'var(--red)'; el.placeholder = msg; el.value = '';
+  setTimeout(() => { el.style.borderColor = ''; el.placeholder = ''; }, 2000);
+}
+
+/* ─── COLLECT STEP DATA ─── */
+function collectStep(n) {
+  if (n === 1) {
+    state.callsign = document.getElementById('callsign').value.trim() || 'OPERATOR';
+    state.age      = parseInt(document.getElementById('age').value) || 25;
+
+    // Weight: convert lbs→kg if imperial
+    const rawWeight = parseFloat(document.getElementById('weight').value) || 70;
+    state.weight = state.unit === 'imperial' ? Math.round(rawWeight * 0.453592 * 10) / 10 : rawWeight;
+
+    // Height: always store as cm
+    if (state.unit === 'metric') {
+      state.heightCm = parseFloat(document.getElementById('height').value) || 170;
+    } else {
+      const ft  = parseFloat(document.getElementById('heightFt').value) || 5;
+      const ins = parseFloat(document.getElementById('heightIn').value) || 8;
+      state.heightCm = Math.round((ft * 12 + ins) * 2.54);
+    }
+
+    // Medical other text
+    if (state.medicalConditions.includes('other')) {
+      state.medicalOtherText = document.getElementById('medicalOtherText').value.trim();
+    }
+  }
+  if (n === 2) {
+    // trainingTime already updated live via selectTimePreset/selectDuration
+    // just ensure custom input is captured if user typed without blur
+    if (state.trainingTime.preset === 'custom') updateCustomTime();
+  }
+  if (n === 4) {
+    // collect all PR inputs across all tabs
+    document.querySelectorAll('[data-pr-id]').forEach(inp => {
+      const id  = inp.dataset.prId;
+      const raw = parseFloat(inp.value);
+      if (!isNaN(raw) && raw > 0) {
+        // For run fields: convert minutes → seconds
+        state.pr[id] = inp.dataset.unit === 'min' ? Math.round(raw * 60) : raw;
+      }
+    });
+  }
+  if (n === 5) {
+    // collect numeric targets
+    document.querySelectorAll('[data-target-id]').forEach(inp => {
+      const id  = inp.dataset.targetId;
+      const raw = parseFloat(inp.value);
+      if (!isNaN(raw) && raw > 0) {
+        state.goalTargets[id] = inp.dataset.unit === 'min' ? Math.round(raw * 60) : raw;
+      }
+    });
+  }
+}
+
+/* ─── UNIT SYSTEM ─── */
+function selectUnit(unit) {
+  state.unit = unit;
+  document.getElementById('unit-metric').classList.toggle('selected',   unit === 'metric');
+  document.getElementById('unit-imperial').classList.toggle('selected', unit === 'imperial');
+
+  const isMetric = unit === 'metric';
+  document.getElementById('labelWeight').textContent = isMetric ? 'น้ำหนัก (kg)' : 'น้ำหนัก (lbs)';
+  document.getElementById('labelHeight').style.display = isMetric ? '' : 'none';
+  document.getElementById('height').closest('.form-group').style.display = isMetric ? '' : 'none';
+  document.getElementById('imperialHeightWrap').style.display = isMetric ? 'none' : 'block';
+
+  // Update placeholders
+  document.getElementById('weight').placeholder = isMetric ? '70' : '155';
+  document.getElementById('weight').max = isMetric ? '200' : '440';
+
+  updateBMI();
+}
+
+/* ─── BMI ─── */
+function updateBMI() {
+  let weightKg  = parseFloat(document.getElementById('weight').value);
+  let heightCm  = parseFloat(document.getElementById('height').value);
+
+  if (state.unit === 'imperial') {
+    weightKg = weightKg * 0.453592;
+    // imperial height from the ft/in inputs
+    const ft = parseFloat(document.getElementById('heightFt').value) || 0;
+    const inches = parseFloat(document.getElementById('heightIn').value) || 0;
+    heightCm = (ft * 12 + inches) * 2.54;
+  }
+
+  if (!weightKg || !heightCm || weightKg < 20 || heightCm < 100) {
+    document.getElementById('bmiBar').style.display = 'none';
+    return;
+  }
+
+  const bmi = weightKg / ((heightCm / 100) ** 2);
+  const bmiRounded = Math.round(bmi * 10) / 10;
+
+  // Category
+  let category, color;
+  if (bmi < 18.5)      { category = 'ผอมเกิน';   color = '#4fc3f7'; }
+  else if (bmi < 23)   { category = 'ปกติ ✓';    color = '#00ff88'; }
+  else if (bmi < 25)   { category = 'เกินนิดหน่อย'; color = '#ffaa00'; }
+  else if (bmi < 30)   { category = 'น้ำหนักเกิน'; color = '#ff8800'; }
+  else                 { category = 'อ้วน';       color = '#ff2d2d'; }
+
+  document.getElementById('bmiBar').style.display = 'block';
+  document.getElementById('bmiValue').textContent = bmiRounded;
+  document.getElementById('bmiValue').style.color = color;
+  document.getElementById('bmiCategory').textContent = category;
+  document.getElementById('bmiCategory').style.color = color;
+
+  // Bar fill: map BMI 15-40 to 0-100%
+  const pct = Math.min(100, Math.max(0, ((bmi - 15) / 25) * 100));
+  document.getElementById('bmiFill').style.width = pct + '%';
+  document.getElementById('bmiFill').style.background = color;
+  document.getElementById('bmiMarker').style.left = pct + '%';
+  document.getElementById('bmiMarker').style.borderColor = color;
+
+  // Store in state
+  state.heightCm = Math.round(heightCm);
+  state.bmi = bmiRounded;
+}
+
+function updateBMIFromImperial() {
+  updateBMI();
+}
+
+/* ─── ACTIVITY LEVEL ─── */
+const ACTIVITY_MULTIPLIERS = {
+  sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, veryactive: 1.9,
+};
+
+function selectActivity(act) {
+  state.activityLevel = act;
+  ['sedentary','light','moderate','active','veryactive'].forEach(a => {
+    document.getElementById('act-' + a).classList.toggle('selected', a === act);
+  });
+}
+
+/* ─── MEDICAL CONDITIONS ─── */
+function toggleMedical(condition) {
+  if (condition === 'none') {
+    // Clear all others
+    state.medicalConditions = [];
+    document.querySelectorAll('.med-chip').forEach(c => c.classList.remove('selected'));
+    document.getElementById('med-none').classList.add('selected');
+    document.getElementById('medicalOtherWrap').style.display = 'none';
+    return;
+  }
+  // Deselect "none"
+  document.getElementById('med-none').classList.remove('selected');
+  const idx = state.medicalConditions.indexOf(condition);
+  if (idx === -1) state.medicalConditions.push(condition);
+  else state.medicalConditions.splice(idx, 1);
+  document.getElementById('med-' + condition).classList.toggle('selected',
+    state.medicalConditions.includes(condition));
+  // Show/hide other text
+  document.getElementById('medicalOtherWrap').style.display =
+    state.medicalConditions.includes('other') ? 'block' : 'none';
+}
+
+/* ─── GENDER SELECT ─── */
+function selectGender(g) {
+  state.gender = g;
+  document.getElementById('opt-male').classList.toggle('selected',   g === 'male');
+  document.getElementById('opt-female').classList.toggle('selected', g === 'female');
+}
+
+/* ─── LEVEL SELECT ─── */
+function selectLevel(lvl) {
+  state.fitnessLevel = lvl;
+  ['beginner','intermediate','advanced'].forEach(l =>
+    document.getElementById(`lvl-${l}`).classList.toggle('selected', l === lvl)
+  );
+  const defaults = { beginner:[1,3,5], intermediate:[1,2,4,5], advanced:[1,2,3,4,5] };
+  state.trainingDays = defaults[lvl];
+  renderDayPicker(); updateDayHint();
+}
+
+/* ─── DAY PICKER ─── */
+function toggleDay(day) {
+  const idx = state.trainingDays.indexOf(day);
+  if (idx === -1) { if (state.trainingDays.length >= 7) return; state.trainingDays.push(day); }
+  else state.trainingDays.splice(idx, 1);
+  renderDayPicker(); updateDayHint();
+}
+
+function renderDayPicker() {
+  document.querySelectorAll('.day-btn').forEach(btn => {
+    btn.classList.toggle('selected', state.trainingDays.includes(parseInt(btn.dataset.day)));
+  });
+}
+
+function updateDayHint() {
+  const n = state.trainingDays.length;
+  const hints = {0:'เลือก 0 วัน',1:'1 วัน — น้อยมาก',2:'2 วัน — พอรักษา',3:'3 วัน — เหมาะมือใหม่ ✓',
+    4:'4 วัน — ดีสำหรับระดับกลาง ✓',5:'5 วัน — ดีมาก ✓',6:'6 วัน — ต้องพักบ้าง',7:'7 วัน — ⚠ ควรพักอย่างน้อย 1 วัน'};
+  const el = document.getElementById('dayHint');
+  el.style.color = (n === 7) ? 'var(--amber)' : '';
+  el.textContent = hints[n] || '';
+}
+
+/* ─── TRAINING TIME (step 2) ─── */
+const TIME_PRESETS = {
+  morning:   { startTime: '05:00', endTime: '07:00', label: 'เช้า 05:00–07:00' },
+  noon:      { startTime: '11:30', endTime: '13:00', label: 'เที่ยง 11:30–13:00' },
+  afternoon: { startTime: '15:00', endTime: '17:00', label: 'บ่าย 15:00–17:00' },
+  evening:   { startTime: '17:00', endTime: '19:00', label: 'เย็น 17:00–19:00' },
+  night:     { startTime: '20:00', endTime: '22:00', label: 'กลางคืน 20:00–22:00' },
+};
+
+function selectTimePreset(preset) {
+  state.trainingTime.preset = preset;
+  ['morning','noon','afternoon','evening','night','custom'].forEach(p => {
+    const el = document.getElementById('tp-' + p);
+    if (el) el.classList.toggle('selected', p === preset);
+  });
+  const customWrap = document.getElementById('customTimeWrap');
+  if (preset === 'custom') {
+    customWrap.style.display = 'block';
+    document.getElementById('timeStart').value = state.trainingTime.startTime;
+    document.getElementById('timeEnd').value   = state.trainingTime.endTime;
+    updateCustomTime();
+  } else {
+    customWrap.style.display = 'none';
+    const p = TIME_PRESETS[preset];
+    state.trainingTime.startTime = p.startTime;
+    state.trainingTime.endTime   = p.endTime;
+    updateTimeSummary(p.label);
+  }
+}
+
+function updateCustomTime() {
+  const start = document.getElementById('timeStart').value;
+  const end   = document.getElementById('timeEnd').value;
+  if (!start || !end) return;
+  state.trainingTime.startTime = start;
+  state.trainingTime.endTime   = end;
+  updateTimeSummary(start + ' – ' + end);
+}
+
+function updateTimeSummary(label) {
+  const slot = document.getElementById('tsSlot');
+  const dur  = document.getElementById('tsDur');
+  if (!slot) return;
+  slot.textContent = label;
+  const parts = state.trainingTime.startTime.split(':').map(Number);
+  const eparts = state.trainingTime.endTime.split(':').map(Number);
+  let mins = (eparts[0] * 60 + eparts[1]) - (parts[0] * 60 + parts[1]);
+  if (mins < 0) mins += 1440;
+  dur.textContent = mins > 0 ? mins + ' นาที' : '';
+}
+
+function selectDuration(mins) {
+  state.trainingTime.durationMins = mins;
+  [30, 45, 60, 90, 120, 0].forEach(d => {
+    const el = document.getElementById('dur-' + d);
+    if (el) el.classList.toggle('selected', d === mins);
+  });
+}
+
+
+/* ─── PATH SELECT (step 3) ─── */
+function togglePath(p) {
+  const idx = state.paths.indexOf(p);
+  if (idx === -1) state.paths.push(p);
+  else state.paths.splice(idx, 1);
+  document.getElementById(`path-${p}`).classList.toggle('selected', state.paths.includes(p));
+  updatePathHint();
+  // If tactical is selected, ensure it shows as primary
+  const btn = document.getElementById('btnPath');
+  if (btn) btn.disabled = state.paths.length === 0;
+}
+
+function updatePathHint() {
+  const n = state.paths.length;
+  const h = document.getElementById('pathHint');
+  if (n === 0) { h.textContent = 'เลือก 0 สาย'; h.style.color = ''; return; }
+  if (n === 1) { const p = state.paths[0]; h.textContent = `เลือก: ${PATH_LABELS[p].icon} ${PATH_LABELS[p].name}`; h.style.color = 'var(--green)'; return; }
+  if (n >= Object.keys(PATH_LABELS).length) { h.innerHTML = '<span style="color:var(--amber)">⚠ ผสมทุกสาย → Balanced Mode</span>'; return; }
+  const names = state.paths.map(p => PATH_LABELS[p].icon + ' ' + PATH_LABELS[p].name).join(' · ');
+  h.textContent = `ผสม: ${names}`;
+  h.style.color = 'var(--amber)';
+}
+
+/* ─── PR TABS (step 4) ─── */
+function buildPRTabs() {
+  // Deduplicate fields across selected paths
+  const seenIds = new Set();
+  const tabDefs = [];
+
+  state.paths.forEach(path => {
+    const fields = PATH_PR[path] || [];
+    const unique = fields.filter(f => !seenIds.has(f.id));
+    if (unique.length > 0) {
+      tabDefs.push({ path, label: `${PATH_LABELS[path].icon} ${PATH_LABELS[path].name}`, fields: unique });
+      unique.forEach(f => seenIds.add(f.id));
+    } else {
+      // All fields are duplicates — show tab but point to existing
+      tabDefs.push({ path, label: `${PATH_LABELS[path].icon} ${PATH_LABELS[path].name}`, fields: fields });
+    }
+  });
+
+  // Build tabs
+  const tabsEl   = document.getElementById('prTabs');
+  const panelsEl = document.getElementById('prPanels');
+  tabsEl.innerHTML   = '';
+  panelsEl.innerHTML = '';
+
+  tabDefs.forEach((def, i) => {
+    // Tab button
+    const tab = document.createElement('button');
+    tab.className = 'pr-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = def.label;
+    tab.onclick = () => switchPRTab(i);
+    tabsEl.appendChild(tab);
+
+    // Panel
+    const panel = document.createElement('div');
+    panel.className = 'pr-panel' + (i === 0 ? ' active' : '');
+    panel.id = `pr-panel-${i}`;
+
+    def.fields.forEach(f => {
+      const isMin = f.id.startsWith('run');
+      const existing = Object.keys(state.pr).includes(f.id) ? state.pr[f.id] : '';
+      const displayVal = existing && isMin ? (existing / 60).toFixed(1) : (existing || '');
+      panel.innerHTML += `
+        <div class="pr-row">
+          <div>
+            <div class="pr-label">${f.label}</div>
+            <div class="pr-unit">${f.unit}</div>
+          </div>
+          <input class="pr-input" type="number"
+            data-pr-id="${f.id}"
+            data-unit="${isMin ? 'min' : 'raw'}"
+            placeholder="—"
+            min="${f.min}" max="${f.max}"
+            step="${f.step || 1}"
+            value="${displayVal}"
+            inputmode="decimal">
+        </div>`;
+    });
+
+    panelsEl.appendChild(panel);
+  });
+}
+
+function switchPRTab(i) {
+  document.querySelectorAll('.pr-tab').forEach((t, j)   => t.classList.toggle('active', j === i));
+  document.querySelectorAll('.pr-panel').forEach((p, j) => p.classList.toggle('active', j === i));
+}
+
+/* ─── GOAL TYPES (step 5) ─── */
+function toggleGoalType(g) {
+  const idx = state.goalTypes.indexOf(g);
+  if (idx === -1) state.goalTypes.push(g);
+  else state.goalTypes.splice(idx, 1);
+  document.getElementById(`goal-${g}`).classList.toggle('selected', state.goalTypes.includes(g));
+}
+
+/* ─── TARGET GRID (step 5) ─── */
+function buildTargetGrid() {
+  const targetIds = new Set();
+  state.paths.forEach(p => (PATH_TARGETS[p] || []).forEach(id => targetIds.add(id)));
+
+  // Map all PR fields by id for label lookup
+  const allFields = Object.values(PATH_PR).flat();
+  const fieldMap  = {};
+  allFields.forEach(f => { if (!fieldMap[f.id]) fieldMap[f.id] = f; });
+
+  const grid = document.getElementById('targetGrid');
+  grid.innerHTML = '';
+
+  [...targetIds].forEach(id => {
+    const f = fieldMap[id];
+    if (!f) return;
+    const isMin = id.startsWith('run');
+    const existingPR = state.pr[id];
+    const prDisplay = existingPR ? (isMin ? `ปัจจุบัน: ${(existingPR/60).toFixed(1)} นาที` : `ปัจจุบัน: ${existingPR}`) : '';
+    grid.innerHTML += `
+      <div class="target-row">
+        <div>
+          <div class="target-label">${f.label}</div>
+          <div class="target-unit">${prDisplay || f.unit}</div>
+        </div>
+        <input class="pr-input" type="number"
+          data-target-id="${id}"
+          data-unit="${isMin ? 'min' : 'raw'}"
+          placeholder="เป้า"
+          min="${f.min}" max="${f.max}"
+          step="${f.step || 1}"
+          inputmode="decimal">
+      </div>`;
+  });
+
+  if (targetIds.size === 0) {
+    grid.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--gray2);padding:8px 0;">ไม่มีเป้าหมายตัวเลขสำหรับสายที่เลือก</div>';
+  }
+}
+
+/* ─── TIMELINE (step 5) ─── */
+const TIMELINE_PRESETS = [30, 60, 90, 120, 180, 270, 365];
+
+function selectTimeline(days) {
+  state.timeline = days;
+  TIMELINE_PRESETS.forEach(d => {
+    const el = document.getElementById(`tl-${d}`);
+    if (el) el.classList.toggle('selected', d === days);
+  });
+  // deselect custom button
+  const custom = document.getElementById('tl-0');
+  if (custom) custom.classList.remove('selected');
+  // hide custom input
+  document.getElementById('customTimelineWrap').style.display = 'none';
+}
+
+function openCustomTimeline() {
+  TIMELINE_PRESETS.forEach(d => {
+    const el = document.getElementById(`tl-${d}`);
+    if (el) el.classList.remove('selected');
+  });
+  document.getElementById('tl-0').classList.add('selected');
+  document.getElementById('customTimelineWrap').style.display = 'block';
+  document.getElementById('customDays').focus();
+}
+
+function applyCustomTimeline(val) {
+  const n = parseInt(val);
+  if (n >= 1 && n <= 365) {
+    state.timeline = n;
+  }
+}
+
+/* ─── RANK COMPUTATION ─── */
+function computeRankAndPreview() {
+  const pushup = state.pr.pushup || 0;
+  const pullup = state.pr.pullup || 0;
+  const plank  = state.pr.plank  || 0;
+  const run2km = state.pr.run2km || null;
+
+  let assignedIdx = 0;
+  for (const rank of RANKS) {
+    const ok =
+      (rank.pushup === 0 || pushup >= rank.pushup) &&
+      (rank.pullup === 0 || pullup >= rank.pullup) &&
+      (rank.plank  === 0 || plank  >= rank.plank)  &&
+      (rank.run2km === null || run2km === null || run2km <= rank.run2km);
+    if (ok) assignedIdx = rank.index; else break;
+  }
+
+  state.assignedIndex = assignedIdx;
+  state.assignedRank  = RANKS[assignedIdx].name;
+
+  document.getElementById('revealRank').textContent = state.assignedRank;
+  document.getElementById('revealSub').textContent  = `RANK ${assignedIdx} / 20`;
+
+  // Build program label from paths
+  const pathNames   = state.paths.map(p => PATH_LABELS[p].icon + ' ' + PATH_LABELS[p].name);
+  const isMixed     = state.paths.length > 1;
+  const levelLabels = { beginner:'RECRUIT', intermediate:'SOLDIER', advanced:'VETERAN' };
+  const progMap     = {
+    beginner:'Full Body × 3 วัน', intermediate:'Push/Pull/Legs', advanced:'5-Day Split',
+  };
+
+  document.getElementById('pvLevel').textContent   = levelLabels[state.fitnessLevel];
+  document.getElementById('pvDays').textContent    = `${state.trainingDays.length} วัน`;
+  document.getElementById('pvProgram').textContent = isMixed ? 'Mixed Program' : progMap[state.fitnessLevel];
+  document.getElementById('pvTarget').textContent  = state.timeline + ' วัน — ' + RANKS[Math.min(assignedIdx+1,20)].name;
+
+  // Show path badges in plan preview
+  const preview = document.getElementById('planPreview');
+  if (!document.getElementById('pvPaths')) {
+    const row = document.createElement('div');
+    row.className = 'plan-preview-row';
+    row.innerHTML = `<span class="plan-preview-key">TRAINING PATH</span><span class="plan-preview-val" id="pvPaths"></span>`;
+    preview.insertBefore(row, preview.firstChild);
+  }
+  document.getElementById('pvPaths').textContent = pathNames.join(' · ');
+}
+
+/* ─── INIT SEQUENCE ─── */
+async function runInitSequence() {
+  const steps = [
+    { id: 'init-profile',  fn: saveProfile  },
+    { id: 'init-pr',       fn: savePR       },
+    { id: 'init-plan',     fn: savePlan     },
+    { id: 'init-missions', fn: saveMissions },
+    { id: 'init-done',     fn: markDone     },
+  ];
+
+  for (const { id, fn } of steps) {
+    await delay(300);
+    try {
+      await fn();
+      const el = document.getElementById(id);
+      if (el) el.classList.add('loaded');
+    } catch (e) {
+      console.error(`[Onboarding] ${id}:`, e);
+      const el = document.getElementById(id);
+      if (el) el.querySelector('span').textContent += ' ⚠ ข้ามแล้ว';
+    }
+  }
+}
+
+async function saveProfile() {
+  await Storage.init();
+  await Storage.User.save(Schema.createUserProfile({
+    callsign:            state.callsign,
+    gender:              state.gender,
+    age:                 state.age,
+    weight:              state.weight,
+    fitnessLevel:        state.fitnessLevel,
+    trainingDaysPerWeek: state.trainingDays.length,
+    currentRank:         state.assignedRank,
+    rankIndex:           state.assignedIndex,
+    onboardingComplete:  true,
+    // store extra fields
+    heightCm:            state.heightCm,
+    bmi:                 state.bmi,
+    unit:                state.unit,
+    activityLevel:       state.activityLevel,
+    medicalConditions:   state.medicalConditions,
+    medicalOtherText:    state.medicalOtherText || '',
+    paths:               state.paths,
+    goalTypes:           state.goalTypes,
+    goalTargets:         state.goalTargets,
+    timeline:            state.timeline,
+    trainingTime:        state.trainingTime,
+  }));
+}
+
+async function savePR() {
+  const pr    = Schema.createPRRecord();
+  const today = new Date().toISOString().split('T')[0];
+  Object.entries(state.pr).forEach(([id, val]) => {
+    if (val && val > 0) {
+      pr[id] = { value: val, date: today, history: [] };
+    }
+  });
+  pr.strengthScore = (pr.pushup?.value || 0) + (pr.pullup?.value || 0) * 2;
+  pr.coreScore     = Math.round((pr.plank?.value || 0) / 10);
+  // Storage.init() returns the IDBDatabase, use it directly
+  const db = await Storage.init();
+  await new Promise((res, rej) => {
+    const tx = db.transaction('pr_record', 'readwrite');
+    tx.objectStore('pr_record').put({ ...pr, id: 'pr_record' });
+    tx.oncomplete = () => res(true);
+    tx.onerror    = () => rej(tx.error);
+  });
+}
+
+async function savePlan() {
+  const now  = new Date();
+  const plan = Schema.createMonthlyPlan({ year: now.getFullYear(), month: now.getMonth() + 1 });
+  plan.weeks = generateWeeks(state.trainingDays, state.fitnessLevel, state.paths);
+  await Storage.Plans.save(plan);
+}
+
+function generateWeeks(days, level, paths) {
+  const isTactical  = paths.includes('tactical');
+  const isEndurance = paths.includes('endurance');
+  const isStrength  = paths.includes('bodybuilding') || paths.includes('powerlifting');
+  const isMixed     = paths.length > 1;
+
+  const getFocus = (d, wk) => {
+    if (level === 'beginner') return 'Full Body';
+    if (isMixed) {
+      const mixed = [null,'Upper + Strength','Lower + Run','Core','Pull + Endurance','Full Body + HIIT',null];
+      return mixed[d] || null;
+    }
+    if (isTactical) {
+      const t = [null,'Upper Endurance','Run + Core','Lower Body','Pull + Core','Interval Run','Full Circuit'];
+      return t[d] || null;
+    }
+    if (isStrength) {
+      const s = [null,'Chest + Tricep','Back + Bicep',null,'Shoulder + Arm','Leg Day',null];
+      return s[d] || null;
+    }
+    if (isEndurance) {
+      const e = [null,'Easy Run','Strength','Rest','Tempo Run','Long Run','Stretching'];
+      return e[d] || null;
+    }
+    const gen = [null,'Upper Body','Lower Body','Rest','Core + Run','Full Body','Rest'];
+    return gen[d] || null;
+  };
+
+  return [1,2,3,4].map(wk => ({
+    weekNumber: wk,
+    days: Object.fromEntries(
+      [0,1,2,3,4,5,6].map(d => {
+        if (!days.includes(d)) return [d, null];
+        const focus = getFocus(d, wk);
+        if (!focus) return [d, null];
+        return [d, Schema.createDaySession({ focus, volumeMultiplier: 1 + (wk-1) * 0.05 })];
+      })
+    ),
+  }));
+}
+
+async function saveMissions() {
+  for (const m of DEFAULT_MISSIONS) await Storage.Missions.save(Schema.createMission(m));
+  for (const m of DEFAULT_MEDALS)   await Storage.Medals.save(Schema.createMedal(m));
+}
+
+async function markDone() {
+  await Storage.App.save(Schema.createAppState());
+  await Storage.User.update({ onboardingComplete: true });
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function launchApp() {
+  document.getElementById('btnLaunch').disabled = true;
+  document.getElementById('btnBack6') && (document.getElementById('btnBack6').disabled = true);
+  await runInitSequence();
+  document.querySelector('.ob-wrap').style.transition = 'opacity 0.4s ease';
+  document.querySelector('.ob-wrap').style.opacity = '0';
+  setTimeout(() => { window.location.href = '../index.html'; }, 400);
+}
+
+/* ─── INIT ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  state.trainingDays = [1, 3, 5];
+  renderDayPicker();
+  updateDayHint();
+  document.getElementById('btnPath').disabled = true;
+  selectTimePreset('evening');
+  selectUnit('metric');
+  selectActivity('moderate');
+  // Default "no conditions"
+  document.getElementById('med-none').classList.add('selected');
+});
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

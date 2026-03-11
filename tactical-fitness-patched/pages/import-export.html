@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>TACTICAL FITNESS — IMPORT / EXPORT</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+
+.shell { display:flex; min-height:100vh; position:relative; z-index:1; }
+
+/* ── SIDEBAR (reuse pattern) ── */
+.sidebar {
+  width: var(--sidebar-w); min-height:100vh;
+  background:var(--bg2); border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  position:fixed; left:0; top:0; bottom:0; z-index:100;
+  transition: transform .3s var(--ease-out);
+}
+.sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid var(--border); }
+.sidebar-logo-mark { font-family:var(--head); font-size:22px; letter-spacing:4px; color:var(--green); text-shadow:0 0 16px var(--green-glow); }
+.sidebar-logo-sub  { font-family:var(--mono); font-size:9px; color:var(--gray2); letter-spacing:2px; margin-top:2px; }
+.nav-section { padding:16px 12px 4px; }
+.nav-label   { font-family:var(--mono); font-size:9px; color:var(--gray2); letter-spacing:3px; padding:0 8px; margin-bottom:4px; }
+.nav-item {
+  display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:4px;
+  cursor:pointer; text-decoration:none; color:var(--gray); font-family:var(--body);
+  font-size:13px; font-weight:500; letter-spacing:.5px;
+  transition:all .15s; border:1px solid transparent; margin-bottom:1px;
+}
+.nav-item:hover { background:var(--bg3); color:var(--white); border-color:var(--border); }
+.nav-item.active { background:var(--green-dim); color:var(--green); border-color:rgba(0,255,136,.2); }
+.nav-icon { font-size:14px; width:18px; text-align:center; flex-shrink:0; }
+.sidebar-footer { margin-top:auto; padding:12px 16px; border-top:1px solid var(--border); }
+.quota-label { font-family:var(--mono); font-size:9px; color:var(--gray); letter-spacing:2px; margin-bottom:6px; display:flex; justify-content:space-between; }
+.quota-track { height:2px; background:var(--border); border-radius:2px; overflow:hidden; }
+.quota-fill  { height:100%; background:var(--green); transition:width .8s var(--ease-out); }
+
+/* ── MAIN ── */
+.main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; }
+.topbar {
+  height:var(--topbar-h); background:var(--bg2); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 24px; gap:16px;
+  position:sticky; top:0; z-index:50;
+}
+.topbar-title { font-family:var(--head); font-size:18px; letter-spacing:3px; color:var(--white); }
+.topbar-title span { color:var(--green); }
+.topbar-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+.topbar-dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.hamburger { display:none; flex-direction:column; gap:4px; cursor:pointer; padding:4px; background:none; border:none; }
+.hamburger span { display:block; width:20px; height:2px; background:var(--gray); }
+.sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:99; }
+.sidebar-overlay.show { display:block; }
+
+/* ── CONTENT ── */
+.content { padding:24px; display:flex; flex-direction:column; gap:20px; max-width:760px; }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  font-family:var(--mono); font-size:10px; color:var(--gray);
+  letter-spacing:3px; margin-bottom:14px;
+  display:flex; align-items:center; gap:8px;
+}
+.section-header::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── CARDS ── */
+.panel {
+  background:var(--bg2); border:1px solid var(--border); border-radius:4px;
+  padding:20px; position:relative; overflow:hidden;
+  animation:fadeUp .4s var(--ease-out) both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.panel::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--green); box-shadow:0 0 8px var(--green-glow); }
+.panel.amber::before { background:var(--amber); box-shadow:0 0 8px rgba(255,170,0,.4); }
+.panel.red::before   { background:var(--red);   box-shadow:0 0 8px rgba(255,45,45,.4); }
+.panel.blue::before  { background:#00b4ff;       box-shadow:0 0 8px rgba(0,180,255,.4); }
+
+.panel-title {
+  font-family:var(--head); font-size:18px; letter-spacing:2px; color:var(--white);
+  margin-bottom:4px; display:flex; align-items:center; gap:10px;
+}
+.panel-title-icon { font-size:20px; }
+.panel-desc {
+  font-family:var(--mono); font-size:10px; color:var(--gray);
+  letter-spacing:1px; line-height:1.7; margin-bottom:18px;
+}
+
+/* ── BIG ACTION BUTTON ── */
+.action-btn {
+  display:flex; align-items:center; gap:12px;
+  width:100%; padding:14px 18px;
+  background:var(--bg3); border:1px solid var(--border2); border-radius:4px;
+  cursor:pointer; transition:all .15s; text-align:left;
+  font-family:var(--mono); font-size:11px; letter-spacing:2px; color:var(--white);
+  -webkit-appearance:none;
+}
+.action-btn:hover { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+.action-btn:active { opacity:.8; }
+.action-btn-icon { font-size:20px; flex-shrink:0; }
+.action-btn-label { flex:1; }
+.action-btn-sub { font-size:9px; color:var(--gray); letter-spacing:1px; margin-top:2px; display:block; }
+.action-btn-arrow { color:var(--gray2); font-size:14px; }
+
+.action-btn.primary { border-color:rgba(0,255,136,.3); background:var(--green-dim); }
+.action-btn.primary:hover { background:rgba(0,255,136,.12); box-shadow:0 0 16px var(--green-glow); }
+.action-btn.danger  { border-color:rgba(255,45,45,.25); }
+.action-btn.danger:hover  { border-color:var(--red); color:var(--red); background:var(--red-dim); }
+
+/* ── BACKUP INFO ── */
+.backup-info {
+  display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-bottom:18px;
+}
+.bi-stat {
+  background:var(--bg3); border:1px solid var(--border); border-radius:3px;
+  padding:12px; text-align:center;
+}
+.bi-val  { font-family:var(--head); font-size:22px; color:var(--green); letter-spacing:1px; }
+.bi-unit { font-family:var(--mono); font-size:9px; color:var(--gray); letter-spacing:2px; margin-top:2px; }
+
+/* ── LAST BACKUP BANNER ── */
+.last-backup {
+  display:flex; align-items:center; gap:10px; padding:10px 14px;
+  background:var(--bg3); border:1px solid var(--border); border-radius:3px;
+  margin-bottom:14px;
+}
+.lb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.lb-dot.ok   { background:var(--green); box-shadow:0 0 6px var(--green); }
+.lb-dot.warn { background:var(--amber); box-shadow:0 0 6px var(--amber); }
+.lb-dot.none { background:var(--gray2); }
+.lb-text { font-family:var(--mono); font-size:10px; color:var(--gray); letter-spacing:1px; flex:1; }
+.lb-date { font-family:var(--mono); font-size:10px; color:var(--white); }
+
+/* ── IMPORT DROP ZONE ── */
+.drop-zone {
+  border:2px dashed var(--border2); border-radius:4px; padding:32px;
+  text-align:center; cursor:pointer; transition:all .2s;
+  background:var(--bg3); position:relative;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color:var(--green); background:var(--green-dim);
+}
+.drop-icon  { font-size:36px; margin-bottom:10px; display:block; }
+.drop-title { font-family:var(--head); font-size:16px; letter-spacing:2px; color:var(--white); margin-bottom:4px; }
+.drop-sub   { font-family:var(--mono); font-size:10px; color:var(--gray); letter-spacing:1px; }
+#file-input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+
+/* ── PREVIEW BOX ── */
+.preview-box {
+  background:var(--bg3); border:1px solid var(--border); border-radius:4px;
+  padding:16px; margin-top:16px; display:none;
+}
+.preview-box.show { display:block; }
+.preview-title { font-family:var(--mono); font-size:10px; color:var(--gray); letter-spacing:2px; margin-bottom:12px; }
+.preview-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+.pv-stat { text-align:center; }
+.pv-val  { font-family:var(--head); font-size:20px; color:var(--amber); }
+.pv-lbl  { font-family:var(--mono); font-size:9px; color:var(--gray); letter-spacing:1px; margin-top:2px; }
+.preview-actions { display:flex; gap:10px; }
+
+/* ── DANGER ZONE ── */
+.danger-grid { display:flex; flex-direction:column; gap:8px; }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--bg2); border:1px solid var(--border); border-radius:4px;
+  padding:12px 20px; font-family:var(--mono); font-size:11px; letter-spacing:1px;
+  color:var(--white); z-index:999; opacity:0;
+  transition:all .3s var(--ease-out); white-space:nowrap;
+  display:flex; align-items:center; gap:10px;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.ok     { border-color:var(--green); color:var(--green); }
+.toast.warn   { border-color:var(--amber); color:var(--amber); }
+.toast.error  { border-color:var(--red);   color:var(--red); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:300;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:var(--bg2); border:1px solid var(--border); border-radius:4px;
+  padding:24px; max-width:400px; width:100%;
+  animation:fadeUp .3s var(--ease-out) both;
+}
+.modal-title { font-family:var(--head); font-size:20px; letter-spacing:2px; color:var(--red); margin-bottom:8px; }
+.modal-body  { font-family:var(--mono); font-size:11px; color:var(--gray); letter-spacing:.5px; line-height:1.8; margin-bottom:20px; }
+.modal-actions { display:flex; gap:10px; }
+
+/* Mobile */
+@media (max-width:900px) {
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; }
+  .topbar { padding:0 16px; }
+  .content { padding:16px; }
+  .hamburger { display:flex; }
+  .backup-info { grid-template-columns:repeat(3,1fr); }
+  .preview-stats { grid-template-columns:repeat(2,1fr); }
+}
+@supports (padding:env(safe-area-inset-bottom)) {
+  .content { padding-bottom:max(24px, env(safe-area-inset-bottom)); }
+}
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+@media(max-width:480px){
+  .panel{padding:16px}
+  .backup-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">⬡ TACTICAL</div>
+      <div class="sidebar-logo-sub">FITNESS SYSTEM v1.0</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// COMMAND</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">◈</span> COMMAND CENTER</a>
+      <a href="training.html"  class="nav-item"><span class="nav-icon">⚡</span> TODAY TRAINING</a>
+      <a href="planner.html"   class="nav-item"><span class="nav-icon">◻</span> MONTHLY PLANNER</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// INTEL</div>
+      <a href="performance.html" class="nav-item"><span class="nav-icon">▲</span> PERFORMANCE LOG</a>
+      <a href="rank.html"        class="nav-item"><span class="nav-icon">◆</span> RANK & CAPABILITY</a>
+      <a href="missions.html"    class="nav-item"><span class="nav-icon">⚔</span> MISSIONS</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// SYSTEM</div>
+      <a href="import-export.html" class="nav-item active"><span class="nav-icon">⇅</span> IMPORT / EXPORT</a>
+      <a href="settings.html"      class="nav-item"><span class="nav-icon">◎</span> SETTINGS</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="quota-label">
+        <span>// STORAGE</span>
+        <span id="quota-text">— MB</span>
+      </div>
+      <div class="quota-track">
+        <div class="quota-fill" id="quota-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <div>
+        <div class="topbar-title">IMPORT <span>/ EXPORT</span></div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-dot"></div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ── EXPORT SECTION ── -->
+      <div>
+        <div class="section-header">// EXPORT BACKUP</div>
+
+        <div class="panel">
+          <div class="panel-title"><span class="panel-title-icon">📦</span> FULL DATA BACKUP</div>
+          <div class="panel-desc">
+            ส่งออกข้อมูลทั้งหมดเป็น JSON ไฟล์เดียว — profile, workout logs, PR records,
+            monthly plans, missions, medals · แนะนำทำ backup สม่ำเสมอ โดยเฉพาะบน iOS
+            เนื่องจาก IndexedDB อาจถูก evict เมื่อ storage เต็ม
+          </div>
+
+          <!-- Stats summary -->
+          <div class="backup-info">
+            <div class="bi-stat">
+              <div class="bi-val" id="stat-logs">—</div>
+              <div class="bi-unit">SESSIONS</div>
+            </div>
+            <div class="bi-stat">
+              <div class="bi-val" id="stat-days">—</div>
+              <div class="bi-unit">ACTIVE DAYS</div>
+            </div>
+            <div class="bi-stat">
+              <div class="bi-val" id="stat-size">—</div>
+              <div class="bi-unit">KB DATA</div>
+            </div>
+          </div>
+
+          <!-- Last backup -->
+          <div class="last-backup">
+            <div class="lb-dot" id="lb-dot"></div>
+            <div class="lb-text" id="lb-text">ตรวจสอบ backup ล่าสุด...</div>
+            <div class="lb-date" id="lb-date"></div>
+          </div>
+
+          <!-- Export buttons -->
+          <div style="display:flex;flex-direction:column;gap:8px">
+
+            <button class="action-btn primary" onclick="exportJSON()">
+              <span class="action-btn-icon">⬇</span>
+              <div class="action-btn-label">
+                DOWNLOAD JSON BACKUP
+                <span class="action-btn-sub">tactical_fitness_backup_YYYYMMDD.json</span>
+              </div>
+              <span class="action-btn-arrow">›</span>
+            </button>
+
+            <button class="action-btn" onclick="copyToClipboard()">
+              <span class="action-btn-icon">📋</span>
+              <div class="action-btn-label">
+                COPY TO CLIPBOARD
+                <span class="action-btn-sub">วางใน Notes หรือ iCloud Drive ได้ทันที</span>
+              </div>
+              <span class="action-btn-arrow">›</span>
+            </button>
+
+            <button class="action-btn" onclick="shareBackup()">
+              <span class="action-btn-icon">↗</span>
+              <div class="action-btn-label">
+                SHARE / AirDrop
+                <span class="action-btn-sub">ใช้ iOS Share Sheet ส่งไปยังอุปกรณ์อื่น</span>
+              </div>
+              <span class="action-btn-arrow">›</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── IMPORT SECTION ── -->
+      <div>
+        <div class="section-header">// IMPORT / RESTORE</div>
+
+        <div class="panel amber" style="animation-delay:.1s">
+          <div class="panel-title"><span class="panel-title-icon">📂</span> RESTORE FROM BACKUP</div>
+          <div class="panel-desc">
+            โหลด JSON backup กลับมา · ข้อมูลปัจจุบันจะถูก<strong style="color:var(--amber)"> merge หรือ overwrite</strong>
+            ขึ้นอยู่กับตัวเลือก · แนะนำ export ก่อน import เสมอ
+          </div>
+
+          <!-- Drop zone -->
+          <div class="drop-zone" id="drop-zone"
+               ondragover="onDragOver(event)"
+               ondragleave="onDragLeave(event)"
+               ondrop="onDrop(event)">
+            <input type="file" id="file-input" accept=".json,application/json" onchange="onFileSelect(event)">
+            <span class="drop-icon">📄</span>
+            <div class="drop-title">DROP JSON FILE HERE</div>
+            <div class="drop-sub">หรือ click เพื่อเลือกไฟล์ · รองรับ .json เท่านั้น</div>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-box" id="preview-box">
+            <div class="preview-title">// BACKUP PREVIEW</div>
+            <div class="preview-stats">
+              <div class="pv-stat"><div class="pv-val" id="pv-logs">—</div><div class="pv-lbl">SESSIONS</div></div>
+              <div class="pv-stat"><div class="pv-val" id="pv-plans">—</div><div class="pv-lbl">PLANS</div></div>
+              <div class="pv-stat"><div class="pv-val" id="pv-missions">—</div><div class="pv-lbl">MISSIONS</div></div>
+              <div class="pv-stat"><div class="pv-val" id="pv-date">—</div><div class="pv-lbl">EXPORTED</div></div>
+            </div>
+            <div class="preview-actions">
+              <button class="btn btn-primary" style="flex:1" onclick="importMerge()">↩ MERGE (keep existing)</button>
+              <button class="btn btn-danger"  style="flex:1" onclick="importOverwrite()">⚠ OVERWRITE ALL</button>
+            </div>
+          </div>
+
+          <!-- Paste JSON -->
+          <div style="margin-top:16px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:2px;margin-bottom:6px">// หรือ paste JSON โดยตรง</div>
+            <textarea id="paste-input" class="input"
+              style="height:80px;resize:vertical;font-size:12px;padding:10px 12px;border-radius:3px"
+              placeholder='{"version":"1.0","logs":[...]}'></textarea>
+            <button class="btn" style="margin-top:8px;width:100%" onclick="parsePaste()">PARSE & PREVIEW</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DANGER ZONE ── -->
+      <div>
+        <div class="section-header">// DANGER ZONE</div>
+
+        <div class="panel red" style="animation-delay:.2s">
+          <div class="panel-title"><span class="panel-title-icon">⚠</span> DATA MANAGEMENT</div>
+          <div class="panel-desc">
+            การกระทำเหล่านี้<strong style="color:var(--red)"> ไม่สามารถย้อนกลับได้</strong> ·
+            กรุณา export backup ก่อนดำเนินการทุกครั้ง
+          </div>
+          <div class="danger-grid">
+
+            <button class="action-btn danger" onclick="confirmClearLogs()">
+              <span class="action-btn-icon">🗑</span>
+              <div class="action-btn-label">
+                CLEAR WORKOUT LOGS
+                <span class="action-btn-sub">ลบประวัติ session ทั้งหมด — เก็บ profile และ PR</span>
+              </div>
+              <span class="action-btn-arrow">›</span>
+            </button>
+
+            <button class="action-btn danger" onclick="confirmReset()">
+              <span class="action-btn-icon">💣</span>
+              <div class="action-btn-label">
+                FACTORY RESET
+                <span class="action-btn-sub">ลบข้อมูลทั้งหมด — กลับสู่ onboarding</span>
+              </div>
+              <span class="action-btn-arrow">›</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── iOS WARNING ── -->
+      <div class="panel blue" style="animation-delay:.3s">
+        <div class="panel-title" style="font-size:14px"><span class="panel-title-icon">📱</span> iOS SAFARI NOTE</div>
+        <div class="panel-desc" style="margin-bottom:0">
+          บน iPhone / iPad — iOS อาจลบ IndexedDB อัตโนมัติเมื่อพื้นที่ storage เหลือน้อย
+          หรือเมื่อไม่ได้ใช้แอปนานเกิน 7 วัน · ควร export backup อย่างน้อยทุกสัปดาห์
+          และเพิ่มแอปไว้ใน Home Screen เพื่อ prevent eviction
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">⚠ CONFIRM</div>
+    <div class="modal-body"  id="modal-body">Are you sure?</div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" style="flex:1" id="modal-confirm">CONFIRM</button>
+      <button class="btn" style="flex:1" onclick="closeModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script>
+'use strict';
+
+/* ── STATE ── */
+let _parsedBackup = null;
+
+/* ── TOAST ── */
+function toast(msg, type = 'ok', duration = 3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+/* ── SIDEBAR ── */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+/* ── MODAL ── */
+function showModal(title, body, onConfirm) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').textContent  = body;
+  document.getElementById('modal-confirm').onclick   = () => { closeModal(); onConfirm(); };
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+/* ── FORMAT ── */
+function fmtDate(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}`;
+}
+function fmtDateFull(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return `${d.getDate()}/${d.getMonth()+1}/${(d.getFullYear()+543).toString().slice(2)} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+/* ══════════════════════════════
+   LOAD STATS
+══════════════════════════════ */
+async function loadStats() {
+  try {
+    const [profile, logs, quota] = await Promise.all([
+      Storage.User.get(),
+      Storage.Logs.getAll(),
+      Storage.getQuota(),
+    ]);
+
+    // Backup info stats
+    document.getElementById('stat-logs').textContent = logs?.length ?? 0;
+    document.getElementById('stat-days').textContent = profile?.totalDaysActive ?? 0;
+
+    // Estimate JSON size
+    const jsonStr = await Storage.Backup.export();
+    const kb = (new Blob([jsonStr]).size / 1024).toFixed(1);
+    document.getElementById('stat-size').textContent = kb;
+
+    // Last backup
+    const lastBackup = localStorage.getItem('tf_last_backup');
+    const lbDot  = document.getElementById('lb-dot');
+    const lbText = document.getElementById('lb-text');
+    const lbDate = document.getElementById('lb-date');
+
+    if (lastBackup) {
+      const daysSince = Math.floor((Date.now() - parseInt(lastBackup)) / 86400000);
+      lbDot.className  = `lb-dot ${daysSince <= 7 ? 'ok' : 'warn'}`;
+      lbText.textContent = daysSince === 0 ? 'Backup ล่าสุด: วันนี้'
+        : daysSince === 1 ? 'Backup ล่าสุด: เมื่อวาน'
+        : `Backup ล่าสุด: ${daysSince} วันที่แล้ว ${daysSince > 7 ? '⚠ ควร backup ใหม่' : ''}`;
+      lbDate.textContent = fmtDateFull(new Date(parseInt(lastBackup)).toISOString());
+    } else {
+      lbDot.className   = 'lb-dot none';
+      lbText.textContent = 'ยังไม่เคย backup — แนะนำทำทันที';
+      lbDate.textContent = '';
+    }
+
+    // Quota bar
+    if (quota) {
+      const quotaEl = document.getElementById('quota-text');
+      const fillEl  = document.getElementById('quota-fill');
+      quotaEl.textContent = `${quota.usedMB} MB`;
+      fillEl.style.width  = quota.pct + '%';
+      if (quota.pct > 70) fillEl.style.background = 'var(--amber)';
+      if (quota.pct > 90) fillEl.style.background = 'var(--red)';
+    }
+
+  } catch(err) {
+    console.error('[ImportExport] loadStats:', err);
+  }
+}
+
+/* ══════════════════════════════
+   EXPORT
+══════════════════════════════ */
+async function exportJSON() {
+  try {
+    toast('กำลัง export...', 'ok');
+    const json = await Storage.Backup.export();
+    const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `tactical_fitness_backup_${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    localStorage.setItem('tf_last_backup', Date.now().toString());
+    loadStats();
+    toast('✓ Export สำเร็จ!', 'ok');
+  } catch(err) {
+    toast('Export ล้มเหลว: ' + err.message, 'error', 4000);
+  }
+}
+
+async function copyToClipboard() {
+  try {
+    const json = await Storage.Backup.export();
+    await navigator.clipboard.writeText(json);
+    localStorage.setItem('tf_last_backup', Date.now().toString());
+    loadStats();
+    toast('✓ Copied to clipboard!', 'ok');
+  } catch(err) {
+    toast('Copy ล้มเหลว — ลองใช้ Download แทน', 'warn', 4000);
+  }
+}
+
+async function shareBackup() {
+  try {
+    const json = await Storage.Backup.export();
+    const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const file = new File([json], `tactical_fitness_${date}.json`, { type: 'application/json' });
+
+    if (navigator.share && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'Tactical Fitness Backup' });
+      localStorage.setItem('tf_last_backup', Date.now().toString());
+      loadStats();
+      toast('✓ Shared!', 'ok');
+    } else {
+      // Fallback: download
+      exportJSON();
+    }
+  } catch(err) {
+    if (err.name !== 'AbortError') toast('Share ล้มเหลว', 'error');
+  }
+}
+
+/* ══════════════════════════════
+   IMPORT — FILE / DRAG
+══════════════════════════════ */
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('drag-over');
+}
+function onDragLeave(e) {
+  document.getElementById('drop-zone').classList.remove('drag-over');
+}
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) readFile(file);
+}
+function onFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) readFile(file);
+}
+
+function readFile(file) {
+  if (!file.name.endsWith('.json')) {
+    toast('รองรับเฉพาะ .json เท่านั้น', 'error'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => parseBackup(e.target.result);
+  reader.readAsText(file);
+}
+
+function parsePaste() {
+  const txt = document.getElementById('paste-input').value.trim();
+  if (!txt) { toast('กรุณา paste JSON ก่อน', 'warn'); return; }
+  parseBackup(txt);
+}
+
+function parseBackup(jsonStr) {
+  try {
+    const data = JSON.parse(jsonStr);
+    if (!data.version) throw new Error('ไม่ใช่ไฟล์ backup ของ Tactical Fitness');
+
+    _parsedBackup = data;
+
+    // Show preview
+    document.getElementById('pv-logs').textContent     = data.logs?.length ?? 0;
+    document.getElementById('pv-plans').textContent    = data.plans?.length ?? 0;
+    document.getElementById('pv-missions').textContent = data.missions?.length ?? 0;
+    document.getElementById('pv-date').textContent     = data.exportedAt
+      ? new Date(data.exportedAt).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'})
+      : '—';
+
+    document.getElementById('preview-box').classList.add('show');
+    toast('✓ Parse สำเร็จ — เลือก Merge หรือ Overwrite', 'ok', 4000);
+
+  } catch(err) {
+    toast('ไฟล์ไม่ถูกต้อง: ' + err.message, 'error', 5000);
+    _parsedBackup = null;
+  }
+}
+
+async function importMerge() {
+  if (!_parsedBackup) return;
+  showModal(
+    '↩ MERGE BACKUP',
+    `จะ import ข้อมูลจาก backup และ merge กับข้อมูลปัจจุบัน\nข้อมูลที่ซ้ำกัน (id เดิม) จะถูก overwrite\n\nแน่ใจหรือไม่?`,
+    async () => {
+      try {
+        await Storage.Backup.import(JSON.stringify(_parsedBackup));
+        toast('✓ Merge สำเร็จ — redirect ใน 2 วินาที', 'ok', 3000);
+        setTimeout(() => window.location.href = 'dashboard.html', 2000);
+      } catch(err) { toast('Import ล้มเหลว: ' + err.message, 'error', 5000); }
+    }
+  );
+}
+
+async function importOverwrite() {
+  if (!_parsedBackup) return;
+  showModal(
+    '⚠ OVERWRITE ALL DATA',
+    `จะลบข้อมูลทั้งหมดในเครื่องแล้ว restore จาก backup ใหม่\nการกระทำนี้ไม่สามารถย้อนกลับได้!\n\nแน่ใจหรือไม่?`,
+    async () => {
+      try {
+        await Storage.reset(false);
+        await Storage.Backup.import(JSON.stringify(_parsedBackup));
+        toast('✓ Restore สำเร็จ — redirect ใน 2 วินาที', 'ok', 3000);
+        setTimeout(() => window.location.href = 'dashboard.html', 2000);
+      } catch(err) { toast('Overwrite ล้มเหลว: ' + err.message, 'error', 5000); }
+    }
+  );
+}
+
+/* ══════════════════════════════
+   DANGER ZONE
+══════════════════════════════ */
+async function confirmClearLogs() {
+  showModal(
+    '🗑 CLEAR WORKOUT LOGS',
+    'จะลบประวัติ session ทั้งหมด\nProfile, PR records และ plans จะยังอยู่\n\nแนะนำ export ก่อน — แน่ใจหรือไม่?',
+    async () => {
+      try {
+        await Storage.reset(true); // keepProfile = true
+        toast('✓ Cleared workout logs', 'ok');
+        loadStats();
+      } catch(err) { toast('ล้มเหลว: ' + err.message, 'error'); }
+    }
+  );
+}
+
+async function confirmReset() {
+  showModal(
+    '💣 FACTORY RESET',
+    'จะลบข้อมูลทั้งหมดในเครื่อง\nรวมถึง profile, PR, logs, plans ทุกอย่าง\n\nGURUXUX ย้อนกลับไม่ได้ — แน่ใจหรือไม่?',
+    async () => {
+      try {
+        await Storage.reset(false);
+        localStorage.removeItem('tf_last_backup');
+        toast('✓ Reset เสร็จสิ้น — redirect...', 'ok', 2000);
+        setTimeout(() => window.location.href = 'onboarding.html', 1500);
+      } catch(err) { toast('ล้มเหลว: ' + err.message, 'error'); }
+    }
+  );
+}
+
+/* ══════════════════════════════
+   BOOT
+══════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  Storage.init().then(loadStats).catch(console.error);
+});
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

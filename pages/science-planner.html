@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TACTICAL FITNESS — SCIENCE PLANNER</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+.shell{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .3s}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo-mark{font-family:var(--head);font-size:22px;letter-spacing:4px;color:var(--green);text-shadow:0 0 16px var(--green-glow)}
+.sidebar-logo-sub{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:2px;margin-top:2px}
+.nav-section{padding:16px 12px 4px}
+.nav-label{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:3px;padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;cursor:pointer;text-decoration:none;color:var(--gray);font-family:var(--body);font-size:13px;font-weight:500;letter-spacing:.5px;transition:all .15s;border:1px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--bg3);color:var(--white);border-color:var(--border)}
+.nav-item.active{background:var(--green-dim);color:var(--green);border-color:rgba(0,255,136,.2)}
+.nav-icon{font-size:14px;width:18px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border)}
+.sf-rank{font-family:var(--head);font-size:14px;color:var(--green)}
+.sf-callsign{font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:2px}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column}
+.topbar{height:var(--topbar-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
+.menu-btn{display:none;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer}
+.topbar-title{font-family:var(--head);font-size:16px;letter-spacing:3px;color:var(--white)}
+.topbar-sub{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:2px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.content{padding:24px;flex:1;max-width:1200px;margin:0 auto;width:100%}
+/* Tabs */
+.tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:3px;margin-bottom:24px;overflow-x:auto}
+.tab{font-family:var(--mono);font-size:10px;letter-spacing:2px;padding:7px 12px;border-radius:4px;cursor:pointer;color:var(--gray);border:none;background:none;white-space:nowrap;transition:all .15s}
+.tab:hover{color:var(--white);background:var(--bg3)}
+.tab.active{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+/* Layout */
+.section{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px}
+.section-title{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--gray2);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.field{margin-bottom:12px}
+.field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gray);margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:8px 10px;font-family:var(--mono);font-size:12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.field select option{background:var(--bg3);color:var(--white)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+/* Stat Cards */
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-g::before{background:var(--green)}.stat-y::before{background:#ffd700}.stat-o::before{background:#ff8c00}.stat-r::before{background:#ff2d2d}.stat-b::before{background:#00bfff}
+.stat-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gray2);margin-bottom:6px}
+.stat-val{font-family:var(--head);font-size:26px;letter-spacing:2px;color:var(--white)}
+.stat-sub{font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:4px}
+/* Readiness */
+.ring-wrap{position:relative;flex-shrink:0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-score{font-family:var(--head);font-size:32px;color:var(--white)}
+.ring-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gray);margin-top:2px}
+.rpart{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.rpart-k{font-family:var(--mono);font-size:9px;color:var(--gray);width:100px;flex-shrink:0}
+.rpart-bar{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.rpart-fill{height:100%;border-radius:3px;transition:width .5s}
+.rpart-s{font-family:var(--mono);font-size:9px;color:var(--gray);width:24px;text-align:right}
+/* OTS */
+.ots-bar{height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-bottom:6px}
+.ots-fill{height:100%;background:linear-gradient(90deg,#00ff88,#ffd700,#ff8c00,#ff2d2d);border-radius:5px;transition:width .6s}
+.ots-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--gray2);margin-bottom:8px}
+.flag-tag{font-family:var(--mono);font-size:8px;padding:3px 7px;border-radius:3px;background:rgba(255,45,45,.1);border:1px solid rgba(255,45,45,.25);color:#ff8c00}
+/* Program */
+.week-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
+.wtab{font-family:var(--mono);font-size:9px;padding:4px 9px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--gray);transition:all .15s}
+.wtab.active{background:var(--green-dim);color:var(--green);border-color:rgba(0,255,136,.3)}
+.wtab.deload{border-color:rgba(255,215,0,.3);color:#ffd700}
+.phase-banner{padding:10px 16px;border-radius:6px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;font-family:var(--mono)}
+.phase-name{font-size:11px;font-weight:700;letter-spacing:3px}
+.phase-focus{font-size:9px;color:var(--gray);letter-spacing:1px}
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day-card{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;min-height:180px}
+.day-card.rest-day{opacity:.45}
+.day-header{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gray2);margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.day-focus{font-family:var(--head);font-size:13px;color:var(--green);margin-bottom:8px}
+.ex-item{margin-bottom:5px}
+.ex-name{font-family:var(--body);font-size:11px;color:var(--white)}
+.ex-detail{font-family:var(--mono);font-size:8px;color:var(--gray);margin-top:1px}
+.ex-subst{color:#ffd700}
+.inj-note{font-family:var(--mono);font-size:8px;padding:3px 6px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:3px;color:#ffd700;margin-top:5px}
+/* Plateau */
+.plateau-item{border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:8px;background:var(--bg3)}
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:32px;margin-top:8px}
+.spark-bar{flex:1;background:var(--green-dim);border-radius:2px 2px 0 0}
+/* Calisthenics */
+.skill-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);margin-bottom:4px}
+.skill-current{border-color:rgba(0,255,136,.4);background:var(--green-dim)}
+.skill-level{font-family:var(--mono);font-size:9px;color:var(--gray);width:90px;flex-shrink:0}
+.skill-bar{flex:1;height:7px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.skill-fill{height:100%;border-radius:4px;transition:width .5s}
+.skill-prog{font-family:var(--mono);font-size:8px;color:var(--gray);flex:2;text-align:right}
+/* Nutrition */
+.macro-bar{height:16px;background:var(--bg3);border-radius:8px;display:flex;overflow:hidden;margin-bottom:8px}
+.macro-p{background:#00ff88;transition:width .5s}.macro-c{background:#00bfff;transition:width .5s}.macro-f{background:#ffd700;transition:width .5s}
+.macro-legend{display:flex;gap:16px;font-family:var(--mono);font-size:9px;color:var(--gray)}
+.ml-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
+.supp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:12px}
+.supp-card{padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px}
+.supp-name{font-family:var(--mono);font-size:10px;color:var(--white);margin-bottom:4px}
+.supp-dose{font-family:var(--mono);font-size:9px;color:var(--green)}
+.supp-ev{font-family:var(--mono);font-size:8px;padding:1px 5px;border-radius:2px;float:right}
+.ev-A{background:rgba(0,255,136,.2);color:#00ff88}.ev-B{background:rgba(255,215,0,.2);color:#ffd700}
+.supp-note{font-family:var(--mono);font-size:8px;color:var(--gray);margin-top:4px;clear:both}
+/* Explain */
+.xstep{display:flex;gap:10px;margin-bottom:8px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px}
+.xnum{font-family:var(--head);font-size:18px;color:var(--green);flex-shrink:0;width:28px;text-align:center;opacity:.5}
+.xbody{flex:1;min-width:0}
+.xname{font-family:var(--mono);font-size:10px;color:var(--white);margin-bottom:2px;letter-spacing:1px}
+.xrule{font-family:var(--mono);font-size:9px;color:var(--gray2);margin-bottom:2px}
+.xio{font-family:var(--mono);font-size:8px;color:var(--gray);word-break:break-all;padding:2px 4px;border-radius:2px;margin-bottom:1px}
+.xin{background:rgba(0,191,255,.04)}.xout{background:rgba(0,255,136,.05);color:#00ff88}
+/* Misc */
+.warn-box{padding:10px 14px;border-radius:6px;margin-bottom:8px;font-family:var(--mono);font-size:10px;display:flex;gap:8px;align-items:flex-start}
+.warn-r{background:rgba(255,45,45,.08);border:1px solid rgba(255,45,45,.25);color:#ff8c00}
+.warn-y{background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);color:#ffd700}
+.warn-g{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);color:#00ff88}
+.badge{font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:3px;border:1px solid}
+.badge-g{background:rgba(0,255,136,.1);color:#00ff88;border-color:rgba(0,255,136,.3)}
+.badge-b{background:rgba(0,191,255,.1);color:#00bfff;border-color:rgba(0,191,255,.3)}
+.badge-y{background:rgba(255,215,0,.1);color:#ffd700;border-color:rgba(255,215,0,.3)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:5px;font-family:var(--mono);font-size:10px;letter-spacing:2px;cursor:pointer;border:none;transition:all .2s;font-weight:600}
+.btn-g{background:var(--green);color:#000}.btn-g:hover{background:#00e67a;box-shadow:0 0 20px var(--green-glow)}
+.btn-o{background:transparent;border:1px solid var(--border);color:var(--gray)}.btn-o:hover{border-color:var(--green);color:var(--green)}
+.btn-full{width:100%;justify-content:center}
+.formula-box{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:4px;padding:10px 14px;margin:8px 0;font-family:var(--mono);font-size:9px;color:var(--gray2);line-height:1.7}
+.formula-eq{font-size:11px;color:var(--green);margin-bottom:4px;font-weight:700}
+.empty-state{text-align:center;padding:32px;color:var(--gray);font-family:var(--mono);font-size:11px;letter-spacing:1px}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.hr-zone-bar{display:flex;gap:2px;height:22px;border-radius:4px;overflow:hidden;margin-top:10px}
+.hr-zone-seg{flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:7px;font-weight:700}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.menu-btn{display:block}.grid-2,.grid-3,.day-grid{grid-template-columns:1fr}}
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+@media(max-width:480px){
+  .tab-bar{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tab-bar::-webkit-scrollbar{display:none}
+  .tab-btn{flex-shrink:0;white-space:nowrap;padding:7px 10px;font-size:9px}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">TACTICAL</div>
+    <div class="sidebar-logo-sub">// FITNESS SYSTEM v1.1</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// NAVIGATION</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">⬛</span>DASHBOARD</a>
+    <a class="nav-item" href="training.html"><span class="nav-icon">⚡</span>TRAINING</a>
+    <a class="nav-item" href="planner.html"><span class="nav-icon">📋</span>PLANNER</a>
+    <a class="nav-item active" href="science-planner.html"><span class="nav-icon">🧬</span>SCIENCE PLANNER</a>
+    <a class="nav-item" href="performance.html"><span class="nav-icon">📊</span>PERFORMANCE</a>
+    <a class="nav-item" href="missions.html"><span class="nav-icon">🎯</span>MISSIONS</a>
+    <a class="nav-item" href="rank.html"><span class="nav-icon">🏅</span>RANK</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="sf-rank" id="sf-rank">พลเรือน</div>
+    <div class="sf-callsign" id="sf-callsign">// OPERATOR</div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <div>
+      <div class="topbar-title">🧬 SCIENCE PLANNER</div>
+      <div class="topbar-sub">// RULE-BASED · OFFLINE · NSCA · ACSM · ISSN</div>
+    </div>
+    <div class="topbar-right">
+      <span class="badge badge-g">OFFLINE</span>
+      <span class="badge badge-b">ENGINE v2.0</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('profile')">01 // PROFILE</button>
+      <button class="tab" onclick="switchTab('readiness')">02 // READINESS</button>
+      <button class="tab" onclick="switchTab('program')">03 // PROGRAM</button>
+      <button class="tab" onclick="switchTab('plateau')">04 // PLATEAU</button>
+      <button class="tab" onclick="switchTab('calisthenics')">05 // CALISTHENICS</button>
+      <button class="tab" onclick="switchTab('nutrition')">06 // NUTRITION</button>
+      <button class="tab" onclick="switchTab('explain')">07 // EXPLAIN</button>
+    </div>
+
+    <!-- TAB 1: PROFILE ─────────────────────────────── -->
+    <div id="tab-profile" class="tab-panel active">
+      <div class="grid-2">
+        <div>
+          <div class="section">
+            <div class="section-title">// IDENTITY & GOAL</div>
+            <div class="field-row">
+              <div class="field"><label>GOAL</label><select id="goal"><option value="military">สายทหาร</option><option value="hypertrophy">สายกล้าม</option><option value="athlete">สายนักกีฬา</option><option value="general">ทั่วไป</option></select></div>
+              <div class="field"><label>LEVEL</label><select id="level"><option value="beginner">Beginner</option><option value="intermediate" selected>Intermediate</option><option value="advanced">Advanced</option><option value="elite">Elite</option></select></div>
+            </div>
+            <div class="field-row3">
+              <div class="field"><label>AGE</label><input type="number" id="age" value="25" min="14" max="70"></div>
+              <div class="field"><label>WEIGHT (kg)</label><input type="number" id="weight" value="70" min="40" max="150"></div>
+              <div class="field"><label>HEIGHT (cm)</label><input type="number" id="height" value="170" min="140" max="220"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>GENDER</label><select id="gender"><option value="male">Male</option><option value="female">Female</option></select></div>
+              <div class="field"><label>EXPERIENCE (months)</label><input type="number" id="expMonths" value="12" min="0" max="360"></div>
+            </div>
+            <div class="field"><label>NUTRITION GOAL</label><select id="nutritionGoal"><option value="military">ทหาร (High Performance)</option><option value="maintain">รักษาน้ำหนัก</option><option value="lean_bulk">Lean Bulk</option><option value="cut">Cut</option><option value="performance">Performance</option></select></div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">// FITNESS TEST (PT)</div>
+            <div class="field-row3">
+              <div class="field"><label>PUSH-UP (max)</label><input type="number" id="pushup" value="45" min="0"></div>
+              <div class="field"><label>PULL-UP (max)</label><input type="number" id="pullup" value="10" min="0"></div>
+              <div class="field"><label>SIT-UP (max)</label><input type="number" id="situp" value="55" min="0"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>RUN 3.2km (MM:SS)</label><input type="text" id="runTime" value="14:30" placeholder="MM:SS"></div>
+              <div class="field"><label>PLANK (sec)</label><input type="number" id="plankSec" value="120" min="0"></div>
+            </div>
+            <div class="field"><label>RESTING HR (bpm)</label><input type="number" id="restingHR" value="65" min="40" max="120"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">// INJURY STATUS</div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">
+              <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--gray);cursor:pointer"><input type="checkbox" id="inj-shoulder" value="shoulder"> ไหล่</label>
+              <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--gray);cursor:pointer"><input type="checkbox" id="inj-wrist" value="wrist"> ข้อมือ</label>
+              <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--gray);cursor:pointer"><input type="checkbox" id="inj-knee" value="knee"> เข่า</label>
+              <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--gray);cursor:pointer"><input type="checkbox" id="inj-lower_back" value="lower_back"> หลังล่าง</label>
+              <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--gray);cursor:pointer"><input type="checkbox" id="inj-elbow" value="elbow"> ข้อศอก</label>
+              <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--gray);cursor:pointer"><input type="checkbox" id="inj-ankle" value="ankle"> ข้อเท้า</label>
+            </div>
+          </div>
+
+          <button class="btn btn-g btn-full" onclick="runAssessment()">⚡ GENERATE ASSESSMENT</button>
+        </div>
+
+        <div>
+          <div class="section">
+            <div class="section-title">// ASSESSMENT RESULTS</div>
+            <div class="grid-2" style="margin-bottom:16px">
+              <div class="stat-card stat-g"><div class="stat-label">FITNESS LEVEL</div><div class="stat-val" id="r-level" style="font-size:18px">—</div></div>
+              <div class="stat-card stat-b"><div class="stat-label">TACTICAL SCORE</div><div class="stat-val" id="r-tscore">—</div></div>
+              <div class="stat-card stat-y"><div class="stat-label">MILITARY STANDARD</div><div class="stat-val" id="r-milrank" style="font-size:16px">—</div></div>
+              <div class="stat-card stat-g"><div class="stat-label">BMR / TDEE (kcal)</div><div class="stat-val" id="r-bmr" style="font-size:15px">—</div></div>
+              <div class="stat-card stat-b"><div class="stat-label">MAX HR</div><div class="stat-val" id="r-maxhr">—</div><div class="stat-sub">bpm — Tanaka formula</div></div>
+              <div class="stat-card stat-o"><div class="stat-label">PUSH-UP NEXT TARGET</div><div class="stat-val" id="r-punext" style="font-size:15px">—</div></div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">// HR ZONES (Karvonen)</div>
+            <div id="hr-zones-display"><div class="empty-state">กด Generate ก่อน</div></div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">// RPE WEIGHT ADJUSTER (NSCA)</div>
+            <div class="field-row3">
+              <div class="field"><label>CURRENT WEIGHT (kg)</label><input type="number" id="rpe-w" value="60" oninput="updateRPE()"></div>
+              <div class="field"><label>ACTUAL RPE</label><input type="number" id="rpe-a" value="7" min="0" max="10" oninput="updateRPE()"></div>
+              <div class="field"><label>TARGET RPE</label><input type="number" id="rpe-t" value="8" min="0" max="10" oninput="updateRPE()"></div>
+            </div>
+            <div id="rpe-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: READINESS ───────────────────────────── -->
+    <div id="tab-readiness" class="tab-panel">
+      <div class="grid-2">
+        <div>
+          <div class="section">
+            <div class="section-title">// TODAY'S STATUS</div>
+            <div class="field-row">
+              <div class="field"><label>SLEEP (hours)</label><input type="number" id="r-sleep" value="7" min="2" max="12" step="0.5"></div>
+              <div class="field"><label>RESTING HR (bpm)</label><input type="number" id="r-rhr" value="65" min="40" max="120"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>BASELINE HR (bpm)</label><input type="number" id="r-basehr" value="65" min="40" max="120"></div>
+              <div class="field"><label>FEEL (1–10)</label><input type="number" id="r-feel" value="7" min="1" max="10"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>SORENESS (0–5)</label><input type="number" id="r-soreness" value="2" min="0" max="5"></div>
+              <div class="field"><label>MOOD (1–10)</label><input type="number" id="r-mood" value="7" min="1" max="10"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>HARD WEEKS STREAK</label><input type="number" id="r-hardwk" value="1" min="0" max="12"></div>
+              <div class="field"><label>FATIGUE INDEX</label><input type="number" id="r-fatidx" value="45" min="0"></div>
+            </div>
+            <div class="field"><label>PERFORMANCE DROP (%) from peak</label><input type="number" id="r-perfdrop" value="0" min="0" max="50"></div>
+            <button class="btn btn-g btn-full" onclick="runReadiness()" style="margin-top:12px">⚡ ANALYZE READINESS</button>
+          </div>
+        </div>
+        <div>
+          <div class="section">
+            <div class="section-title">// READINESS SCORE</div>
+            <div id="readiness-display"><div class="empty-state">กด ANALYZE</div></div>
+          </div>
+          <div class="section">
+            <div class="section-title">// OTS RISK (Vol.1 §4.4)</div>
+            <div id="ots-display"><div class="empty-state">กด ANALYZE</div></div>
+          </div>
+          <div class="section">
+            <div class="section-title">// RECOMMENDATION</div>
+            <div id="rec-display"><div class="empty-state">—</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: PROGRAM ─────────────────────────────── -->
+    <div id="tab-program" class="tab-panel">
+      <div class="section" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div class="section-title" style="margin-bottom:8px">// PROGRAM CONFIG</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <select id="prog-goal" style="font-family:var(--mono);font-size:10px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);color:var(--white);border-radius:4px">
+                <option value="military">สายทหาร (12wk)</option>
+                <option value="hypertrophy">สายกล้าม (12wk)</option>
+                <option value="athlete">สายนักกีฬา (12wk)</option>
+                <option value="general">ทั่วไป (8wk)</option>
+              </select>
+              <select id="prog-level" style="font-family:var(--mono);font-size:10px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);color:var(--white);border-radius:4px">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate" selected>Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+              <button class="btn btn-g" onclick="generateProgram()" style="padding:7px 16px">⚡ GENERATE</button>
+            </div>
+          </div>
+          <div id="prog-summary" style="font-family:var(--mono);font-size:9px;color:var(--gray);text-align:right;min-width:140px"></div>
+        </div>
+      </div>
+      <div id="prog-warnings"></div>
+      <div class="week-tabs" id="week-tabs"></div>
+      <div class="phase-banner" id="phase-banner" style="display:none"></div>
+      <div class="day-grid" id="day-grid"><div class="empty-state" style="grid-column:1/-1">กด GENERATE เพื่อสร้างโปรแกรม</div></div>
+    </div>
+
+    <!-- TAB 4: PLATEAU ─────────────────────────────── -->
+    <div id="tab-plateau" class="tab-panel">
+      <div class="grid-2">
+        <div>
+          <div class="section">
+            <div class="section-title">// SESSION LOG ENTRY</div>
+            <div class="field"><label>EXERCISE NAME</label><input type="text" id="plt-name" value="Push-up"></div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--gray2);margin-bottom:8px">date · weight(kg) · reps</div>
+            <div id="plt-sessions"></div>
+            <button class="btn btn-o" onclick="addPltSession()" style="margin-top:6px;padding:6px 12px;font-size:9px">+ ADD SESSION</button>
+            <div class="divider"></div>
+            <button class="btn btn-g btn-full" onclick="analyzePlateau()">⚡ ANALYZE PLATEAU</button>
+          </div>
+
+          <div class="section">
+            <div class="section-title">// DOUBLE PROGRESSION CHECK (Vol.1 §1.2)</div>
+            <div class="formula-box"><div class="formula-eq">Double Progression Rule</div>target reps ทั้ง 2 sessions ติดกัน → เพิ่ม load<br>+2 reps ก่อน → เมื่อครบ → +2.5 kg</div>
+            <div class="field-row" style="margin-top:8px">
+              <div class="field"><label>TARGET REPS</label><input type="number" id="dp-target" value="10" min="1"></div>
+              <div class="field"><label>SESSION 1 REPS</label><input type="number" id="dp-s1" value="10" min="0"></div>
+            </div>
+            <div class="field"><label>SESSION 2 REPS</label><input type="number" id="dp-s2" value="10" min="0"></div>
+            <button class="btn btn-g btn-full" onclick="checkDP()" style="margin-top:6px">CHECK PROGRESSION</button>
+            <div id="dp-result" style="margin-top:8px"></div>
+          </div>
+        </div>
+        <div>
+          <div class="section">
+            <div class="section-title">// PLATEAU ANALYSIS</div>
+            <div id="plateau-result"><div class="empty-state">ใส่ sessions แล้วกด ANALYZE</div></div>
+          </div>
+          <div class="section">
+            <div class="section-title">// BREAKTHROUGH STRATEGIES (Vol.1 §1.2)</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--gray);line-height:2">
+              <div><span style="color:var(--green)">1.</span> <b>Rep Range Shift</b> — กล้ามเนื้อตอบสนองใหม่</div>
+              <div><span style="color:var(--green)">2.</span> <b>Rest Reduction</b> — ลด 10–15s เพิ่ม metabolic stress</div>
+              <div><span style="color:var(--green)">3.</span> <b>Volume +1 Set</b> — progressive volume (Israetel)</div>
+              <div><span style="color:var(--green)">4.</span> <b>TUT eccentric 3–4s</b> — mechanical tension↑</div>
+              <div><span style="color:var(--green)">5.</span> <b>Frequency +1 วัน</b> — เพิ่มความถี่</div>
+              <div><span style="color:var(--green)">6.</span> <b>Deload Week</b> — supercompensation</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: CALISTHENICS ────────────────────────── -->
+    <div id="tab-calisthenics" class="tab-panel">
+      <div class="grid-2">
+        <div>
+          <div class="section">
+            <div class="section-title">// YOUR MAX REPS</div>
+            <div class="field-row">
+              <div class="field"><label>PUSH-UP MAX</label><input type="number" id="cal-pu" value="35" min="0"></div>
+              <div class="field"><label>PULL-UP MAX</label><input type="number" id="cal-plu" value="8" min="0"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>SQUAT MAX</label><input type="number" id="cal-sq" value="20" min="0"></div>
+              <div class="field"><label>DIP MAX</label><input type="number" id="cal-dip" value="15" min="0"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <input type="checkbox" id="cal-core" style="width:auto">
+              <label for="cal-core" style="font-family:var(--mono);font-size:9px;color:var(--gray);cursor:pointer">STRONG CORE (Plank >3 min)</label>
+            </div>
+            <button class="btn btn-g btn-full" onclick="analyzeCalisthenics()">⚡ ANALYZE PROGRESSION</button>
+          </div>
+          <div class="section">
+            <div class="section-title">// SKILL READINESS (Vol.2 §11.1)</div>
+            <div id="skill-readiness"><div class="empty-state">กด Analyze ก่อน</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section">
+            <div class="section-title">// PUSH-UP PROGRESSION TREE (Vol.2 §11.3)</div>
+            <div id="pu-tree"></div>
+          </div>
+          <div class="section">
+            <div class="section-title">// PULL-UP PROGRESSION TREE (Vol.2 §11.4)</div>
+            <div id="plu-tree"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: NUTRITION ───────────────────────────── -->
+    <div id="tab-nutrition" class="tab-panel">
+      <div id="nutrition-output"><div class="empty-state">กด GENERATE ASSESSMENT ในแท็บ Profile</div></div>
+    </div>
+
+    <!-- TAB 7: EXPLAIN ─────────────────────────────── -->
+    <div id="tab-explain" class="tab-panel">
+      <div class="section">
+        <div class="section-title">// RULE ENGINE — REASONING CHAIN</div>
+        <p style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-bottom:16px;line-height:1.8">
+          ทุก decision ของ Rule Engine จะถูก log ไว้ที่นี่<br>
+          <b style="color:var(--green)">Step → Rule → Input → Output</b><br>
+          Source: Exercise Science Vol.1–2 · NSCA · ACSM · ISSN · Israetel et al. · Army FM 7-22
+        </p>
+        <div id="explain-output"><div class="empty-state">กด Generate ในแท็บใดก็ได้</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90" onclick="closeSidebar()"></div>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/engines/exercise-science-rules.js"></script>
+<script>
+'use strict';
+const E = ExerciseScienceRules;
+let _program = null, _currentWeek = 1, _pltSessions = [];
+
+/* init */
+window.addEventListener('DOMContentLoaded', async () => {
+  initPltSessions();
+  try {
+    await Storage.init();
+    const p = await Storage.User.get();
+    if (p) { document.getElementById('sf-rank').textContent='// '+p.callsign; document.getElementById('sf-callsign').textContent=p.currentRank||'พลเรือน'; }
+  } catch(e){}
+  runAssessment();
+  generateProgram();
+});
+
+function toggleSidebar() {
+  const s=document.getElementById('sidebar'),o=document.getElementById('overlay');
+  s.classList.toggle('open');
+  o.style.display=s.classList.contains('open')?'block':'none';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').style.display='none';
+}
+function switchTab(name) {
+  document.querySelectorAll('.tab,.tab-panel').forEach(e=>e.classList.remove('active'));
+  const names=['profile','readiness','program','plateau','calisthenics','nutrition','explain'];
+  document.querySelectorAll('.tab')[names.indexOf(name)]?.classList.add('active');
+  document.getElementById('tab-'+name)?.classList.add('active');
+  if (name==='explain') renderExplain();
+}
+function getInjured() {
+  return ['shoulder','wrist','knee','lower_back','elbow','ankle'].filter(p=>document.getElementById('inj-'+p)?.checked);
+}
+function parseRun(s) {
+  const p=String(s).split(':');
+  return p.length===2?parseInt(p[0])*60+parseInt(p[1]):parseInt(s)*60||870;
+}
+
+/* ── TAB 1 ASSESSMENT ─────────── */
+function runAssessment() {
+  E.startExplain();
+  const age=+document.getElementById('age').value, w=+document.getElementById('weight').value;
+  const h=+document.getElementById('height').value, sex=document.getElementById('gender').value;
+  const pushup=+document.getElementById('pushup').value, pullup=+document.getElementById('pullup').value;
+  const situp=+document.getElementById('situp').value, plankSec=+document.getElementById('plankSec').value;
+  const rhr=+document.getElementById('restingHR').value, expM=+document.getElementById('expMonths').value;
+  const runSec=parseRun(document.getElementById('runTime').value);
+  const ng=document.getElementById('nutritionGoal').value;
+
+  const maxHR=E.F.maxHR(age), bmr=E.F.bmr(w,h,age,sex), tdee=E.F.tdee(bmr,'active');
+  const tsc=E.Periodization.tacticalScore(pushup,situp,pullup,plankSec,runSec);
+  const mil=E.Periodization.militaryStd({pushup,situp,pullup,run3200s:runSec});
+  const fit=E.Periodization.classifyFitness({pushup,pullup,situp,run3200s:runSec,expM});
+  const puL=E.Calisthenics.pushupLevel(pushup), pluL=E.Calisthenics.pullupLevel(pullup);
+  const zones=E.F.hrZones(age,rhr);
+  const nut=E.Nutrition.targets(w,tdee,ng);
+
+  document.getElementById('r-level').textContent=fit.charAt(0).toUpperCase()+fit.slice(1);
+  document.getElementById('r-tscore').textContent=tsc;
+  document.getElementById('r-milrank').textContent=mil.rank;
+  document.getElementById('r-bmr').textContent=bmr+' / '+tdee;
+  document.getElementById('r-maxhr').textContent=maxHR+' bpm';
+  document.getElementById('r-punext').textContent='→ '+(puL.next||'✓')+' reps ('+puL.level+')';
+
+  const zColors=['#6b7280','#3b82f6','#10b981','#f59e0b','#ef4444'];
+  document.getElementById('hr-zones-display').innerHTML =
+    Object.values(zones).map(z=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <span style="font-family:var(--mono);font-size:8px;width:80px;color:var(--gray2)">${z.name}</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--green);width:70px">${z.lo}–${z.hi} bpm</span>
+      <span style="font-family:var(--mono);font-size:8px;color:var(--gray)">${z.purpose}</span>
+    </div>`).join('')
+    + `<div class="hr-zone-bar">${Object.values(zones).map((z,i)=>`<div class="hr-zone-seg" style="background:${zColors[i]}">Z${i+1}</div>`).join('')}</div>`;
+
+  window._nut=nut; window._w=w; renderNutrition(nut,w,ng);
+  updateRPE(); renderExplain();
+}
+
+function updateRPE() {
+  const w=+document.getElementById('rpe-w')?.value||60;
+  const a=+document.getElementById('rpe-a')?.value||7;
+  const t=+document.getElementById('rpe-t')?.value||8;
+  const res=E.RPE.adjustWeight(w,a,t); const lbl=E.RPE.label(a);
+  document.getElementById('rpe-result').innerHTML=`
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;background:var(--bg3);border-radius:5px;padding:10px;border:1px solid var(--border)">
+        <div style="font-family:var(--mono);font-size:8px;color:var(--gray2)">RPE ${a} — ${lbl.text}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:3px">${lbl.note}</div>
+      </div>
+      <div style="flex:1;background:var(--bg3);border-radius:5px;padding:10px;border:1px solid var(--border)">
+        <div style="font-family:var(--mono);font-size:8px;color:var(--gray2)">ADJUSTED WEIGHT</div>
+        <div style="font-family:var(--head);font-size:22px;color:${res.dir==='↑'?'#00ff88':res.dir==='↓'?'#ff2d2d':'#ffd700'}">${res.newW}kg ${res.dir}</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--gray)">${res.delta>=0?'+':''}${res.delta}kg</div>
+      </div>
+    </div>`;
+}
+
+/* ── TAB 2 READINESS ─────────── */
+function runReadiness() {
+  E.startExplain();
+  const sleep=+document.getElementById('r-sleep').value;
+  const rhr=+document.getElementById('r-rhr').value, basehr=+document.getElementById('r-basehr').value;
+  const feel=+document.getElementById('r-feel').value, soreness=+document.getElementById('r-soreness').value;
+  const mood=+document.getElementById('r-mood').value, hardWk=+document.getElementById('r-hardwk').value;
+  const fatIdx=+document.getElementById('r-fatidx').value, perfDrop=+document.getElementById('r-perfdrop').value/100;
+  const goal=document.getElementById('goal').value;
+  const daily=E.dailyRec({sleep,restHR:rhr,baseHR:basehr,feel,soreness,fatIdx,hardWeeks:hardWk,perfDrop,mood,acwr:1.0,goal,week:_currentWeek||1});
+
+  const {score,parts,color,label,mod,note}=daily.readiness;
+  const r=44,circ=2*Math.PI*r,filled=circ*(score/100);
+  document.getElementById('readiness-display').innerHTML=`
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div class="ring-wrap">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          <circle cx="55" cy="55" r="${r}" fill="none" stroke="var(--bg3)" stroke-width="10"/>
+          <circle cx="55" cy="55" r="${r}" fill="none" stroke="${color}" stroke-width="10"
+            stroke-dasharray="${filled} ${circ}" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-center"><div class="ring-score" style="color:${color}">${score}</div><div class="ring-label">${label.toUpperCase()}</div></div>
+      </div>
+      <div style="flex:1;min-width:180px">
+        ${parts.map(p=>`<div class="rpart">
+          <div class="rpart-k">${p.k}</div>
+          <div class="rpart-bar"><div class="rpart-fill" style="width:${(p.s/(p.k==='Sleep'?40:20))*100}%;background:${p.s>10?'#00ff88':'#ffd700'}"></div></div>
+          <div class="rpart-s">${p.s}</div>
+        </div>`).join('')}
+        <div style="font-family:var(--mono);font-size:9px;color:${color};margin-top:6px">×${mod} — ${note}</div>
+      </div>
+    </div>`;
+
+  const {risk,flags,stage,color:oc,action}=daily.otsRisk;
+  document.getElementById('ots-display').innerHTML=`
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--white)">${stage}</span>
+      <span style="font-family:var(--head);font-size:20px;color:${oc}">${risk}</span>
+    </div>
+    <div class="ots-bar"><div class="ots-fill" style="width:${risk}%"></div></div>
+    <div class="ots-labels"><span>Normal</span><span>Warning</span><span>Overreaching</span><span>OTS</span></div>
+    <div style="font-family:var(--mono);font-size:9px;color:${oc};margin-bottom:8px">→ ${action}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px">${flags.map(f=>`<span class="flag-tag">${f}</span>`).join('')}</div>`;
+
+  const fat=daily.fatigue;
+  document.getElementById('rec-display').innerHTML=
+    daily.warnings.map(w=>`<div class="warn-box ${w.startsWith('🔴')?'warn-r':'warn-y'}">${w}</div>`).join('')
+    +`<div class="warn-box ${daily.deload?'warn-y':'warn-g'}">${daily.deload?'🔄':'✅'} ${daily.recommendation}</div>
+    <div style="margin-top:10px;font-family:var(--mono);font-size:9px">
+      <span style="color:var(--gray2)">FATIGUE: </span>
+      <span style="color:${fat.color}">${fat.level}</span>
+      <span style="color:var(--gray);margin-left:8px">${fat.note}</span>
+    </div>`;
+
+  renderExplain();
+}
+
+/* ── TAB 3 PROGRAM ────────────── */
+function generateProgram() {
+  E.startExplain();
+  const goal=document.getElementById('prog-goal').value;
+  const level=document.getElementById('prog-level').value;
+  const injured=getInjured();
+  _program=E.buildProgram({goal,level,injuredParts:injured});
+  _currentWeek=1;
+
+  document.getElementById('prog-summary').innerHTML=
+    `<span style="color:var(--green)">${_program.goalLabel}</span> · ${_program.totalWeeks} สัปดาห์<br>
+     <span style="color:var(--gray)">Generated ${new Date().toLocaleTimeString()}</span>`;
+
+  document.getElementById('week-tabs').innerHTML=_program.weeks.map((w,i)=>
+    `<div class="wtab ${w.isDeload?'deload':''} ${i===0?'active':''}" onclick="selectWeek(${i})" id="wtab-${i}">W${i+1}${w.isDeload?' 🔄':''}</div>`
+  ).join('');
+
+  document.getElementById('prog-warnings').innerHTML=injured.length
+    ? injured.map(p=>`<div class="warn-box warn-y">⚠ ${E.Injury.MATRIX[p]?.note||p}</div>`).join('')
+    : '';
+
+  renderWeek(0); renderExplain();
+}
+
+function selectWeek(i) {
+  document.querySelectorAll('.wtab').forEach((t,j)=>t.classList.toggle('active',j===i));
+  _currentWeek=i+1; renderWeek(i);
+}
+
+function renderWeek(i) {
+  if (!_program) return;
+  const wk=_program.weeks[i]; if (!wk) return;
+  const phC={Foundation:'rgba(0,191,255,.12)',Build:'rgba(0,255,136,.12)',Peak:'rgba(255,140,0,.12)',Taper:'rgba(255,215,0,.12)'};
+  const phT={Foundation:'#00bfff',Build:'#00ff88',Peak:'#ff8c00',Taper:'#ffd700'};
+  const ph=wk.phase;
+  const banner=document.getElementById('phase-banner');
+  banner.style.display='flex'; banner.style.background=phC[ph]||'var(--bg3)'; banner.style.border='1px solid rgba(128,128,128,.2)';
+  banner.innerHTML=`<div><div class="phase-name" style="color:${phT[ph]}">${ph.toUpperCase()}</div><div class="phase-focus">${wk.phaseNote}</div></div>
+    <div style="text-align:right"><div style="font-family:var(--head);font-size:18px;color:${phT[ph]}">VOL ${wk.volMult}</div><div style="font-family:var(--mono);font-size:9px;color:var(--gray)">${wk.isDeload?'🔄 DELOAD':wk.trainingDays+' TRAINING DAYS'}</div></div>`;
+
+  document.getElementById('day-grid').innerHTML=wk.days.map(d=>{
+    if (d.isRest) return `<div class="day-card rest-day"><div class="day-header">${d.day}</div><div class="day-focus" style="color:var(--gray)">REST</div><div style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:6px">Active Recovery<br>เดิน · ยืด · Foam Roll</div></div>`;
+    const exHtml=(d.exercises||[]).map(ex=>{
+      const det=ex.type==='timed'?`${ex.sets}×${ex.duration}s rest ${ex.rest}s`:ex.type==='distance'?`${(ex.distance/1000).toFixed(1)}km`:`${ex.sets}×${ex.reps} rest ${ex.rest}s`;
+      return `<div class="ex-item"><div class="ex-name ${ex._subst?'ex-subst':''}">${ex._subst?'🔄 ':''}${ex.name}</div><div class="ex-detail">${det}</div></div>`;
+    }).join('');
+    const notes=(d.notes||[]).map(n=>`<div class="inj-note">${n}</div>`).join('');
+    return `<div class="day-card"><div class="day-header">${d.day}</div><div class="day-focus">${d.focus.toUpperCase()}</div>${exHtml}${notes}</div>`;
+  }).join('');
+}
+
+/* ── TAB 4 PLATEAU ────────────── */
+function initPltSessions() {
+  _pltSessions=[
+    {date:'2024-01-01',weight:50,reps:10},{date:'2024-01-08',weight:50,reps:10},
+    {date:'2024-01-15',weight:50,reps:10},{date:'2024-01-22',weight:50,reps:10},
+  ];
+  renderPltSessions();
+}
+function renderPltSessions() {
+  document.getElementById('plt-sessions').innerHTML=_pltSessions.map((s,i)=>`
+    <div style="display:flex;gap:5px;margin-bottom:5px">
+      <input type="date" value="${s.date}" onchange="_pltSessions[${i}].date=this.value" style="flex:2;background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:6px 7px;font-family:var(--mono);font-size:10px;border-radius:4px">
+      <input type="number" value="${s.weight}" placeholder="kg" onchange="_pltSessions[${i}].weight=+this.value" min="0" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:6px 7px;font-family:var(--mono);font-size:10px;border-radius:4px">
+      <input type="number" value="${s.reps}" placeholder="reps" onchange="_pltSessions[${i}].reps=+this.value" min="0" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:6px 7px;font-family:var(--mono);font-size:10px;border-radius:4px">
+      <button onclick="_pltSessions.splice(${i},1);renderPltSessions()" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px">✕</button>
+    </div>`).join('');
+}
+function addPltSession() {
+  const l=_pltSessions.at(-1), d=new Date((l?.date||new Date().toISOString().split('T')[0])+'T00:00:00');
+  d.setDate(d.getDate()+7);
+  _pltSessions.push({date:d.toISOString().split('T')[0],weight:l?.weight||50,reps:l?.reps||10});
+  renderPltSessions();
+}
+function analyzePlateau() {
+  E.startExplain();
+  const name=document.getElementById('plt-name').value||'Exercise';
+  const res=E.Plateau.detect(_pltSessions);
+  const max=Math.max(...(res.scores||[1])), min=Math.min(...(res.scores||[0]));
+  const clr=res.trend==='improving'?'#00ff88':res.trend==='plateau'?'#ffd700':'#ff2d2d';
+  const sparkH=(res.scores||[]).map(s=>max-min>0?Math.max(6,Math.round(((s-min)/(max-min))*26)+6):16);
+  document.getElementById('plateau-result').innerHTML=`
+    <div class="plateau-item">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:20px">${res.signal}</span>
+        <div><div style="font-family:var(--mono);font-size:11px;color:var(--white)">${name}</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--gray)">${_pltSessions.length} sessions · slope ${res.slope}</div></div>
+        <span style="margin-left:auto;font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:3px;background:${clr}20;border:1px solid ${clr}40;color:${clr}">${res.trend.toUpperCase()} ${res.pct>0?'+':''}${res.pct}%</span>
+      </div>
+      <div class="sparkline">${(res.scores||[]).map((s,i)=>`<div class="spark-bar" style="height:${sparkH[i]}px;background:${clr}"></div>`).join('')}</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:10px;line-height:1.7">${res.action}</div>
+    </div>`;
+  renderExplain();
+}
+function checkDP() {
+  const target=+document.getElementById('dp-target').value;
+  const s1=+document.getElementById('dp-s1').value, s2=+document.getElementById('dp-s2').value;
+  const logs=[{date:'2024-01-01',exercise:'ex',reps:s2},{date:'2024-01-08',exercise:'ex',reps:s1}];
+  const res=E.Adaptation.shouldProgress(logs,'ex',target);
+  document.getElementById('dp-result').innerHTML=`<div class="warn-box ${res.progress?'warn-g':'warn-y'}">${res.progress?'✅':'⏳'} ${res.reason}</div>`;
+}
+
+/* ── TAB 5 CALISTHENICS ──────── */
+function analyzeCalisthenics() {
+  const pu=+document.getElementById('cal-pu').value, plu=+document.getElementById('cal-plu').value;
+  const sq=+document.getElementById('cal-sq').value, dip=+document.getElementById('cal-dip').value;
+  const core=document.getElementById('cal-core').checked;
+
+  const puL=E.Calisthenics.pushupLevel(pu), pluL=E.Calisthenics.pullupLevel(plu);
+
+  function treeHTML(tree, cur, maxR) {
+    return tree.map(row=>{
+      const isCur=row.level===cur.level, isPast=maxR>row.max&&row.max<999;
+      const pct=Math.min(100,row.max>0?(maxR/row.max)*100:0);
+      return `<div class="skill-row ${isCur?'skill-current':''}">
+        <div class="skill-level" style="color:${isCur?'#00ff88':isPast?'var(--gray2)':'var(--gray)'}">${row.level}${isCur?' ◀':isPast?' ✓':''}</div>
+        <div class="skill-bar"><div class="skill-fill" style="width:${isPast?100:pct}%;background:${isCur?'#00ff88':isPast?'rgba(0,255,136,.3)':'var(--border)'}"></div></div>
+        <div class="skill-prog">${isCur?row.prog:row.max+'+'}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('pu-tree').innerHTML=treeHTML(E.Calisthenics.PUSHUP,puL,pu);
+  document.getElementById('plu-tree').innerHTML=treeHTML(E.Calisthenics.PULLUP,pluL,plu);
+
+  const skills=['muscle_up','handstand','planche','front_lever','l_sit','pistol_squat'];
+  document.getElementById('skill-readiness').innerHTML=skills.map(sk=>{
+    const res=E.Calisthenics.skillReady(sk,{pullup:plu,pushup:pu,dip,squat:sq,strongCore:core});
+    return `<div style="padding:10px;border:1px solid var(--border);border-radius:5px;margin-bottom:6px;background:${res.ready?'rgba(0,255,136,.05)':'var(--bg3)'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+        <span style="font-family:var(--mono);font-size:10px;color:${res.ready?'#00ff88':'var(--white)'}">${sk.replace('_',' ').toUpperCase()}</span>
+        <span style="margin-left:auto;font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:3px;background:${res.ready?'rgba(0,255,136,.15)':'rgba(255,215,0,.15)'};border:1px solid ${res.ready?'rgba(0,255,136,.3)':'rgba(255,215,0,.3)'};color:${res.ready?'#00ff88':'#ffd700'}">${res.ready?'✓ READY':'PREREQUISITE'}</span>
+      </div>
+      ${res.ready?`<div style="font-family:var(--mono);font-size:9px;color:var(--gray)">${res.steps}</div>`
+      :`<div style="font-family:var(--mono);font-size:8px;color:#ffd700">ต้องการ: ${res.missing.join(', ')}</div>`}
+    </div>`;
+  }).join('');
+}
+
+/* ── TAB 6 NUTRITION ─────────── */
+function renderNutrition(nut, w, ng) {
+  if (!nut) return;
+  const supps=E.Nutrition.supplements();
+  const pMid=(nut.pMin+nut.pMax)/2, cMid=(nut.cMin+nut.cMax)/2;
+  const tot=pMid*4+cMid*4+nut.fatG*9;
+  const pPct=Math.round((pMid*4/tot)*100), cPct=Math.round((cMid*4/tot)*100), fPct=100-pPct-cPct;
+  document.getElementById('nutrition-output').innerHTML=`
+    <div class="grid-3">
+      <div class="stat-card stat-g"><div class="stat-label">CALORIES / DAY</div><div class="stat-val">${nut.cal}<span style="font-size:12px;color:var(--gray);margin-left:4px">kcal</span></div></div>
+      <div class="stat-card stat-b"><div class="stat-label">PROTEIN</div><div class="stat-val" style="font-size:18px">${nut.pMin}–${nut.pMax}<span style="font-size:12px;color:var(--gray);margin-left:4px">g/day</span></div><div class="stat-sub">${(nut.pMin/w).toFixed(1)}–${(nut.pMax/w).toFixed(1)} g/kg</div></div>
+      <div class="stat-card stat-y"><div class="stat-label">WATER TARGET</div><div class="stat-val">${nut.water}<span style="font-size:12px;color:var(--gray);margin-left:4px">L/day</span></div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">// MACRO SPLIT (Vol.1 §5)</div>
+      <div class="macro-bar"><div class="macro-p" style="width:${pPct}%"></div><div class="macro-c" style="width:${cPct}%"></div><div class="macro-f" style="width:${fPct}%"></div></div>
+      <div class="macro-legend">
+        <span><span class="ml-dot" style="background:#00ff88;margin-right:4px"></span>Protein ${pPct}% (${nut.pMin}–${nut.pMax}g)</span>
+        <span><span class="ml-dot" style="background:#00bfff;margin-right:4px"></span>Carbs ${cPct}% (${nut.cMin}–${nut.cMax}g)</span>
+        <span><span class="ml-dot" style="background:#ffd700;margin-right:4px"></span>Fat ${fPct}% (~${nut.fatG}g)</span>
+      </div>
+      <div class="formula-box" style="margin-top:14px"><div class="formula-eq">Meal Timing Protocol</div>${nut.timing}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">// SUPPLEMENTS — Evidence Grade (ISSN)</div>
+      <div class="supp-grid">${supps.map(s=>`<div class="supp-card"><div class="supp-name">${s.name}<span class="supp-ev ev-${s.ev}">${s.ev}</span></div><div class="supp-dose">${s.dose}</div><div class="supp-note">${s.note}</div></div>`).join('')}</div>
+    </div>`;
+}
+
+/* ── EXPLAIN ─────────────────── */
+function renderExplain() {
+  document.getElementById('explain-output').innerHTML=E.explainHTML();
+}
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

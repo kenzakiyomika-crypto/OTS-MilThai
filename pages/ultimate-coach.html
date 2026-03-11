@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>TACTICAL FITNESS — ULTIMATE COACH</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+
+/* ══════════════════════════════ LAYOUT ══════════════════════════════ */
+.shell { display: flex; min-height: 100vh; }
+
+.sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; transition: transform .3s var(--ease-out); }
+.sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); }
+.sidebar-logo-mark { font-family: var(--head); font-size: 22px; letter-spacing: 4px; color: var(--green); text-shadow: 0 0 16px var(--green-glow); }
+.sidebar-logo-sub { font-family: var(--mono); font-size: 9px; color: var(--gray2); letter-spacing: 2px; margin-top: 2px; }
+.sidebar-rank-badge { margin: 16px; background: var(--green-dim); border: 1px solid rgba(0,255,136,.15); border-radius: 4px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+.rank-icon { font-size: 20px; line-height: 1; }
+.rank-name { font-family: var(--head); font-size: 15px; letter-spacing: 1px; color: var(--green); line-height: 1; }
+.rank-callsign { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 1px; margin-top: 2px; }
+.nav-section { padding: 16px 12px 4px; }
+.nav-label { font-family: var(--mono); font-size: 9px; color: var(--gray2); letter-spacing: 3px; padding: 0 8px; margin-bottom: 4px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; color: var(--gray); font-family: var(--body); font-size: 13px; font-weight: 500; letter-spacing: .5px; transition: all .15s; border: 1px solid transparent; margin-bottom: 1px; }
+.nav-item:hover { background: var(--bg3); color: var(--white); border-color: var(--border); }
+.nav-item.active { background: var(--green-dim); color: var(--green); border-color: rgba(0,255,136,.2); }
+.nav-icon { font-size: 14px; width: 18px; text-align: center; }
+.sidebar-footer { margin-top: auto; padding: 14px 16px; border-top: 1px solid var(--border); }
+.sf-rank { font-family: var(--head); font-size: 14px; color: var(--green); }
+.sf-callsign { font-family: var(--mono); font-size: 9px; color: var(--gray); margin-top: 2px; }
+
+.main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+.topbar { height: var(--topbar-h); background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 16px; position: sticky; top: 0; z-index: 50; }
+.menu-btn { display: none; background: none; border: none; color: var(--gray); font-size: 20px; cursor: pointer; padding: 0; }
+.topbar-title { font-family: var(--head); font-size: 16px; letter-spacing: 3px; color: var(--white); }
+.topbar-sub { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 2px; }
+.topbar-badge { font-family: var(--mono); font-size: 9px; padding: 3px 8px; border-radius: 3px; background: rgba(0,255,136,.1); border: 1px solid rgba(0,255,136,.2); color: var(--green); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.content { padding: 24px; flex: 1; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+/* ══════════════════════════════ STATE INPUT PANEL ══════════════════════════════ */
+.input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.input-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; position: relative; }
+.input-card-label { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--gray2); margin-bottom: 10px; display: flex; justify-content: space-between; }
+.input-card-val { font-family: var(--head); font-size: 28px; color: var(--white); line-height: 1; }
+.input-card-unit { font-family: var(--mono); font-size: 10px; color: var(--gray); margin-left: 4px; }
+.slider-wrap { margin-top: 8px; }
+input[type=range] { width: 100%; -webkit-appearance: none; height: 4px; border-radius: 2px; background: var(--border2); outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green-glow); cursor: pointer; }
+input[type=range].red::-webkit-slider-thumb { background: var(--red); box-shadow: 0 0 6px rgba(255,45,45,.4); }
+input[type=range].amber::-webkit-slider-thumb { background: var(--amber); box-shadow: 0 0 6px rgba(255,170,0,.4); }
+select.input-sel { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--white); padding: 6px 8px; font-family: var(--mono); font-size: 11px; border-radius: 4px; outline: none; margin-top: 6px; }
+select.input-sel option { background: var(--bg2); }
+
+/* ══════════════════════════════ GENERATE BUTTON ══════════════════════════════ */
+.gen-btn { width: 100%; background: var(--green); color: var(--black); font-family: var(--head); font-size: 20px; letter-spacing: 4px; padding: 16px; border: none; border-radius: 6px; cursor: pointer; margin-bottom: 24px; position: relative; overflow: hidden; transition: all .2s; }
+.gen-btn:hover { background: #00ff99; box-shadow: 0 0 30px rgba(0,255,136,.3); }
+.gen-btn:active { transform: scale(.98); }
+.gen-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.1) 50%, transparent 100%); transform: translateX(-100%); transition: transform .4s ease; }
+.gen-btn:hover::before { transform: translateX(100%); }
+
+/* ══════════════════════════════ MISSION BRIEF ══════════════════════════════ */
+.mission-brief { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+.mission-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+.mission-mode { font-family: var(--head); font-size: 22px; letter-spacing: 3px; }
+.mission-mode.green { color: var(--green); text-shadow: 0 0 16px var(--green-glow); }
+.mission-mode.amber { color: var(--amber); text-shadow: 0 0 16px rgba(255,170,0,.4); }
+.mission-mode.red   { color: var(--red);   text-shadow: 0 0 16px rgba(255,45,45,.4); }
+.mission-note { font-family: var(--body); font-size: 13px; color: var(--gray); margin-top: 3px; }
+.mission-body { padding: 16px 20px; }
+.mission-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.mstat { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; text-align: center; }
+.mstat-val { font-family: var(--head); font-size: 24px; color: var(--white); }
+.mstat-key { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--gray2); margin-top: 2px; }
+.exercise-list { list-style: none; }
+.exercise-list li { font-family: var(--body); font-size: 13px; color: var(--white); padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.exercise-list li:last-child { border-bottom: none; }
+.exercise-list li::before { content: '▸'; color: var(--green); font-size: 10px; }
+
+/* ══════════════════════════════ CONFIDENCE BAR ══════════════════════════════ */
+.conf-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.conf-label { font-family: var(--mono); font-size: 9px; color: var(--gray); width: 90px; flex-shrink: 0; }
+.conf-bar { flex: 1; height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+.conf-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width .8s var(--ease-out); box-shadow: 0 0 6px var(--green-glow); }
+.conf-pct { font-family: var(--head); font-size: 16px; color: var(--green); width: 46px; text-align: right; }
+
+/* ══════════════════════════════ FORECAST PANEL ══════════════════════════════ */
+.forecast-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.fcast-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.fcast-day { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--gray2); margin-bottom: 8px; }
+.fcast-val { font-family: var(--head); font-size: 36px; }
+.fcast-val.green { color: var(--green); }
+.fcast-val.amber { color: var(--amber); }
+.fcast-val.red   { color: var(--red); }
+.fcast-label { font-family: var(--mono); font-size: 9px; color: var(--gray); margin-top: 4px; }
+.risk-pill { display: inline-block; font-family: var(--mono); font-size: 9px; padding: 3px 9px; border-radius: 12px; margin-top: 8px; font-weight: 700; letter-spacing: 1px; }
+.risk-low      { background: rgba(0,255,136,.1);  border: 1px solid rgba(0,255,136,.25);  color: var(--green); }
+.risk-moderate { background: rgba(255,170,0,.1);  border: 1px solid rgba(255,170,0,.25);  color: var(--amber); }
+.risk-high     { background: rgba(255,45,45,.1);  border: 1px solid rgba(255,45,45,.25);  color: var(--red); }
+
+/* ══════════════════════════════ EXPLAIN CHAIN ══════════════════════════════ */
+.explain-chain { background: rgba(0,0,0,.5); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; font-family: var(--mono); font-size: 10px; margin-top: 16px; }
+.explain-chain .ec-title { font-size: 9px; letter-spacing: 3px; color: var(--gray2); margin-bottom: 10px; }
+.explain-chain .ec-formula { display: flex; gap: 8px; align-items: center; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+.explain-chain .ec-eq  { color: var(--gray); flex: 1; }
+.explain-chain .ec-res { color: var(--white); font-weight: 600; flex-shrink: 0; }
+.explain-chain .ec-src { color: var(--gray2); font-size: 8px; flex-shrink: 0; margin-left: 8px; }
+.explain-chain .ec-decision { padding: 3px 0; color: var(--white); }
+.explain-chain .ec-if  { color: var(--amber); font-weight: 700; margin-right: 5px; }
+.explain-chain .ec-why { color: var(--gray); font-size: 9px; margin-left: 8px; }
+.explain-chain .ec-warn { color: var(--amber); padding: 3px 0; }
+.explain-chain .ec-conclusion { color: var(--green); padding: 3px 0; font-weight: 600; }
+
+/* ══════════════════════════════ BASELINE PANEL ══════════════════════════════ */
+.baseline-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.bl-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+.bl-label { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--gray2); margin-bottom: 5px; }
+.bl-val { font-family: var(--head); font-size: 20px; color: var(--white); }
+.bl-sub { font-family: var(--mono); font-size: 9px; color: var(--gray); margin-top: 2px; }
+
+/* ══════════════════════════════ RULE PERFORMANCE ══════════════════════════════ */
+.rule-perf-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 10px; }
+.rule-perf-table th { text-align: left; padding: 6px 8px; color: var(--gray2); font-size: 8px; letter-spacing: 2px; border-bottom: 1px solid var(--border); }
+.rule-perf-table td { padding: 6px 8px; color: var(--gray); border-bottom: 1px solid rgba(255,255,255,.04); }
+.rule-perf-table td:first-child { color: var(--green); }
+.succ-bar { height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+.succ-fill { height: 100%; border-radius: 2px; background: var(--green); }
+
+/* ══════════════════════════════ FEEDBACK ══════════════════════════════ */
+.feedback-row { display: flex; gap: 8px; margin-top: 12px; }
+.fb-btn { flex: 1; padding: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; color: var(--gray); font-family: var(--mono); font-size: 11px; cursor: pointer; transition: all .15s; text-align: center; }
+.fb-btn:hover { border-color: var(--green); color: var(--green); }
+.fb-btn.active { background: var(--green-dim); border-color: rgba(0,255,136,.3); color: var(--green); }
+.fb-btn.bad:hover { border-color: var(--red); color: var(--red); }
+.fb-btn.bad.active { background: var(--red-dim); border-color: rgba(255,45,45,.3); color: var(--red); }
+
+/* ══════════════════════════════ XP PANEL ══════════════════════════════ */
+.xp-row { display: flex; align-items: center; gap: 12px; }
+.xp-icon { font-size: 24px; }
+.xp-rank-name { font-family: var(--head); font-size: 18px; color: var(--green); }
+.xp-sub { font-family: var(--mono); font-size: 9px; color: var(--gray); }
+.xp-bar-wrap { flex: 1; }
+.xp-bar { height: 8px; background: var(--border2); border-radius: 4px; overflow: hidden; }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--green), #00bfff); border-radius: 4px; transition: width .8s var(--ease-out); }
+.xp-next { font-family: var(--mono); font-size: 8px; color: var(--gray2); margin-top: 4px; display: flex; justify-content: space-between; }
+
+/* ══════════════════════════════ SECTION ══════════════════════════════ */
+.section { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; margin-bottom: 14px; }
+.section-title { font-family: var(--mono); font-size: 9px; letter-spacing: 3px; color: var(--gray2); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ══════════════════════════════ TABS ══════════════════════════════ */
+.tabs { display: flex; gap: 2px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 3px; margin-bottom: 20px; overflow-x: auto; }
+.tab { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; padding: 7px 14px; border-radius: 4px; cursor: pointer; color: var(--gray); border: none; background: none; white-space: nowrap; transition: all .15s; }
+.tab:hover { color: var(--white); background: var(--bg3); }
+.tab.active { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,255,136,.25); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ══════════════════════════════ COMMUNITY ══════════════════════════════ */
+.copy-url { word-break: break-all; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; font-family: var(--mono); font-size: 9px; color: var(--green); margin-top: 8px; cursor: pointer; }
+.import-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 8px 10px; font-family: var(--mono); font-size: 10px; color: var(--white); outline: none; }
+.import-input:focus { border-color: var(--green); }
+.action-btn { padding: 8px 18px; background: var(--green-dim); border: 1px solid rgba(0,255,136,.25); border-radius: 4px; color: var(--green); font-family: var(--mono); font-size: 10px; letter-spacing: 1px; cursor: pointer; transition: all .15s; }
+.action-btn:hover { background: rgba(0,255,136,.15); }
+
+/* ══════════════════════════════ EMPTY STATE ══════════════════════════════ */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--gray); font-family: var(--mono); font-size: 11px; }
+.empty-state-icon { font-size: 32px; margin-bottom: 10px; }
+
+/* ══════════════════════════════ MOBILE ══════════════════════════════ */
+@media (max-width: 768px) {
+  .main { margin-left: 0; }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,.8); }
+  .menu-btn { display: block; }
+  .content { padding: 16px; }
+  .mission-stats { grid-template-columns: 1fr 1fr; }
+  .forecast-grid { grid-template-columns: 1fr; }
+  .input-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+@media(max-width:480px){
+  .coach-layout{flex-direction:column}
+  .chat-panel{min-height:60dvh}
+  .tab-nav{overflow-x:auto;scrollbar-width:none}
+  .tab-nav::-webkit-scrollbar{display:none}
+  .tab-btn{flex-shrink:0;white-space:nowrap}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">⬡ TACTICAL</div>
+      <div class="sidebar-logo-sub">FITNESS SYSTEM v1.0</div>
+    </div>
+    <div class="sidebar-rank-badge">
+      <div class="rank-icon" id="sb-rank-icon">👤</div>
+      <div>
+        <div class="rank-name" id="sb-rank-name">—</div>
+        <div class="rank-callsign" id="sb-callsign">LOADING...</div>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// COMMAND</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">◈</span> COMMAND CENTER</a>
+      <a href="training.html"  class="nav-item"><span class="nav-icon">⚡</span> TODAY TRAINING</a>
+      <a href="planner.html"   class="nav-item"><span class="nav-icon">◻</span> MONTHLY PLANNER</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// INTELLIGENCE</div>
+      <a href="ultimate-coach.html" class="nav-item active"><span class="nav-icon">🧠</span> ULTIMATE COACH</a>
+      <a href="science-planner.html" class="nav-item"><span class="nav-icon">⚗</span> SCIENCE PLANNER</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// INTEL</div>
+      <a href="performance.html"  class="nav-item"><span class="nav-icon">▲</span> PERFORMANCE LOG</a>
+      <a href="rank.html"         class="nav-item"><span class="nav-icon">◆</span> RANK & CAPABILITY</a>
+      <a href="missions.html"     class="nav-item"><span class="nav-icon">⚔</span> MISSIONS</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// SYSTEM</div>
+      <a href="import-export.html" class="nav-item"><span class="nav-icon">⇅</span> IMPORT / EXPORT</a>
+      <a href="settings.html"      class="nav-item"><span class="nav-icon">◎</span> SETTINGS</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sf-rank" id="sf-rank-name">—</div>
+      <div class="sf-callsign" id="sf-callsign">OPERATOR</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="topbar-title">ULTIMATE COACH</div>
+        <div class="topbar-sub">RULE-BASED ELITE ENGINE v3.0</div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-badge" id="engine-badge">OFFLINE READY</span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('coach')">🧠 COACH ENGINE</button>
+        <button class="tab" onclick="switchTab('baseline')">📊 BASELINE</button>
+        <button class="tab" onclick="switchTab('meta')">⚙ META-LEARNING</button>
+        <button class="tab" onclick="switchTab('community')">🌐 COMMUNITY</button>
+      </div>
+
+      <!-- ═══ TAB: COACH ENGINE ═══ -->
+      <div class="tab-panel active" id="tab-coach">
+
+        <!-- XP RANK BAR -->
+        <div class="section" id="xp-section" style="display:none">
+          <div class="section-title">// OPERATOR RANK</div>
+          <div class="xp-row">
+            <div class="xp-icon" id="xp-icon">👤</div>
+            <div>
+              <div class="xp-rank-name" id="xp-rank-name">พลเรือน</div>
+              <div class="xp-sub" id="xp-total">0 XP</div>
+            </div>
+            <div class="xp-bar-wrap">
+              <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+              <div class="xp-next"><span id="xp-cur-label">0 XP</span><span id="xp-next-label">—</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INPUT PANEL -->
+        <div class="section">
+          <div class="section-title">// MISSION INPUT — State Variables</div>
+          <div class="input-grid">
+
+            <div class="input-card">
+              <div class="input-card-label">
+                <span>READINESS</span>
+                <span style="color:var(--green)" id="lb-readiness">75</span>
+              </div>
+              <div class="input-card-val" id="val-readiness">75<span class="input-card-unit">/100</span></div>
+              <div class="slider-wrap">
+                <input type="range" id="sl-readiness" min="0" max="100" value="75" oninput="updateSlider('readiness',this.value)">
+              </div>
+            </div>
+
+            <div class="input-card">
+              <div class="input-card-label">
+                <span>SORENESS</span>
+                <span style="color:var(--amber)" id="lb-soreness">3</span>
+              </div>
+              <div class="input-card-val" id="val-soreness">3<span class="input-card-unit">/10</span></div>
+              <div class="slider-wrap">
+                <input type="range" id="sl-soreness" min="1" max="10" value="3" class="amber" oninput="updateSlider('soreness',this.value)">
+              </div>
+            </div>
+
+            <div class="input-card">
+              <div class="input-card-label">
+                <span>SLEEP</span>
+                <span style="color:var(--white)" id="lb-sleep">7</span>
+              </div>
+              <div class="input-card-val" id="val-sleep">7<span class="input-card-unit">h</span></div>
+              <div class="slider-wrap">
+                <input type="range" id="sl-sleep" min="2" max="12" step="0.5" value="7" oninput="updateSlider('sleep',this.value)">
+              </div>
+            </div>
+
+            <div class="input-card">
+              <div class="input-card-label">
+                <span>MOTIVATION</span>
+                <span style="color:var(--green)" id="lb-motivation">3</span>
+              </div>
+              <div class="input-card-val" id="val-motivation">3<span class="input-card-unit">/5</span></div>
+              <div class="slider-wrap">
+                <input type="range" id="sl-motivation" min="1" max="5" value="3" oninput="updateSlider('motivation',this.value)">
+              </div>
+            </div>
+
+            <div class="input-card">
+              <div class="input-card-label"><span>DUTY SHIFT</span></div>
+              <select class="input-sel" id="sel-duty">
+                <option value="none">ไม่มีเวร</option>
+                <option value="plad1">พลัด 1 (06:00-14:00)</option>
+                <option value="plad2">พลัด 2 (14:00-22:00)</option>
+                <option value="plad3">พลัด 3 (22:00-06:00)</option>
+              </select>
+            </div>
+
+            <div class="input-card">
+              <div class="input-card-label"><span>EQUIPMENT</span></div>
+              <select class="input-sel" id="sel-equipment">
+                <option value="bodyweight">Bodyweight Only</option>
+                <option value="gym">Full Gym</option>
+                <option value="bands">Bands + Rings</option>
+              </select>
+            </div>
+
+            <div class="input-card">
+              <div class="input-card-label"><span>FOCUS</span></div>
+              <select class="input-sel" id="sel-focus">
+                <option value="fullbody">Full Body</option>
+                <option value="upper">Upper Body</option>
+                <option value="lower">Lower Body</option>
+                <option value="core">Core & Cardio</option>
+              </select>
+            </div>
+
+            <div class="input-card">
+              <div class="input-card-label">
+                <span>TIME AVAILABLE</span>
+                <span style="color:var(--white)" id="lb-time">45</span>
+              </div>
+              <div class="input-card-val" id="val-time">45<span class="input-card-unit">min</span></div>
+              <div class="slider-wrap">
+                <input type="range" id="sl-time" min="10" max="120" step="5" value="45" oninput="updateSlider('time',this.value)">
+              </div>
+            </div>
+
+          </div>
+
+          <button class="gen-btn" onclick="generateMission()">⚡ GENERATE MISSION</button>
+        </div>
+
+        <!-- OUTPUT: MISSION BRIEF -->
+        <div id="output-section" style="display:none">
+
+          <div class="mission-brief" id="mission-brief">
+            <div class="mission-header" id="mission-header">
+              <div>
+                <div class="mission-mode green" id="mission-mode">—</div>
+                <div class="mission-note" id="mission-note">—</div>
+              </div>
+            </div>
+            <div class="mission-body">
+              <div class="mission-stats">
+                <div class="mstat"><div class="mstat-val" id="ms-sets">—</div><div class="mstat-key">SETS</div></div>
+                <div class="mstat"><div class="mstat-val" id="ms-reps">—</div><div class="mstat-key">REPS</div></div>
+                <div class="mstat"><div class="mstat-val" id="ms-rpe">—</div><div class="mstat-key">RPE</div></div>
+                <div class="mstat"><div class="mstat-val" id="ms-fi">—</div><div class="mstat-key">FATIGUE %</div></div>
+              </div>
+
+              <div class="section-title" style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gray2);margin-bottom:8px;display:flex;align-items:center;gap:8px;">EXERCISE LIST <span style="flex:1;height:1px;background:var(--border);display:inline-block"></span></div>
+              <ul class="exercise-list" id="exercise-list"></ul>
+
+              <div class="conf-row">
+                <div class="conf-label">CONFIDENCE</div>
+                <div class="conf-bar"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
+                <div class="conf-pct" id="conf-pct">—%</div>
+              </div>
+
+              <!-- FEEDBACK -->
+              <div class="section-title" style="margin-top:16px;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gray2);display:flex;align-items:center;gap:8px;">FEEDBACK — Rate This Plan <span style="flex:1;height:1px;background:var(--border);display:inline-block"></span></div>
+              <div class="feedback-row">
+                <button class="fb-btn" onclick="sendFeedback('good')">👍 GOOD</button>
+                <button class="fb-btn" onclick="sendFeedback('neutral')">😐 OK</button>
+                <button class="fb-btn bad" onclick="sendFeedback('bad')">👎 BAD</button>
+              </div>
+
+              <!-- EXPLAIN CHAIN -->
+              <div id="explain-output"></div>
+            </div>
+          </div>
+
+          <!-- 72HR FORECAST -->
+          <div class="section">
+            <div class="section-title">// 72HR FORECAST — Scenario Simulation</div>
+            <div class="forecast-grid">
+              <div class="fcast-card">
+                <div class="fcast-day">TODAY → +24H</div>
+                <div class="fcast-val" id="fc-readiness">—</div>
+                <div class="fcast-label">PROJECTED READINESS</div>
+              </div>
+              <div class="fcast-card">
+                <div class="fcast-day">FATIGUE INDEX</div>
+                <div class="fcast-val" id="fc-fatigue">—</div>
+                <div class="fcast-label">AFTER THIS SESSION</div>
+              </div>
+              <div class="fcast-card">
+                <div class="fcast-day">OVERREACH RISK</div>
+                <div class="fcast-val" style="font-size:20px" id="fc-risk">—</div>
+                <div class="fcast-label">72HR WINDOW</div>
+                <div id="fc-risk-pill"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div><!-- /tab-coach -->
+
+      <!-- ═══ TAB: BASELINE ═══ -->
+      <div class="tab-panel" id="tab-baseline">
+        <div class="section">
+          <div class="section-title">// PERSONAL BASELINE ENGINE — จากข้อมูลจริงของคุณ</div>
+          <div id="baseline-content">
+            <div class="empty-state">
+              <div class="empty-state-icon">📊</div>
+              <div>ยังไม่มีข้อมูล — ต้องฝึกอย่างน้อย 5 sessions</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">// READINESS DISTRIBUTION</div>
+          <canvas id="baseline-chart" height="120" style="width:100%"></canvas>
+          <div id="baseline-chart-empty" class="empty-state" style="display:none">
+            <div class="empty-state-icon">📈</div>
+            <div>ต้องการข้อมูลอย่างน้อย 10 sessions</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: META-LEARNING ═══ -->
+      <div class="tab-panel" id="tab-meta">
+        <div class="section">
+          <div class="section-title">// RULE PERFORMANCE — Auto-Evolution</div>
+          <div id="meta-content">
+            <div class="empty-state">
+              <div class="empty-state-icon">🧬</div>
+              <div>ระบบเรียนรู้หลังจากคุณให้ feedback — Generate mission แล้วกด GOOD/BAD</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">// META FLAGS</div>
+          <div id="meta-flags">
+            <div class="empty-state" style="padding:20px">
+              <div>ยังไม่มีข้อมูลเพียงพอ</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: COMMUNITY ═══ -->
+      <div class="tab-panel" id="tab-community">
+        <div class="section">
+          <div class="section-title">// EXPORT RULESET — แชร์ให้เพื่อน</div>
+          <p style="font-family:var(--mono);font-size:10px;color:var(--gray);margin-bottom:12px">Export baseline profile + rule performance สำหรับ import ไปยังอุปกรณ์อื่น</p>
+          <button class="action-btn" onclick="doExport()">📤 GENERATE EXPORT URL</button>
+          <div id="export-url" style="display:none"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">// IMPORT RULESET — รับจากเพื่อน</div>
+          <p style="font-family:var(--mono);font-size:10px;color:var(--gray);margin-bottom:10px">วาง URL ที่ได้จากคนอื่น</p>
+          <input class="import-input" id="import-input" placeholder="operatorprotocol://v3?data=...">
+          <br><br>
+          <button class="action-btn" onclick="doImport()">📥 IMPORT & MERGE</button>
+          <div id="import-result" style="margin-top:10px;font-family:var(--mono);font-size:10px"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /shell -->
+
+<!-- ═══ OVERLAY ═══ -->
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99" onclick="closeSidebar()"></div>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/engines/ultimate-engine.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   PAGE STATE
+══════════════════════════════════════════════════════════════ */
+let _profile  = null;
+let _logs     = [];
+let _pr       = null;
+let _lastResult = null;
+let _appState = {};
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+(async () => {
+  try {
+    await Storage.init();
+    const [user, pr, logs, app] = await Promise.all([
+      Storage.User.get(),
+      Storage.PR.get(),
+      Storage.Logs.getAll(),
+      Storage.App.get(),
+    ]);
+    _profile  = user;
+    _pr       = pr;
+    _logs     = logs || [];
+    _appState = app  || {};
+
+    if (!user || !user.onboardingComplete) {
+      window.location.href = 'onboarding.html'; return;
+    }
+
+    updateSidebar(user, app);
+    updateXPSection(app);
+    renderBaselineTab();
+    renderMetaTab();
+    generateMission(); // auto-generate on load
+  } catch (e) {
+    console.error('[UltimateCoach] Init error', e);
+  }
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════════════════════════ */
+function updateSidebar(user, app) {
+  if (!user) return;
+  const rank = UltimateEngine.XPSystem.getRank(app?.totalXP || 0);
+  document.getElementById('sb-rank-icon').textContent = rank.icon;
+  document.getElementById('sb-rank-name').textContent = rank.name;
+  document.getElementById('sb-callsign').textContent  = user.callsign || 'OPERATOR';
+  document.getElementById('sf-rank-name').textContent = rank.name;
+  document.getElementById('sf-callsign').textContent  = user.callsign || 'OPERATOR';
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('overlay');
+  sb.classList.toggle('open');
+  ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').style.display = 'none';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   XP SECTION
+══════════════════════════════════════════════════════════════ */
+function updateXPSection(app) {
+  if (!app?.totalXP) return;
+  const rank = UltimateEngine.XPSystem.getRank(app.totalXP);
+  const sec = document.getElementById('xp-section');
+  sec.style.display = 'block';
+  document.getElementById('xp-icon').textContent       = rank.icon;
+  document.getElementById('xp-rank-name').textContent  = rank.name;
+  document.getElementById('xp-total').textContent      = `${rank.totalXP.toLocaleString()} XP`;
+  document.getElementById('xp-fill').style.width       = `${Math.round(rank.progress * 100)}%`;
+  document.getElementById('xp-cur-label').textContent  = `${rank.xp.toLocaleString()} XP`;
+  document.getElementById('xp-next-label').textContent = rank.next ? `${rank.next.xp.toLocaleString()} XP → ${rank.next.name}` : 'MAX RANK';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SLIDERS
+══════════════════════════════════════════════════════════════ */
+function updateSlider(key, v) {
+  const num = parseFloat(v);
+  const fmt = Number.isInteger(num) ? num : num.toFixed(1);
+  switch(key) {
+    case 'readiness':  document.getElementById('val-readiness').innerHTML = `${fmt}<span class="input-card-unit">/100</span>`; document.getElementById('lb-readiness').textContent = fmt; break;
+    case 'soreness':   document.getElementById('val-soreness').innerHTML  = `${fmt}<span class="input-card-unit">/10</span>`;  document.getElementById('lb-soreness').textContent  = fmt; break;
+    case 'sleep':      document.getElementById('val-sleep').innerHTML     = `${fmt}<span class="input-card-unit">h</span>`;    document.getElementById('lb-sleep').textContent     = fmt; break;
+    case 'motivation': document.getElementById('val-motivation').innerHTML= `${fmt}<span class="input-card-unit">/5</span>`;   document.getElementById('lb-motivation').textContent= fmt; break;
+    case 'time':       document.getElementById('val-time').innerHTML      = `${fmt}<span class="input-card-unit">min</span>`;  document.getElementById('lb-time').textContent      = fmt; break;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GENERATE MISSION
+══════════════════════════════════════════════════════════════ */
+function generateMission() {
+  const input = {
+    readiness:     parseFloat(document.getElementById('sl-readiness').value),
+    soreness:      parseFloat(document.getElementById('sl-soreness').value),
+    sleepHours:    parseFloat(document.getElementById('sl-sleep').value),
+    motivation:    parseFloat(document.getElementById('sl-motivation').value),
+    dutyShift:     document.getElementById('sel-duty').value,
+    equipment:     document.getElementById('sel-equipment').value,
+    focus:         document.getElementById('sel-focus').value,
+    timeAvailable: parseFloat(document.getElementById('sl-time').value),
+  };
+
+  const result = UltimateEngine.evaluate(input, _logs);
+  _lastResult  = result;
+
+  renderMission(result);
+  renderForecast(result.projection);
+  document.getElementById('output-section').style.display = 'block';
+  renderMetaTab();
+}
+
+function renderMission(result) {
+  const { plan, confidence, explanation } = result;
+
+  // Header
+  const modeText = {
+    emergency_stop:   '⛔ EMERGENCY STOP',
+    active_recovery:  '🔋 ACTIVE RECOVERY',
+    night_gtg:        '🌙 NIGHT GTG',
+    deload:           '📉 DELOAD',
+    sleep_deficit:    '😴 SLEEP PROTOCOL',
+    reduced:          '📊 REDUCED TRAINING',
+    normal:           '✅ NORMAL TRAINING',
+    high_performance: '🔥 HIGH PERFORMANCE',
+    plateau_break:    '⚡ PLATEAU BUSTER',
+    standard:         '📈 STANDARD',
+  }[plan.mode] || plan.mode?.toUpperCase();
+
+  const el = document.getElementById('mission-mode');
+  el.textContent  = modeText;
+  el.className    = `mission-mode ${plan.color || 'green'}`;
+  document.getElementById('mission-note').textContent = plan.note || '';
+
+  // Stats
+  document.getElementById('ms-sets').textContent = plan.sets || '—';
+  document.getElementById('ms-reps').textContent = plan.reps || '—';
+  document.getElementById('ms-rpe').textContent  = plan.rpe  || '—';
+  document.getElementById('ms-fi').textContent   = `${Math.round(result.state.fatigueIndex)}%`;
+
+  // Exercise list
+  const ul = document.getElementById('exercise-list');
+  ul.innerHTML = '';
+  (plan.exercises || []).forEach(ex => {
+    const li = document.createElement('li');
+    li.textContent = ex;
+    ul.appendChild(li);
+  });
+
+  // Confidence
+  const conf = Math.round(confidence * 100);
+  document.getElementById('conf-fill').style.width = `${conf}%`;
+  document.getElementById('conf-pct').textContent  = `${conf}%`;
+
+  // Explain
+  document.getElementById('explain-output').innerHTML = explanation || '';
+
+  // Reset feedback buttons
+  document.querySelectorAll('.fb-btn').forEach(b => b.classList.remove('active'));
+}
+
+function renderForecast(proj) {
+  if (!proj) return;
+  const readEl  = document.getElementById('fc-readiness');
+  const fatEl   = document.getElementById('fc-fatigue');
+  const riskEl  = document.getElementById('fc-risk');
+  const pillEl  = document.getElementById('fc-risk-pill');
+
+  readEl.textContent  = proj.projectedReadiness;
+  readEl.className    = `fcast-val ${proj.projectedReadiness >= 65 ? 'green' : proj.projectedReadiness >= 45 ? 'amber' : 'red'}`;
+
+  fatEl.textContent   = `${proj.projectedFatigue}%`;
+  fatEl.className     = `fcast-val ${proj.projectedFatigue < 60 ? 'green' : proj.projectedFatigue < 80 ? 'amber' : 'red'}`;
+
+  const riskMap = { LOW: { cls: 'green', icon: '✅' }, MODERATE: { cls: 'amber', icon: '⚠' }, HIGH: { cls: 'red', icon: '🔴' } };
+  const r       = riskMap[proj.overreachRisk] || riskMap.LOW;
+  riskEl.textContent  = r.icon;
+  riskEl.className    = `fcast-val`;
+  pillEl.innerHTML    = `<span class="risk-pill risk-${proj.overreachRisk.toLowerCase()}">${proj.overreachRisk}</span>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FEEDBACK → RULE TRACKER
+══════════════════════════════════════════════════════════════ */
+function sendFeedback(outcome) {
+  if (!_lastResult?.triggeredRule) return;
+  UltimateEngine.RuleTracker.record(_lastResult.triggeredRule, outcome);
+  document.querySelectorAll('.fb-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderMetaTab();
+
+  // XP
+  const xp = UltimateEngine.XPSystem.calcSessionXP(
+    _lastResult.plan, outcome === 'good' ? 5 : 3, _profile?.currentStreak || 0
+  );
+  saveXP(xp);
+}
+
+async function saveXP(xp) {
+  try {
+    const app = (await Storage.App.get()) || {};
+    app.totalXP = (app.totalXP || 0) + xp;
+    await Storage.App.set(app);
+    _appState = app;
+    updateXPSection(app);
+  } catch (e) {}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BASELINE TAB
+══════════════════════════════════════════════════════════════ */
+function renderBaselineTab() {
+  const baseline = UltimateEngine.baselineEngine.compute(_logs);
+  const cont = document.getElementById('baseline-content');
+
+  if (_logs.length < 5) {
+    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📊</div><div>ต้องฝึกอย่างน้อย 5 sessions — ปัจจุบัน ${_logs.length} sessions</div></div>`;
+    document.getElementById('baseline-chart-empty').style.display = 'block';
+    document.getElementById('baseline-chart').style.display = 'none';
+    return;
+  }
+
+  cont.innerHTML = `
+    <div class="baseline-grid">
+      <div class="bl-card">
+        <div class="bl-label">READINESS P10</div>
+        <div class="bl-val" style="color:var(--red)">${Math.round(baseline.readiness_p10)}</div>
+        <div class="bl-sub">Bad day threshold</div>
+      </div>
+      <div class="bl-card">
+        <div class="bl-label">READINESS P50</div>
+        <div class="bl-val">${Math.round(baseline.readiness_p50)}</div>
+        <div class="bl-sub">Your median</div>
+      </div>
+      <div class="bl-card">
+        <div class="bl-label">READINESS P90</div>
+        <div class="bl-val" style="color:var(--green)">${Math.round(baseline.readiness_p90)}</div>
+        <div class="bl-sub">Best day threshold</div>
+      </div>
+      <div class="bl-card">
+        <div class="bl-label">RPE AVERAGE</div>
+        <div class="bl-val">${baseline.rpe_avg.toFixed(1)}</div>
+        <div class="bl-sub">14-day avg</div>
+      </div>
+      <div class="bl-card">
+        <div class="bl-label">ADAPTATION RATE</div>
+        <div class="bl-val" style="color:${baseline.adaptation_rate >= 0 ? 'var(--green)' : 'var(--red)'}">
+          ${baseline.adaptation_rate >= 0 ? '+' : ''}${(baseline.adaptation_rate * 100).toFixed(1)}%
+        </div>
+        <div class="bl-sub">Volume progression</div>
+      </div>
+      <div class="bl-card">
+        <div class="bl-label">RECOVERY RATE</div>
+        <div class="bl-val" style="color:var(--green)">+${baseline.recovery_rate.toFixed(1)}</div>
+        <div class="bl-sub">Readiness pts/day</div>
+      </div>
+      <div class="bl-card">
+        <div class="bl-label">SESSIONS</div>
+        <div class="bl-val">${baseline.session_count}</div>
+        <div class="bl-sub">Total logged</div>
+      </div>
+      <div class="bl-card">
+        <div class="bl-label">VOL AVERAGE</div>
+        <div class="bl-val">${Math.round(baseline.vol_avg)}</div>
+        <div class="bl-sub">Load units/session</div>
+      </div>
+    </div>
+  `;
+
+  // Draw chart
+  renderBaselineChart(baseline);
+}
+
+function renderBaselineChart(baseline) {
+  const canvas = document.getElementById('baseline-chart');
+  const empty  = document.getElementById('baseline-chart-empty');
+  if (_logs.length < 10) { canvas.style.display='none'; empty.style.display='block'; return; }
+  canvas.style.display = 'block'; empty.style.display = 'none';
+
+  const ctx = canvas.getContext('2d');
+  const W   = canvas.offsetWidth || 600;
+  const H   = 120;
+  canvas.width  = W * window.devicePixelRatio;
+  canvas.height = H * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+  const readings = _logs.slice(-30).map(l => l.readiness || 70);
+  const max = Math.max(...readings, 100);
+  const min = Math.min(...readings, 0);
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  [25,50,75].forEach(y => {
+    const px = H - (y / 100) * H;
+    ctx.beginPath(); ctx.moveTo(0, px); ctx.lineTo(W, px); ctx.stroke();
+  });
+
+  // Fill area
+  const step = W / (readings.length - 1);
+  ctx.beginPath();
+  readings.forEach((v, i) => {
+    const x = i * step;
+    const y = H - ((v - min) / (max - min || 1)) * (H - 20) - 10;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, 'rgba(0,255,136,0.2)');
+  grad.addColorStop(1, 'rgba(0,255,136,0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0,255,136,0.8)';
+  ctx.lineWidth = 2;
+  readings.forEach((v, i) => {
+    const x = i * step;
+    const y = H - ((v - min) / (max - min || 1)) * (H - 20) - 10;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // P10/P90 lines
+  const p10y = H - ((baseline.readiness_p10 - min) / (max - min || 1)) * (H - 20) - 10;
+  const p90y = H - ((baseline.readiness_p90 - min) / (max - min || 1)) * (H - 20) - 10;
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = 'rgba(255,45,45,0.5)';  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, p10y); ctx.lineTo(W, p10y); ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,255,136,0.5)';
+  ctx.beginPath(); ctx.moveTo(0, p90y); ctx.lineTo(W, p90y); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   META-LEARNING TAB
+══════════════════════════════════════════════════════════════ */
+function renderMetaTab() {
+  const stats = UltimateEngine.RuleTracker.getAll();
+  const keys  = Object.keys(stats);
+  const cont  = document.getElementById('meta-content');
+  const flags = document.getElementById('meta-flags');
+
+  if (!keys.length) {
+    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🧬</div><div>ยังไม่มีข้อมูล — Generate mission แล้วให้ feedback</div></div>`;
+    return;
+  }
+
+  const rows = keys.map(ruleId => {
+    const s = stats[ruleId];
+    const rate = s.total > 0 ? Math.round(((s.good || 0) + (s.neutral || 0) * 0.5) / s.total * 100) : 0;
+    const mult = (s.threshMult || 1.0).toFixed(2);
+    const color = rate >= 70 ? 'var(--green)' : rate >= 45 ? 'var(--amber)' : 'var(--red)';
+    return `
+      <tr>
+        <td>${ruleId}</td>
+        <td>${s.total}</td>
+        <td style="color:${color}">${rate}%</td>
+        <td style="color:${parseFloat(mult) > 1 ? 'var(--amber)' : parseFloat(mult) < 1 ? 'var(--green)' : 'var(--gray)'}">×${mult}</td>
+        <td style="width:80px"><div class="succ-bar"><div class="succ-fill" style="width:${rate}%;background:${color}"></div></div></td>
+      </tr>`;
+  }).join('');
+
+  cont.innerHTML = `
+    <table class="rule-perf-table">
+      <thead><tr><th>RULE ID</th><th>TOTAL</th><th>SUCCESS</th><th>THRESHOLD</th><th>BAR</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:10px">
+      Threshold ×&gt;1 = engine เพิ่ม conservative (Success &lt; 60%) · ×&lt;1 = engine relax (Success &gt; 85%)
+    </p>`;
+
+  // Meta flags
+  const logReadinesses = _logs.slice(-14).map(l => l.readiness || 70);
+  const variance = logReadinesses.length > 1
+    ? logReadinesses.reduce((s,v) => s + (v - logReadinesses.reduce((a,b)=>a+b,0)/logReadinesses.length)**2, 0) / logReadinesses.length
+    : 0;
+
+  flags.innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:var(--mono);font-size:10px">
+        <div style="color:var(--gray2);font-size:8px;letter-spacing:2px;margin-bottom:4px">READINESS VARIANCE (14d)</div>
+        <div style="color:${variance > 200 ? 'var(--amber)' : 'var(--green)'};font-family:var(--head);font-size:18px">${Math.round(variance)}</div>
+        <div style="color:var(--gray);font-size:9px">${variance > 200 ? '⚠ Conservative mode ON' : '✅ Stable'}</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:var(--mono);font-size:10px">
+        <div style="color:var(--gray2);font-size:8px;letter-spacing:2px;margin-bottom:4px">RULES TRACKED</div>
+        <div style="color:var(--white);font-family:var(--head);font-size:18px">${keys.length}</div>
+        <div style="color:var(--gray);font-size:9px">active rules</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:var(--mono);font-size:10px">
+        <div style="color:var(--gray2);font-size:8px;letter-spacing:2px;margin-bottom:4px">TOTAL FEEDBACK</div>
+        <div style="color:var(--white);font-family:var(--head);font-size:18px">${keys.reduce((s,k) => s + (stats[k].total||0), 0)}</div>
+        <div style="color:var(--gray);font-size:9px">sessions rated</div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COMMUNITY
+══════════════════════════════════════════════════════════════ */
+function doExport() {
+  const baseline = UltimateEngine.baselineEngine.compute(_logs);
+  const stats    = UltimateEngine.RuleTracker.getAll();
+  const url      = UltimateEngine.exportRuleset(baseline, stats, _profile);
+  const div      = document.getElementById('export-url');
+  div.style.display = 'block';
+  div.innerHTML = `<div class="copy-url" onclick="navigator.clipboard.writeText(this.textContent)">${url}</div>
+    <p style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:5px">คลิกเพื่อ copy</p>`;
+}
+
+function doImport() {
+  const url    = document.getElementById('import-input').value.trim();
+  const result = UltimateEngine.importRuleset(url);
+  const div    = document.getElementById('import-result');
+  if (!result) {
+    div.innerHTML = `<span style="color:var(--red)">❌ Invalid URL</span>`;
+    return;
+  }
+  div.innerHTML = `<span style="color:var(--green)">✅ Imported from ${result.userMetrics?.rank || '?'} — ${result.userMetrics?.sessionCount || 0} sessions</span>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TABS
+══════════════════════════════════════════════════════════════ */
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const ids = ['coach','baseline','meta','community'];
+    t.classList.toggle('active', ids[i] === id);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === `tab-${id}`);
+  });
+  if (id === 'baseline') renderBaselineTab();
+  if (id === 'meta')     renderMetaTab();
+}
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+
+</body>
+</html>

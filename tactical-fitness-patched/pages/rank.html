@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>TACTICAL FITNESS — RANK & CAPABILITY</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+.shell{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .3s var(--ease-out)}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo-mark{font-family:var(--head);font-size:22px;letter-spacing:4px;color:var(--green);text-shadow:0 0 16px var(--green-glow)}
+.sidebar-logo-sub{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:2px;margin-top:2px}
+.nav-section{padding:16px 12px 4px}
+.nav-label{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:3px;padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;cursor:pointer;text-decoration:none;color:var(--gray);font-family:var(--body);font-size:13px;font-weight:500;letter-spacing:.5px;transition:all .15s;border:1px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--bg3);color:var(--white);border-color:var(--border)}
+.nav-item.active{background:var(--green-dim);color:var(--green);border-color:rgba(0,255,136,.2)}
+.nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border)}
+.sf-rank{font-family:var(--head);font-size:14px;color:var(--green);letter-spacing:1px}
+.sf-callsign{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:2px;margin-top:2px}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column}
+.topbar{height:var(--topbar-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:var(--head);font-size:18px;letter-spacing:3px;color:var(--white)}
+.topbar-title span{color:var(--green)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topbar-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:4px;background:none;border:none}
+.hamburger span{display:block;width:20px;height:2px;background:var(--gray)}
+.sidebar-overlay{
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.sidebar-overlay.show{display:block}
+.content{padding:24px;display:flex;flex-direction:column;gap:20px}
+.section-header{font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:3px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-header::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── CURRENT RANK HERO ── */
+.rank-hero{
+  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  padding:28px;position:relative;overflow:hidden;
+  animation:fadeUp .5s var(--ease-out) both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.rank-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent)}
+.rank-hero-inner{display:flex;align-items:center;gap:24px}
+.rank-emblem-big{
+  width:88px;height:88px;border-radius:8px;flex-shrink:0;
+  background:var(--green-dim);border:1px solid rgba(0,255,136,.25);
+  display:flex;align-items:center;justify-content:center;font-size:44px;
+  box-shadow:0 0 24px rgba(0,255,136,.12);
+}
+.rank-info{flex:1}
+.rank-tier-badge{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:3px;margin-bottom:6px}
+.rank-name-big{font-family:var(--head);font-size:36px;letter-spacing:2px;color:var(--green);line-height:1;text-shadow:0 0 16px var(--green-glow)}
+.rank-callsign{font-family:var(--mono);font-size:11px;color:var(--gray);letter-spacing:2px;margin-top:6px}
+.rank-index-badge{
+  display:inline-flex;align-items:center;gap:6px;margin-top:10px;
+  padding:4px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;
+  font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:1px;
+}
+.rank-prestige{color:var(--amber);font-size:12px}
+
+.rank-prog-section{margin-top:20px}
+.rank-prog-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:2px;margin-bottom:8px}
+.rank-prog-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:16px}
+.rank-prog-fill{height:100%;background:linear-gradient(90deg,var(--green),rgba(0,255,136,.6));box-shadow:0 0 8px var(--green-glow);border-radius:3px;transition:width 1.2s var(--ease-out)}
+
+/* ── REQUIREMENTS GRID ── */
+.req-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.req-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:14px;
+  position:relative;overflow:hidden;transition:border-color .15s;
+}
+.req-card.met{border-color:rgba(0,255,136,.25);background:var(--green-dim)}
+.req-card-icon{font-size:20px;margin-bottom:8px}
+.req-card-name{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:2px;margin-bottom:6px}
+.req-card-val{font-family:var(--head);font-size:26px;color:var(--white);line-height:1}
+.req-card-val.met{color:var(--green)}
+.req-card-target{font-family:var(--mono);font-size:9px;color:var(--gray2);margin-top:4px}
+.req-check{position:absolute;top:10px;right:10px;font-size:14px;color:var(--green)}
+.req-card-bar{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
+.req-card-bar-fill{height:100%;background:var(--green);box-shadow:0 0 6px var(--green-glow);transition:width 1s var(--ease-out)}
+.req-card-bar-fill.amber{background:var(--amber)}
+
+/* ── RANK LADDER ── */
+.rank-ladder{display:flex;flex-direction:column;gap:0;background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;animation:fadeUp .5s var(--ease-out) .1s both}
+.ladder-row{
+  display:flex;align-items:center;gap:12px;padding:11px 16px;
+  border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;
+  position:relative;
+}
+.ladder-row:last-child{border-bottom:none}
+.ladder-row:hover{background:var(--bg3)}
+.ladder-row.current{background:var(--green-dim);border-left:3px solid var(--green)}
+.ladder-row.unlocked{opacity:.7}
+.ladder-row.locked{opacity:.35}
+.ladder-icon{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.ladder-name{font-family:var(--head);font-size:15px;letter-spacing:1px;flex:1}
+.ladder-row.current .ladder-name{color:var(--green)}
+.ladder-tier{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:1px;width:70px;text-align:right}
+.ladder-req{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:.5px;width:120px;text-align:right}
+.ladder-badge{
+  font-family:var(--mono);font-size:8px;letter-spacing:1px;padding:2px 7px;
+  border-radius:2px;border:1px solid;flex-shrink:0;
+}
+.badge-current{color:var(--green);border-color:var(--green);background:var(--green-dim)}
+.badge-done{color:var(--gray2);border-color:var(--gray2)}
+.badge-next{color:var(--amber);border-color:var(--amber);background:rgba(255,170,0,.08)}
+.badge-locked{color:var(--gray2);border-color:var(--border2)}
+
+/* ── CAPABILITY SCORES ── */
+.cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;animation:fadeUp .5s var(--ease-out) .15s both}
+.cap-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:18px}
+.cap-title{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:3px;margin-bottom:14px}
+.cap-score-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.cap-score-name{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:1px;width:72px;flex-shrink:0}
+.cap-bar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.cap-bar-fill{height:100%;border-radius:4px;transition:width 1.2s var(--ease-out)}
+.cap-bar-fill.str{background:linear-gradient(90deg,var(--green),rgba(0,255,136,.6))}
+.cap-bar-fill.end{background:linear-gradient(90deg,#00b4ff,rgba(0,180,255,.5))}
+.cap-bar-fill.cor{background:linear-gradient(90deg,var(--amber),rgba(255,170,0,.5))}
+.cap-score-num{font-family:var(--head);font-size:18px;color:var(--white);width:36px;text-align:right}
+
+.total-score-box{
+  background:var(--bg3);border:1px solid var(--border);border-radius:4px;
+  padding:16px;text-align:center;margin-top:12px;
+}
+.total-score-label{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:3px;margin-bottom:6px}
+.total-score-val{font-family:var(--head);font-size:48px;color:var(--green);letter-spacing:2px;line-height:1;text-shadow:0 0 16px var(--green-glow)}
+.total-score-rank{font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:2px;margin-top:6px}
+
+/* ── CAREER PATH ── */
+.career-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;animation:fadeUp .5s var(--ease-out) .2s both}
+.career-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:18px;
+  cursor:pointer;transition:all .15s;position:relative;overflow:hidden;
+}
+.career-card:hover{border-color:var(--border2)}
+.career-card.selected{background:var(--green-dim);border-color:rgba(0,255,136,.35)}
+.career-card.locked{opacity:.4;pointer-events:none}
+.career-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background .2s}
+.career-card.selected::before{background:var(--green);box-shadow:0 0 8px var(--green-glow)}
+.career-icon{font-size:28px;margin-bottom:10px}
+.career-name{font-family:var(--head);font-size:18px;letter-spacing:2px;color:var(--white);margin-bottom:4px}
+.career-card.selected .career-name{color:var(--green)}
+.career-desc{font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:.5px;line-height:1.7}
+.career-bonus{font-family:var(--mono);font-size:9px;color:var(--green);margin-top:8px;letter-spacing:1px}
+.career-lock-note{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:1px;margin-top:6px}
+.career-check{position:absolute;top:12px;right:12px;font-size:16px;color:var(--green);opacity:0;transition:opacity .2s}
+.career-card.selected .career-check{opacity:1}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .topbar{padding:0 16px}
+  .content{padding:16px}
+  .hamburger{display:flex}
+  .rank-hero-inner{flex-direction:column;text-align:center}
+  .req-grid{grid-template-columns:repeat(2,1fr)}
+  .cap-grid{grid-template-columns:1fr}
+  .career-grid{grid-template-columns:1fr}
+  .ladder-req{display:none}
+}
+@supports(padding:env(safe-area-inset-bottom)){
+  .content{padding-bottom:max(24px,env(safe-area-inset-bottom))}
+}
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+.promotion-panel-visible {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+}
+
+@media(max-width:480px){
+  .ladder-grid,.career-grid{grid-template-columns:1fr}
+  .rank-hero-name{font-size:28px}
+  .req-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">⬡ TACTICAL</div>
+      <div class="sidebar-logo-sub">FITNESS SYSTEM v1.0</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// COMMAND</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">◈</span> COMMAND CENTER</a>
+      <a href="training.html"  class="nav-item"><span class="nav-icon">⚡</span> TODAY TRAINING</a>
+      <a href="planner.html"   class="nav-item"><span class="nav-icon">◻</span> MONTHLY PLANNER</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// INTEL</div>
+      <a href="performance.html" class="nav-item"><span class="nav-icon">▲</span> PERFORMANCE LOG</a>
+      <a href="rank.html"        class="nav-item active"><span class="nav-icon">◆</span> RANK & CAPABILITY</a>
+      <a href="missions.html"    class="nav-item"><span class="nav-icon">⚔</span> MISSIONS</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// SYSTEM</div>
+      <a href="import-export.html" class="nav-item"><span class="nav-icon">⇅</span> IMPORT / EXPORT</a>
+      <a href="settings.html"      class="nav-item"><span class="nav-icon">◎</span> SETTINGS</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sf-rank" id="sb-rank">—</div>
+      <div class="sf-callsign" id="sb-callsign">LOADING...</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div><div class="topbar-title">RANK <span>& CAPABILITY</span></div></div>
+      <div class="topbar-right"><div class="topbar-dot"></div></div>
+    </header>
+
+    <div class="content">
+
+      <!-- ── RANK HERO ── -->
+      <div class="rank-hero">
+        <div class="rank-hero-inner">
+          <div class="rank-emblem-big" id="hero-emblem">⭐</div>
+          <div class="rank-info">
+            <div class="rank-tier-badge" id="hero-tier">// — TIER</div>
+            <div class="rank-name-big" id="hero-name">กำลังโหลด...</div>
+            <div class="rank-callsign" id="hero-callsign">OPERATOR</div>
+            <div class="rank-index-badge">
+              INDEX <span id="hero-index" style="color:var(--white);margin:0 4px">—</span>/20
+              &nbsp;·&nbsp;
+              <span class="rank-prestige" id="hero-prestige">★×0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rank-prog-section">
+          <div class="rank-prog-label">
+            <span>// PROGRESS TO NEXT RANK</span>
+            <span id="prog-next-name" style="color:var(--white)">—</span>
+          </div>
+          <div class="rank-prog-track">
+            <div class="rank-prog-fill" id="hero-prog-fill" style="width:0%"></div>
+          </div>
+
+          <div class="section-header" style="margin-bottom:10px">// REQUIREMENTS FOR NEXT RANK</div>
+          <div class="req-grid" id="req-grid">
+            <!-- filled by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CAPABILITY SCORES ── -->
+      <div class="cap-grid">
+        <div class="cap-card">
+          <div class="cap-title">// CAPABILITY SCORES</div>
+          <div class="cap-score-row">
+            <span class="cap-score-name">STRENGTH</span>
+            <div class="cap-bar-track"><div class="cap-bar-fill str" id="bar-str" style="width:0%"></div></div>
+            <span class="cap-score-num" id="num-str">0</span>
+          </div>
+          <div class="cap-score-row">
+            <span class="cap-score-name">ENDURANCE</span>
+            <div class="cap-bar-track"><div class="cap-bar-fill end" id="bar-end" style="width:0%"></div></div>
+            <span class="cap-score-num" id="num-end">0</span>
+          </div>
+          <div class="cap-score-row">
+            <span class="cap-score-name">CORE</span>
+            <div class="cap-bar-track"><div class="cap-bar-fill cor" id="bar-cor" style="width:0%"></div></div>
+            <span class="cap-score-num" id="num-cor">0</span>
+          </div>
+        </div>
+
+        <div class="cap-card" style="display:flex;flex-direction:column;justify-content:center">
+          <div class="total-score-box">
+            <div class="total-score-label">// TOTAL SCORE</div>
+            <div class="total-score-val" id="total-score">0</div>
+            <div class="total-score-rank" id="total-score-rank">ระดับ: —</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CAREER PATH ── -->
+      <div>
+        <div class="section-header">// CAREER PATH <span id="career-unlock-note" style="color:var(--amber);font-size:9px;margin-left:8px"></span></div>
+        <div class="career-grid" id="career-grid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <!-- ── RANK LADDER ── -->
+      <div>
+        <div class="section-header">// RANK LADDER — ALL 21 RANKS</div>
+        <div class="rank-ladder" id="rank-ladder">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <!-- PROMOTION TEST PANEL -->
+      <div>
+        <div class="section-header">// PROMOTION TEST</div>
+        <div id="promotion-panel" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px;transform:translateY(-8px);opacity:0;transition:all .3s var(--ease-out)">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--gray);padding:16px;text-align:center">กำลังโหลด...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="promo-toast" style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--green);color:var(--green);font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:10px 20px;border-radius:4px;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none"></div>
+
+<style>
+.promo-req-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.promo-req-row:last-child { border-bottom:none; }
+.promo-req-row.met .promo-req-name { color:var(--green); }
+.promo-req-name { font-family:var(--mono); font-size:10px; color:var(--gray); letter-spacing:1px; width:90px; flex-shrink:0; }
+.promo-req-bar-wrap { flex:1; }
+.promo-req-bar { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.promo-req-fill { height:100%; background:var(--green); box-shadow:0 0 6px var(--green-glow); border-radius:2px; transition:width 1s var(--ease-out); }
+.promo-req-fill.amber { background:var(--amber); box-shadow:none; }
+.promo-req-vals { font-family:var(--head); font-size:11px; color:var(--white); letter-spacing:1px; width:80px; text-align:right; flex-shrink:0; }
+.promo-req-check { font-size:14px; width:20px; text-align:center; flex-shrink:0; color:var(--gray2); }
+.promo-req-row.met .promo-req-check { color:var(--green); }
+.promo-result.pass { background:var(--green-dim); border:1px solid rgba(0,255,136,.3); color:var(--green); }
+.promo-result.fail { background:rgba(255,45,45,.05); border:1px solid rgba(255,45,45,.2); color:var(--red); }
+.toast.show { opacity:1 !important; }
+</style>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/engines/rank.js"></script>
+<script>
+'use strict';
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');_unlockScroll();}
+
+const RANK_ICONS = {civilian:'👤',enlisted:'🪖',nco:'⚙️',officer:'⭐',general:'🌟'};
+const CAREER_PATHS = [
+  { id:'assault',    icon:'⚔️',  name:'ASSAULT',    desc:'เชี่ยวชาญด้านความแข็งแกร่งและ explosive power ทดสอบด้วย push-up และ pull-up ระดับสูง',  bonus:'+ Strength Score ×1.2', locked:false },
+  { id:'recon',      icon:'🏃',  name:'RECON',       desc:'เชี่ยวชาญด้าน endurance และ cardio วิ่ง 5km ระดับ elite ใน sub-20 นาที',                  bonus:'+ Endurance Score ×1.2', locked:false },
+  { id:'tactical',   icon:'🎯',  name:'TACTICAL',    desc:'ความสมดุลของทุก attribute — strength, endurance และ core ในระดับเดียวกัน',                   bonus:'+ Total Score ×1.1',    locked:false },
+  { id:'instructor', icon:'🎓',  name:'INSTRUCTOR',  desc:'เส้นทางของผู้ฝึกสอน เน้น consistency และ streak สูงสุด ไม่ขาดฝึกเกิน 2 วัน',              bonus:'+ Streak bonus ×1.5',   locked:false },
+];
+
+function fmtTime(s){if(!s)return'—';return`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
+function fmtDate(d){if(!d)return'—';const dt=new Date(d+'T00:00:00');return`${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear()+543}`}
+
+async function bootstrap(){
+  await Storage.init();
+  const [profile, pr, logs] = await Promise.all([Storage.User.get(), Storage.PR.get(), Storage.Logs.getAll()]);
+  if(!profile){window.location.href='onboarding.html';return}
+
+  const rank     = RANKS[profile.rankIndex||0];
+  const nextRank = RANKS[(profile.rankIndex||0)+1];
+
+  // Sidebar
+  document.getElementById('sb-rank').textContent    = rank?.name||'—';
+  document.getElementById('sb-callsign').textContent = profile.callsign||'OPERATOR';
+
+  // Hero
+  document.getElementById('hero-emblem').textContent  = RANK_ICONS[rank?.tier]||'⭐';
+  document.getElementById('hero-tier').textContent    = `// ${(rank?.tier||'').toUpperCase()} TIER`;
+  document.getElementById('hero-name').textContent    = rank?.name||'—';
+  document.getElementById('hero-callsign').textContent = profile.callsign||'OPERATOR';
+  document.getElementById('hero-index').textContent   = profile.rankIndex||0;
+  document.getElementById('hero-prestige').textContent = `★×${profile.prestigeStars||0}`;
+
+  // Use RankEngine for real progress %
+  const realPct = RankEngine.progressToNextRank(pr, profile.rankIndex||0);
+  document.getElementById('prog-next-name').textContent = nextRank?.name||'MAX RANK';
+  setTimeout(()=>{ document.getElementById('hero-prog-fill').style.width = realPct+'%'; }, 300);
+
+  // Requirements grid — use RankEngine.checkRequirements
+  renderRequirements(nextRank, pr, profile);
+
+  // Capability scores — use RankEngine.getCapabilityScores
+  const scores = RankEngine.getCapabilityScores(pr);
+  const maxStr=250, maxEnd=50, maxCor=80;
+  document.getElementById('num-str').textContent = scores.strength;
+  document.getElementById('num-end').textContent = scores.endurance;
+  document.getElementById('num-cor').textContent = scores.core;
+  document.getElementById('total-score').textContent = scores.total;
+  document.getElementById('total-score-rank').textContent = `ระดับ: ${rank?.name||'—'}`;
+  setTimeout(()=>{
+    document.getElementById('bar-str').style.width = Math.min(100,Math.round(scores.strength/maxStr*100))+'%';
+    document.getElementById('bar-end').style.width = Math.min(100,Math.round(scores.endurance/maxEnd*100))+'%';
+    document.getElementById('bar-cor').style.width = Math.min(100,Math.round(scores.core/maxCor*100))+'%';
+  },400);
+
+  // Career path
+  renderCareerPath(profile);
+
+  // Rank ladder
+  renderLadder(profile);
+
+  // Promotion check — use RankEngine.checkPromotion
+  renderPromotionTest(profile, pr, logs);
+}
+}
+
+function renderRequirements(nextRank, pr, profile){
+  if(!nextRank){ document.getElementById('req-grid').innerHTML=`<div style="grid-column:1/-1;text-align:center;font-family:var(--mono);font-size:11px;color:var(--green);padding:16px;letter-spacing:2px">🏆 MAX RANK ACHIEVED</div>`; return; }
+  const checks = [
+    {icon:'💪', name:'PUSH-UP',  need:nextRank.pushup, have:pr?.pushup?.value||0, unit:'reps', lower:false},
+    {icon:'🏋️', name:'PULL-UP',  need:nextRank.pullup, have:pr?.pullup?.value||0, unit:'reps', lower:false},
+    {icon:'🧱', name:'PLANK',    need:nextRank.plank,  have:pr?.plank?.value||0,  unit:'sec',  lower:false},
+  ];
+  if(nextRank.run5km) checks.push({icon:'⚡',name:'RUN 5KM',need:nextRank.run5km,have:pr?.run5km?.value,unit:'sec',lower:true});
+  if(nextRank.run2km) checks.push({icon:'🏃',name:'RUN 2KM',need:nextRank.run2km,have:pr?.run2km?.value,unit:'sec',lower:true});
+  if(nextRank.extra)  checks.push({icon:'📋',name:'SPECIAL', need:nextRank.extra, have:null, unit:'',lower:false});
+
+  const html = checks.map(c=>{
+    const met  = c.unit==='' ? false : c.have && (c.lower ? c.have<=c.need : c.have>=c.need);
+    const pct  = c.unit==='' ? 0 : c.need ? Math.min(100, c.lower
+      ? (c.have ? Math.round((c.need/c.have)*100) : 0)
+      : Math.round(((c.have||0)/c.need)*100)) : 0;
+    const dispNeed = c.unit==='sec' && c.need>=60 ? fmtTime(c.need) : (c.need||'—');
+    const dispHave = c.have ? (c.unit==='sec' && c.have>=60 ? fmtTime(c.have) : c.have) : (c.unit==='') ? '—' : '0';
+    return `<div class="req-card${met?' met':''}">
+      ${met?'<span class="req-check">✓</span>':''}
+      <div class="req-card-icon">${c.icon}</div>
+      <div class="req-card-name">${c.name}</div>
+      <div class="req-card-val${met?' met':''}">${dispHave}${c.unit&&c.unit!=='sec'?' '+c.unit:''}</div>
+      <div class="req-card-target">TARGET: ${typeof c.need==='string'?c.need:dispNeed}${c.unit&&c.unit!=='sec'?' '+c.unit:''}</div>
+      <div class="req-card-bar"><div class="req-card-bar-fill${pct<50?' amber':''}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('req-grid').innerHTML = html;
+}
+
+function renderCareerPath(profile){
+  const unlocked = (profile.rankIndex||0) >= 10; // ร้อยตรี index 10
+  const selected = profile.careerPath;
+
+  if(!unlocked){
+    document.getElementById('career-unlock-note').textContent = '// ปลดล็อกที่ยศ ร้อยตรี';
+  }
+
+  document.getElementById('career-grid').innerHTML = CAREER_PATHS.map(c=>{
+    const isSel = c.id===selected;
+    const isLocked = !unlocked;
+    return `<div class="career-card${isSel?' selected':''}${isLocked?' locked':''}" onclick="selectCareer('${c.id}')">
+      <span class="career-check">✓</span>
+      <div class="career-icon">${c.icon}</div>
+      <div class="career-name">${c.name}</div>
+      <div class="career-desc">${c.desc}</div>
+      <div class="career-bonus">${c.bonus}</div>
+      ${isLocked?`<div class="career-lock-note">🔒 ปลดล็อกที่ ร้อยตรี</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function selectCareer(id){
+  try{
+    await Storage.User.update({careerPath:id});
+    const profile = await Storage.User.get();
+    renderCareerPath(profile);
+  }catch(e){console.error(e)}
+}
+
+function renderLadder(profile){
+  const idx = profile.rankIndex||0;
+  document.getElementById('rank-ladder').innerHTML = RANKS.map((r,i)=>{
+    const isCurrent = i===idx;
+    const isDone    = i<idx;
+    const isNext    = i===idx+1;
+    const isLocked  = i>idx+1;
+    const cls = isCurrent?'current':isDone?'unlocked':'locked';
+    const badge = isCurrent?'<span class="ladder-badge badge-current">CURRENT</span>'
+      : isDone   ?'<span class="ladder-badge badge-done">✓ DONE</span>'
+      : isNext   ?'<span class="ladder-badge badge-next">NEXT</span>'
+      :            '<span class="ladder-badge badge-locked">🔒</span>';
+    const reqStr = r.pushup ? `${r.pushup}push / ${r.pullup}pull` : 'เริ่มต้น';
+    return `<div class="ladder-row ${cls}">
+      <span class="ladder-icon">${RANK_ICONS[r.tier]||'·'}</span>
+      <span class="ladder-name">${r.name}</span>
+      <span class="ladder-tier">${r.tier.toUpperCase()}</span>
+      <span class="ladder-req">${reqStr}</span>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+/* ── PROMOTION TEST (RankEngine powered) ── */
+function renderPromotionTest(profile, pr, logs) {
+  const el = document.getElementById('promotion-panel');
+  if (!el) return;
+
+  const result = RankEngine.checkPromotion(profile, pr, logs);
+  const nextRank = RANKS[(profile.rankIndex||0)+1];
+
+  if (!nextRank) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:20px">
+        <div style="font-size:40px;margin-bottom:10px">🏆</div>
+        <div style="font-family:var(--head);font-size:18px;color:var(--green);letter-spacing:2px">MAX RANK ACHIEVED</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--gray);margin-top:6px">กด PRESTIGE เพื่อรีเซ็ตและรับ Prestige Star</div>
+        <button class="btn btn-primary" style="margin-top:14px;font-size:11px;letter-spacing:2px" onclick="doPrestige()">⭐ PRESTIGE</button>
+      </div>`;
+    return;
+  }
+
+  const detailRows = (result.details||[]).map(d => {
+    const fmt = v => (d.exercise.includes('วิ่ง') && v >= 60) ? `${Math.floor(v/60)}:${String(v%60).padStart(2,'0')}` : (v ?? '—');
+    const pct = !d.required ? 100 : d.exercise.includes('วิ่ง')
+      ? (d.current ? Math.min(100, Math.round(d.required/d.current*100)) : 0)
+      : Math.min(100, Math.round(((d.current||0)/d.required)*100));
+    return `
+      <div class="promo-req-row ${d.met?'met':''}">
+        <span class="promo-req-name">${d.exercise}</span>
+        <div class="promo-req-bar-wrap">
+          <div class="promo-req-bar"><div class="promo-req-fill ${pct<50?'amber':''}" style="width:${pct}%"></div></div>
+        </div>
+        <span class="promo-req-vals">${fmt(d.current)} / ${fmt(d.required)}</span>
+        <span class="promo-req-check">${d.met?'✓':'✗'}</span>
+      </div>`;
+  }).join('');
+
+  const canPromote = result.shouldPromote;
+  el.innerHTML = `
+    <div style="font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:2px;margin-bottom:12px">// PROMOTION TEST → ${nextRank.name}</div>
+    <div class="promo-req-list">${detailRows || '<div style="font-family:var(--mono);font-size:10px;color:var(--gray)">ไม่มีเงื่อนไขพิเศษ</div>'}</div>
+    <div class="promo-result ${canPromote?'pass':'fail'}" style="margin-top:12px;padding:10px 14px;border-radius:4px;font-family:var(--mono);font-size:10px;letter-spacing:1px">
+      ${canPromote ? `✓ พร้อมเลื่อนยศ — ${result.reason}` : `✗ ${result.reason}`}
+    </div>
+    ${canPromote ? `<button class="btn btn-primary" style="width:100%;margin-top:12px;font-size:12px;letter-spacing:3px;padding:14px" onclick="doPromotion()">⭐ PROMOTE TO ${nextRank.name.toUpperCase()}</button>` : ''}
+  `;
+}
+
+async function doPromotion() {
+  try {
+    const [profile, pr, logs] = await Promise.all([Storage.User.get(), Storage.PR.get(), Storage.Logs.getAll()]);
+    const result = RankEngine.checkPromotion(profile, pr, logs);
+    if (!result.shouldPromote) { alert('ยังไม่ผ่านเงื่อนไข'); return; }
+
+    await RankEngine.promote(profile, result.newRankIndex);
+
+    // Celebration
+    document.getElementById('promo-toast').textContent = `🎖 เลื่อนยศเป็น ${result.newRank.name}!`;
+    document.getElementById('promo-toast').classList.add('show');
+    if (navigator.vibrate) navigator.vibrate([100,50,100,50,300]);
+    setTimeout(() => location.reload(), 2000);
+  } catch(e) { alert('เลื่อนยศไม่สำเร็จ: ' + e.message); }
+}
+
+async function doPrestige() {
+  if (!confirm('Prestige: ยศจะ reset เป็น พลเรือน แต่ได้รับ Prestige Star ⭐ ยืนยัน?')) return;
+  try {
+    const profile = await Storage.User.get();
+    await RankEngine.prestige(profile);
+    setTimeout(() => location.reload(), 500);
+  } catch(e) { alert(e.message); }
+}
+
+document.addEventListener('DOMContentLoaded', bootstrap);
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

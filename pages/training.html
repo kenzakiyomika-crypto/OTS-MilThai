@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>TACTICAL FITNESS — TODAY TRAINING</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+
+/* ══════════════════════════════
+   SCREENS / VIEWS
+   screens: #screen-setup, #screen-active, #screen-summary
+══════════════════════════════ */
+.screen { display: none; min-height: 100vh; flex-direction: column; position: relative; z-index: 1; }
+.screen.visible { display: flex; }
+
+/* ══════════════════════════════
+   TOPBAR (shared)
+══════════════════════════════ */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 14px;
+  position: sticky; top: 0; z-index: 50;
+  flex-shrink: 0;
+}
+.topbar-back {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  color: var(--gray); cursor: pointer; padding: 6px 0;
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none;
+}
+.topbar-back:hover { color: var(--green); }
+.topbar-title { font-family: var(--head); font-size: 17px; letter-spacing: 3px; color: var(--white); }
+.topbar-title span { color: var(--green); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.session-clock { font-family: var(--mono); font-size: 13px; color: var(--amber); letter-spacing: 2px; }
+.topbar-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ══════════════════════════════
+   SCREEN 1 — SETUP
+══════════════════════════════ */
+.setup-content { padding: 24px; max-width: 640px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+.focus-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.focus-card {
+  padding: 14px 10px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+  text-align: center; cursor: pointer; transition: all .15s;
+}
+.focus-card:hover { border-color: var(--border2); }
+.focus-card.selected { background: var(--green-dim); border-color: rgba(0,255,136,.35); }
+.focus-icon { font-size: 22px; margin-bottom: 4px; }
+.focus-name { font-family: var(--head); font-size: 13px; letter-spacing: 1px; color: var(--white); }
+.focus-sub  { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 1px; margin-top: 2px; }
+.focus-card.selected .focus-name { color: var(--green); }
+
+.exercise-list { display: flex; flex-direction: column; gap: 8px; }
+.exercise-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+  cursor: pointer; transition: all .15s;
+  user-select: none;
+}
+.exercise-row:hover { border-color: var(--border2); }
+.exercise-row.checked { background: var(--green-dim); border-color: rgba(0,255,136,.25); }
+.ex-check { width: 18px; height: 18px; border-radius: 2px; border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; transition: all .15s; }
+.exercise-row.checked .ex-check { background: var(--green); border-color: var(--green); color: var(--black); font-weight: 700; }
+.ex-name { font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--white); flex: 1; }
+.exercise-row.checked .ex-name { color: var(--green); }
+.ex-meta { font-family: var(--mono); font-size: 10px; color: var(--gray); }
+
+.add-exercise-row { display: flex; gap: 8px; }
+.add-exercise-row .input { flex: 1; }
+
+.quick-add-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.quick-chip {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
+  padding: 5px 10px; border: 1px solid var(--border2); background: var(--bg3); color: var(--gray);
+  cursor: pointer; border-radius: 2px; transition: all .15s;
+}
+.quick-chip:hover { border-color: var(--green); color: var(--green); }
+
+/* ══════════════════════════════
+   SCREEN 2 — ACTIVE WORKOUT
+══════════════════════════════ */
+.active-layout { display: flex; flex-direction: column; flex: 1; }
+
+/* ── Progress Header ── */
+.session-progress {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+}
+.progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.prog-label { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 2px; }
+.prog-count { font-family: var(--head); font-size: 16px; color: var(--green); }
+.progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--green); box-shadow: 0 0 8px var(--green-glow); transition: width .6s var(--ease-out); }
+
+/* ── Exercise List (side panel on desktop / top on mobile) ── */
+.active-body { display: flex; flex: 1; overflow: hidden; }
+
+.ex-sidebar {
+  width: 240px; border-right: 1px solid var(--border); background: var(--bg2);
+  overflow-y: auto; flex-shrink: 0;
+}
+.ex-sidebar-item {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .15s;
+  display: flex; align-items: center; gap: 10px;
+}
+.ex-sidebar-item:hover { background: var(--bg3); }
+.ex-sidebar-item.current { background: var(--green-dim); border-left: 2px solid var(--green); }
+.ex-sidebar-item.done    { opacity: .5; }
+.ex-sidebar-item.done .ex-si-name { text-decoration: line-through; }
+.ex-si-num  { font-family: var(--mono); font-size: 9px; color: var(--gray2); width: 16px; }
+.ex-si-name { font-family: var(--body); font-size: 12px; font-weight: 600; color: var(--white); flex: 1; }
+.ex-sidebar-item.current .ex-si-name { color: var(--green); }
+.ex-si-check { font-size: 12px; color: var(--green); }
+
+/* ── Active Panel ── */
+.active-main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 16px; }
+
+/* Current exercise header */
+.ex-header-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 20px;
+  position: relative; overflow: hidden;
+}
+.ex-header-card::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background: var(--green); box-shadow:0 0 8px var(--green-glow); }
+.ex-num-badge { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 2px; margin-bottom: 6px; }
+.ex-title { font-family: var(--head); font-size: 28px; letter-spacing: 2px; color: var(--white); line-height: 1; }
+.ex-desc  { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 1px; margin-top: 6px; }
+
+/* Sets tracker */
+.sets-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 18px; }
+.sets-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.sets-title { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 3px; }
+.sets-progress { font-family: var(--head); font-size: 14px; color: var(--amber); }
+
+.set-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.set-row:last-child { border-bottom: none; }
+.set-num { font-family: var(--mono); font-size: 10px; color: var(--gray2); width: 36px; }
+.set-target { font-family: var(--mono); font-size: 11px; color: var(--gray); flex: 1; }
+
+/* Reps input spinner */
+.reps-spinner { display: flex; align-items: center; gap: 0; }
+.spin-btn {
+  width: 36px; height: 36px; border: 1px solid var(--border2); background: var(--bg3);
+  color: var(--white); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .12s; font-family: var(--mono); user-select: none;
+}
+.spin-btn:hover { border-color: var(--green); color: var(--green); }
+.spin-btn:active { background: var(--green-dim); }
+.spin-btn.left  { border-radius: 3px 0 0 3px; }
+.spin-btn.right { border-radius: 0 3px 3px 0; }
+.spin-val {
+  width: 52px; height: 36px; background: var(--bg3); border-top: 1px solid var(--border2); border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--head); font-size: 20px; color: var(--white); letter-spacing: 1px;
+}
+
+/* Timed set */
+.timed-val { font-family: var(--head); font-size: 18px; color: var(--amber); flex: 1; text-align: right; }
+
+.set-done-btn {
+  padding: 8px 14px; border: 1px solid var(--border2); background: var(--bg3);
+  color: var(--gray); font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+  cursor: pointer; border-radius: 3px; transition: all .15s; white-space: nowrap;
+  min-height: 36px;
+}
+.set-done-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.set-done-btn.confirmed { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+
+/* ── REST TIMER ── */
+.rest-overlay {
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.92); display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px;
+}
+.rest-overlay.show { display: flex; }
+
+.rest-ring {
+  position: relative; width: 180px; height: 180px;
+}
+.rest-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.rest-ring-bg    { fill: none; stroke: var(--border);  stroke-width: 6; }
+.rest-ring-fill  { fill: none; stroke: var(--green);   stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset .9s linear; }
+.rest-ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.rest-num   { font-family: var(--head); font-size: 52px; color: var(--green); letter-spacing: 2px; line-height: 1; text-shadow: 0 0 24px var(--green-glow); }
+.rest-label { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 3px; }
+
+.rest-title  { font-family: var(--head); font-size: 20px; letter-spacing: 4px; color: var(--white); }
+.rest-next   { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 2px; }
+.rest-skip   { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; padding: 8px 20px; border: 1px solid var(--border2); background: var(--bg3); color: var(--gray); cursor: pointer; margin-top: 8px; }
+.rest-skip:hover { border-color: var(--amber); color: var(--amber); }
+.rest-overlay { padding-bottom: max(24px,env(safe-area-inset-bottom,24px)); }
+
+/* ── Exercise nav buttons ── */
+.ex-nav-row { display: flex; gap: 10px; }
+.ex-nav-row .btn { flex: 1; }
+
+/* ══════════════════════════════
+   SCREEN 3 — SUMMARY
+══════════════════════════════ */
+.summary-content {
+  padding: 24px; max-width: 640px; width: 100%; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 20px;
+  animation: fadeInUp .5s var(--ease-out) both;
+}
+@keyframes fadeInUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.summary-hero {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+  padding: 28px 24px; text-align: center; position: relative; overflow: hidden;
+}
+.summary-hero::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background: linear-gradient(90deg, transparent, var(--green), transparent); }
+.summary-icon  { font-size: 56px; display: block; margin-bottom: 12px; animation: popIn .4s var(--ease-out) .1s both; }
+.summary-grade { font-family: var(--head); font-size: 48px; letter-spacing: 4px; line-height: 1; margin-bottom: 6px; }
+.summary-grade.S { color: var(--green); text-shadow: 0 0 20px var(--green-glow); }
+.summary-grade.A { color: var(--green); }
+.summary-grade.B { color: var(--amber); }
+.summary-grade.C { color: var(--gray); }
+.summary-label { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 3px; }
+@keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+.summary-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.sum-stat {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 14px;
+  text-align: center;
+}
+.sum-stat-val { font-family: var(--head); font-size: 28px; color: var(--white); letter-spacing: 1px; line-height: 1; }
+.sum-stat-unit { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 2px; margin-top: 4px; }
+
+.ex-summary-list { display: flex; flex-direction: column; gap: 8px; }
+.ex-sum-row {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+  padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+}
+.ex-sum-icon { font-size: 16px; flex-shrink: 0; }
+.ex-sum-name { font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--white); flex: 1; }
+.ex-sum-sets { font-family: var(--mono); font-size: 10px; color: var(--gray); }
+.ex-sum-reps { font-family: var(--head); font-size: 18px; color: var(--green); letter-spacing: 1px; }
+.ex-sum-badge { padding: 3px 8px; border: 1px solid var(--green); color: var(--green); background: var(--green-dim); font-family: var(--mono); font-size: 8px; letter-spacing: 1px; border-radius: 2px; }
+.ex-sum-badge.skip { border-color: var(--gray2); color: var(--gray2); background: transparent; }
+
+.pr-alert {
+  background: var(--green-dim); border: 1px solid rgba(0,255,136,.3); border-radius: 4px;
+  padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+  animation: fadeInUp .4s var(--ease-out) .3s both;
+}
+.pr-alert-icon { font-size: 24px; }
+.pr-alert-text { font-family: var(--mono); font-size: 10px; color: var(--green); letter-spacing: 1px; line-height: 1.6; }
+
+.notes-area {
+  font-family: var(--mono); font-size: 14px; background: var(--bg3);
+  border: 1px solid var(--border2); color: var(--white); padding: 12px 14px;
+  width: 100%; height: 80px; resize: none; border-radius: 3px;
+}
+.notes-area:focus { outline: none; border-color: var(--green); }
+
+/* ══════════════════════════════
+   SESSION MODE SELECTOR
+══════════════════════════════ */
+.mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.mode-card {
+  padding: 12px 8px; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px; text-align: center; cursor: pointer; transition: all .15s;
+}
+.mode-card:hover { border-color: var(--border2); }
+.mode-card.selected { background: var(--green-dim); border-color: rgba(0,255,136,.35); }
+.mode-icon { font-size: 20px; margin-bottom: 4px; }
+.mode-name { font-family: var(--head); font-size: 11px; letter-spacing: 1px; color: var(--white); }
+.mode-desc { font-family: var(--mono); font-size: 8px; color: var(--gray); letter-spacing: .5px; margin-top: 2px; line-height: 1.4; }
+.mode-card.selected .mode-name { color: var(--green); }
+
+/* AMRAP / EMOM / Tabata config panels */
+.mode-config { display: none; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 14px; margin-top: 8px; }
+.mode-config.visible { display: block; }
+.mode-config-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.mode-config-row:last-child { margin-bottom: 0; }
+.mode-config-label { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 1px; }
+.mode-config input[type=number] {
+  width: 70px; font-family: var(--head); font-size: 18px; text-align: center;
+  background: var(--bg2); border: 1px solid var(--border2); color: var(--green);
+  padding: 4px; border-radius: 3px;
+}
+
+/* ══════════════════════════════
+   LIVE COACH PANEL
+══════════════════════════════ */
+.coach-panel {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  padding: 0 16px max(12px,env(safe-area-inset-bottom,12px));
+  display: flex; align-items: flex-start; gap: 12px;
+  transform: translateY(100%); transition: transform .3s var(--ease-out);
+}
+.coach-panel.show { transform: translateY(0); }
+.coach-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.coach-body { flex: 1; }
+.coach-type { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 2px; margin-bottom: 3px; }
+.coach-msg  { font-family: var(--body); font-size: 13px; color: var(--white); line-height: 1.5; }
+.coach-action { font-family: var(--mono); font-size: 9px; color: var(--green); letter-spacing: 1px; margin-top: 4px; }
+.coach-close { background: none; border: none; color: var(--gray); font-size: 16px; cursor: pointer; padding: 0; flex-shrink: 0; align-self: flex-start; }
+.coach-close:hover { color: var(--white); }
+
+/* RPE selector (after set done) */
+.rpe-bar {
+  display: none; align-items: center; gap: 6px; margin-top: 8px;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px;
+}
+.rpe-bar.show { display: flex; }
+.rpe-label { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 1px; flex-shrink: 0; }
+.rpe-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.rpe-btn {
+  width: 26px; height: 26px; border-radius: 3px; border: 1px solid var(--border2);
+  background: var(--bg2); color: var(--gray); font-family: var(--mono); font-size: 10px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .1s;
+}
+.rpe-btn:hover { border-color: var(--green); color: var(--green); }
+.rpe-btn.selected { background: var(--green-dim); border-color: var(--green); color: var(--green); font-weight: 700; }
+
+/* AMRAP / Tabata / EMOM active timers */
+.interval-overlay {
+  position: fixed; inset: 0; z-index: 180;
+  background: rgba(0,0,0,.95); display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px;
+}
+.interval-overlay.show { display: flex; }
+.interval-phase { font-family: var(--mono); font-size: 11px; letter-spacing: 4px; color: var(--gray); }
+.interval-time  { font-family: var(--head); font-size: 80px; line-height: 1; color: var(--green); text-shadow: 0 0 40px var(--green-glow); letter-spacing: 4px; }
+.interval-sub   { font-family: var(--mono); font-size: 13px; color: var(--gray2); letter-spacing: 2px; }
+.interval-reps-row { display: flex; gap: 12px; }
+.interval-reps-btn { font-family: var(--head); font-size: 32px; width: 56px; height: 56px; background: var(--bg2); border: 1px solid var(--border2); color: var(--white); cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+.interval-reps-val { font-family: var(--head); font-size: 48px; color: var(--white); min-width: 60px; text-align: center; }
+.interval-stop { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; padding: 8px 20px; border: 1px solid var(--red); color: var(--red); background: transparent; cursor: pointer; margin-top: 8px; }
+.interval-work { color: var(--green) !important; text-shadow: 0 0 40px var(--green-glow); }
+.interval-rest { color: var(--amber) !important; text-shadow: 0 0 40px rgba(255,170,0,.4); }
+
+
+@media (max-width: 700px) {
+  .ex-sidebar { display: none; }
+  .setup-content { padding: 16px; }
+  .active-main { padding: 14px; }
+  .summary-content { padding: 16px; }
+  .focus-grid { grid-template-columns: repeat(2, 1fr); }
+  .summary-stats { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* iOS safe area */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-pad { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+}
+
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+@media(max-width:480px){
+  .ex-name{font-size:14px}
+  .set-done-btn{min-height:48px;font-size:10px}
+  .rpe-btns{flex-wrap:wrap;gap:6px}
+  .rpe-btn{width:30px;height:30px;font-size:11px}
+  .rest-num{font-size:40px}
+  .ex-nav-row{flex-direction:column}
+  .ex-nav-row .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     SCREEN 1 — SETUP
+══════════════════════════════ -->
+<div class="screen visible" id="screen-setup">
+
+  <header class="topbar">
+    <button class="topbar-back" onclick="window.location.href='dashboard.html'">
+      ← BACK
+    </button>
+    <div>
+      <div class="topbar-title">TODAY <span>TRAINING</span></div>
+    </div>
+  </header>
+
+  <div class="setup-content safe-pad">
+
+    <!-- Focus selection -->
+    <div>
+      <div class="section-title">// SELECT FOCUS</div>
+      <div class="focus-grid" id="focus-grid">
+        <div class="focus-card selected" data-focus="Full Body">
+          <div class="focus-icon">⚡</div>
+          <div class="focus-name">FULL BODY</div>
+          <div class="focus-sub">COMPOUND</div>
+        </div>
+        <div class="focus-card" data-focus="Upper Body">
+          <div class="focus-icon">💪</div>
+          <div class="focus-name">UPPER</div>
+          <div class="focus-sub">PUSH + PULL</div>
+        </div>
+        <div class="focus-card" data-focus="Lower Body">
+          <div class="focus-icon">🦵</div>
+          <div class="focus-name">LOWER</div>
+          <div class="focus-sub">LEGS + GLUTES</div>
+        </div>
+        <div class="focus-card" data-focus="Core">
+          <div class="focus-icon">🧱</div>
+          <div class="focus-name">CORE</div>
+          <div class="focus-sub">ABS + BACK</div>
+        </div>
+        <div class="focus-card" data-focus="Cardio">
+          <div class="focus-icon">🏃</div>
+          <div class="focus-name">CARDIO</div>
+          <div class="focus-sub">ENDURANCE</div>
+        </div>
+        <div class="focus-card" data-focus="Custom">
+          <div class="focus-icon">✏️</div>
+          <div class="focus-name">CUSTOM</div>
+          <div class="focus-sub">YOUR LIST</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exercise list -->
+    <div>
+      <div class="section-title">// EXERCISE LIST</div>
+      <div class="exercise-list" id="exercise-list"></div>
+
+      <!-- Quick add chips -->
+      <div style="margin-top:12px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:2px;margin-bottom:8px">// QUICK ADD</div>
+        <div class="quick-add-grid" id="quick-chips"></div>
+      </div>
+
+      <!-- Manual add -->
+      <div class="add-exercise-row" style="margin-top:12px">
+        <input type="text" class="input" id="custom-ex-input" placeholder="ชื่อ exercise..." style="font-size:16px">
+        <button class="btn btn-primary" onclick="addCustomExercise()">+ ADD</button>
+      </div>
+    </div>
+
+    <!-- Session Mode (Phase 4 — Session 2.0) -->
+    <div>
+      <div class="section-title">// SESSION MODE</div>
+      <div class="mode-grid" id="mode-grid">
+        <div class="mode-card selected" data-mode="standard">
+          <div class="mode-icon">▶</div>
+          <div class="mode-name">STANDARD</div>
+          <div class="mode-desc">Sets × Reps ปกติ</div>
+        </div>
+        <div class="mode-card" data-mode="superset">
+          <div class="mode-icon">⚡</div>
+          <div class="mode-name">SUPERSET</div>
+          <div class="mode-desc">2 exercises สลับ ไม่มีพัก</div>
+        </div>
+        <div class="mode-card" data-mode="amrap">
+          <div class="mode-icon">∞</div>
+          <div class="mode-name">AMRAP</div>
+          <div class="mode-desc">Max reps ใน X นาที</div>
+        </div>
+        <div class="mode-card" data-mode="emom">
+          <div class="mode-icon">⏱</div>
+          <div class="mode-name">EMOM</div>
+          <div class="mode-desc">Every Minute On Minute</div>
+        </div>
+        <div class="mode-card" data-mode="tabata">
+          <div class="mode-icon">🔥</div>
+          <div class="mode-name">TABATA</div>
+          <div class="mode-desc">20s ON / 10s OFF × 8</div>
+        </div>
+        <div class="mode-card" data-mode="cluster">
+          <div class="mode-icon">◼◼</div>
+          <div class="mode-name">CLUSTER</div>
+          <div class="mode-desc">Mini sets ในช่วงพัก</div>
+        </div>
+      </div>
+
+      <!-- AMRAP config -->
+      <div class="mode-config" id="cfg-amrap">
+        <div class="mode-config-row">
+          <span class="mode-config-label">⏱ DURATION (MINUTES)</span>
+          <input type="number" id="amrap-min" value="10" min="1" max="60">
+        </div>
+      </div>
+
+      <!-- EMOM config -->
+      <div class="mode-config" id="cfg-emom">
+        <div class="mode-config-row">
+          <span class="mode-config-label">🔄 ROUNDS</span>
+          <input type="number" id="emom-rounds" value="10" min="1" max="30">
+        </div>
+      </div>
+
+      <!-- Tabata config -->
+      <div class="mode-config" id="cfg-tabata">
+        <div class="mode-config-row">
+          <span class="mode-config-label">🔄 ROUNDS</span>
+          <input type="number" id="tab-rounds" value="8" min="1" max="20">
+        </div>
+        <div class="mode-config-row">
+          <span class="mode-config-label">⚡ WORK (SEC)</span>
+          <input type="number" id="tab-work" value="20" min="5" max="60">
+        </div>
+        <div class="mode-config-row">
+          <span class="mode-config-label">💤 REST (SEC)</span>
+          <input type="number" id="tab-rest" value="10" min="5" max="60">
+        </div>
+      </div>
+
+      <!-- Cluster config -->
+      <div class="mode-config" id="cfg-cluster">
+        <div class="mode-config-row">
+          <span class="mode-config-label">🎯 TOTAL REPS</span>
+          <input type="number" id="clus-reps" value="30" min="5" max="100">
+        </div>
+        <div class="mode-config-row">
+          <span class="mode-config-label">◼ MINI SET SIZE</span>
+          <input type="number" id="clus-mini" value="5" min="2" max="15">
+        </div>
+        <div class="mode-config-row">
+          <span class="mode-config-label">⏳ INTRA REST (SEC)</span>
+          <input type="number" id="clus-rest" value="15" min="5" max="60">
+        </div>
+      </div>
+    </div>
+
+    <!-- Start button -->
+    <button class="btn btn-primary btn-full" style="font-size:14px;letter-spacing:3px;padding:16px" onclick="startSession()">
+      ⚡ START SESSION
+    </button>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 2 — ACTIVE WORKOUT
+══════════════════════════════ -->
+<div class="screen" id="screen-active">
+
+  <header class="topbar">
+    <button class="topbar-back" onclick="confirmAbort()">✕ ABORT</button>
+    <div>
+      <div class="topbar-title" id="active-focus-title">FULL <span>BODY</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="session-clock" id="session-clock">00:00</div>
+      <div class="topbar-dot"></div>
+    </div>
+  </header>
+
+  <div class="session-progress">
+    <div class="progress-meta">
+      <span class="prog-label">// SESSION PROGRESS</span>
+      <span class="prog-count" id="prog-count">0 / 0</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="active-body">
+    <!-- Sidebar: exercise list -->
+    <div class="ex-sidebar" id="ex-sidebar"></div>
+
+    <!-- Main active panel -->
+    <div class="active-main" id="active-main">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+</div>
+
+<!-- LIVE COACH PANEL (Phase 4 System A) -->
+<div class="coach-panel" id="coach-panel">
+  <div class="coach-icon" id="coach-icon">🧠</div>
+  <div class="coach-body">
+    <div class="coach-type" id="coach-type">// LIVE COACH</div>
+    <div class="coach-msg"  id="coach-msg">กำลังวิเคราะห์...</div>
+    <div class="coach-action" id="coach-action"></div>
+  </div>
+  <button class="coach-close" onclick="dismissCoach()">✕</button>
+</div>
+
+<!-- INTERVAL TIMER OVERLAY (AMRAP / Tabata / EMOM) -->
+<div class="interval-overlay" id="interval-overlay">
+  <div class="interval-phase" id="iv-phase">// AMRAP</div>
+  <div class="interval-time"  id="iv-time">00:00</div>
+  <div class="interval-sub"   id="iv-sub">GET AS MANY REPS AS POSSIBLE</div>
+  <div class="interval-reps-row" id="iv-reps-row">
+    <button class="interval-reps-btn" onclick="ivAdjReps(-1)">−</button>
+    <div class="interval-reps-val" id="iv-reps">0</div>
+    <button class="interval-reps-btn" onclick="ivAdjReps(+1)">+</button>
+  </div>
+  <button class="interval-stop" onclick="stopIntervalMode()">■ STOP</button>
+</div>
+
+<!-- REST TIMER OVERLAY -->
+<div class="rest-overlay" id="rest-overlay">
+  <div class="rest-title">// REST PERIOD</div>
+  <div class="rest-ring">
+    <svg viewBox="0 0 180 180" width="180" height="180">
+      <circle class="rest-ring-bg" cx="90" cy="90" r="80"/>
+      <circle class="rest-ring-fill" id="rest-ring-fill" cx="90" cy="90" r="80"/>
+    </svg>
+    <div class="rest-ring-center">
+      <div class="rest-num" id="rest-num">60</div>
+      <div class="rest-label">SECONDS</div>
+    </div>
+  </div>
+  <div class="rest-next" id="rest-next-label">NEXT: —</div>
+  <button class="rest-skip" onclick="skipRest()">⚡ SKIP REST</button>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 3 — SUMMARY
+══════════════════════════════ -->
+<div class="screen" id="screen-summary">
+
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">SESSION <span>COMPLETE</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-dot"></div>
+    </div>
+  </header>
+
+  <div class="summary-content safe-pad">
+
+    <!-- Hero grade -->
+    <div class="summary-hero">
+      <span class="summary-icon" id="sum-icon">🎖</span>
+      <div class="summary-grade S" id="sum-grade">S</div>
+      <div class="summary-label" id="sum-label">MISSION COMPLETE</div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="summary-stats">
+      <div class="sum-stat">
+        <div class="sum-stat-val" id="sum-duration">—</div>
+        <div class="sum-stat-unit">MINUTES</div>
+      </div>
+      <div class="sum-stat">
+        <div class="sum-stat-val" id="sum-exercises">—</div>
+        <div class="sum-stat-unit">EXERCISES</div>
+      </div>
+      <div class="sum-stat">
+        <div class="sum-stat-val" id="sum-total-reps">—</div>
+        <div class="sum-stat-unit">TOTAL REPS</div>
+      </div>
+    </div>
+
+    <!-- PR alert (shown if PR broken) -->
+    <div class="pr-alert" id="pr-alert" style="display:none">
+      <div class="pr-alert-icon">🏆</div>
+      <div class="pr-alert-text" id="pr-alert-text">NEW PERSONAL RECORD!</div>
+    </div>
+
+    <!-- Exercise breakdown -->
+    <div>
+      <div class="section-title">// EXERCISE BREAKDOWN</div>
+      <div class="ex-summary-list" id="ex-summary-list"></div>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <div class="section-title">// SESSION NOTES</div>
+      <textarea class="notes-area" id="session-notes" placeholder="บันทึกความรู้สึก, PR, หรืออะไรก็ได้..."></textarea>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-primary btn-full" style="font-size:13px;letter-spacing:3px;padding:14px" onclick="saveSession()">
+        💾 SAVE SESSION
+      </button>
+      <button class="btn btn-full" style="font-size:11px;letter-spacing:2px" onclick="window.location.href='dashboard.html'">
+        ← BACK TO COMMAND CENTER
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Load deps -->
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/phase1-training.js"></script>
+<script src="../js/phase4-engine.js"></script>
+<script src="../js/engines/fatigue.js"></script>
+<script src="../js/engines/ultimate-engine.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════
+   STATE
+══════════════════════════════ */
+const State = {
+  focus:      'Full Body',
+  exercises:  [],          // { name, type, sets, reps, duration, rest, muscleGroup, checked }
+  session:    null,        // active WorkoutLog
+  currentEx:  0,           // index in session.exercises
+  startTime:  null,
+  clockTimer: null,
+  restTimer:  null,
+  restSecs:   0,
+  restCirc:   502.65,      // 2πr = 2π×80
+  profile:    null,
+  pr:         null,
+  newPRs:     [],
+};
+
+/* ══════════════════════════════
+   AUDIO (Web Audio beeps)
+══════════════════════════════ */
+let _audioCtx = null;
+function getAudio() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+function beep(freq = 880, dur = 0.12, vol = 0.3) {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+function beepSuccess() { beep(660,.12,.25); setTimeout(()=>beep(880,.18,.3),120); }
+function beepDone()    { beep(660,.1,.2); setTimeout(()=>beep(880,.1,.2),100); setTimeout(()=>beep(1100,.25,.3),200); }
+function beepCountdown(n) { beep(n<=3?660:440, .08, .15); }
+
+/* ══════════════════════════════
+   SCREEN SWITCHING
+══════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
+  document.getElementById(id).classList.add('visible');
+}
+
+/* ══════════════════════════════
+   SETUP SCREEN
+══════════════════════════════ */
+const FOCUS_EXERCISES = {
+  'Full Body':   ['Push-up','Pull-up','Squat','Sit-up','Burpee'],
+  'Upper Body':  ['Push-up','Diamond Push-up','Pike Push-up','Pull-up','Dip'],
+  'Lower Body':  ['Squat','Lunge','Step-up','Calf Raise'],
+  'Core':        ['Plank','Sit-up','Leg Raise','Mountain Climber'],
+  'Cardio':      ['วิ่ง 2km','Burpee'],
+  'Custom':      [],
+};
+
+const EXERCISE_DEFAULTS = {
+  'Push-up':          { type:'repetition', sets:4, reps:15, rest:60,  muscleGroup:'upper' },
+  'Diamond Push-up':  { type:'repetition', sets:3, reps:10, rest:60,  muscleGroup:'upper' },
+  'Pike Push-up':     { type:'repetition', sets:3, reps:12, rest:60,  muscleGroup:'upper' },
+  'Pull-up':          { type:'repetition', sets:4, reps:8,  rest:90,  muscleGroup:'upper' },
+  'Chin-up':          { type:'repetition', sets:3, reps:8,  rest:90,  muscleGroup:'upper' },
+  'Dip':              { type:'repetition', sets:3, reps:10, rest:90,  muscleGroup:'upper' },
+  'Squat':            { type:'repetition', sets:4, reps:15, rest:60,  muscleGroup:'lower' },
+  'Lunge':            { type:'repetition', sets:3, reps:12, rest:60,  muscleGroup:'lower' },
+  'Step-up':          { type:'repetition', sets:3, reps:12, rest:45,  muscleGroup:'lower' },
+  'Calf Raise':       { type:'repetition', sets:3, reps:20, rest:30,  muscleGroup:'lower' },
+  'Plank':            { type:'timed',      sets:3, reps:0,  duration:60,  rest:60, muscleGroup:'core' },
+  'Sit-up':           { type:'repetition', sets:3, reps:20, rest:45,  muscleGroup:'core' },
+  'Leg Raise':        { type:'repetition', sets:3, reps:15, rest:45,  muscleGroup:'core' },
+  'Mountain Climber': { type:'timed',      sets:3, reps:0,  duration:30,  rest:30, muscleGroup:'core' },
+  'Burpee':           { type:'repetition', sets:3, reps:10, rest:60,  muscleGroup:'cardio' },
+  'วิ่ง 2km':          { type:'distance',   sets:1, reps:0,  distance:2000, rest:0, muscleGroup:'cardio' },
+  'วิ่ง 3km':          { type:'distance',   sets:1, reps:0,  distance:3000, rest:0, muscleGroup:'cardio' },
+};
+
+const ALL_QUICK_CHIPS = Object.keys(EXERCISE_DEFAULTS);
+
+function renderSetup() {
+  // Focus grid listeners
+  document.querySelectorAll('.focus-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.focus-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      State.focus = card.dataset.focus;
+      loadFocusExercises(State.focus);
+      renderExerciseList();
+      renderQuickChips();
+    });
+  });
+
+  loadFocusExercises('Full Body');
+  renderExerciseList();
+  renderQuickChips();
+}
+
+function loadFocusExercises(focus) {
+  const names = FOCUS_EXERCISES[focus] || [];
+  State.exercises = names.map(name => ({
+    ...(EXERCISE_DEFAULTS[name] || { type:'repetition', sets:3, reps:10, rest:60, muscleGroup:'full' }),
+    name,
+    checked: true,
+    actualReps: [],
+  }));
+}
+
+function renderExerciseList() {
+  const el = document.getElementById('exercise-list');
+  if (State.exercises.length === 0) {
+    el.innerHTML = `<div style="font-family:var(--mono);font-size:10px;color:var(--gray2);padding:16px 0;text-align:center;letter-spacing:1px">// เลือก focus หรือเพิ่ม exercise เอง</div>`;
+    return;
+  }
+  el.innerHTML = State.exercises.map((ex, i) => {
+    const metaText = ex.type === 'timed' ? `${ex.sets} sets × ${ex.duration}s`
+      : ex.type === 'distance' ? `${(ex.distance/1000).toFixed(1)} km`
+      : `${ex.sets} sets × ${ex.reps} reps`;
+    return `<div class="exercise-row ${ex.checked ? 'checked' : ''}" onclick="toggleExercise(${i})">
+      <div class="ex-check">${ex.checked ? '✓' : ''}</div>
+      <div class="ex-name">${ex.name}</div>
+      <div class="ex-meta">${metaText}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderQuickChips() {
+  const existing = new Set(State.exercises.map(e => e.name));
+  const chips = ALL_QUICK_CHIPS.filter(n => !existing.has(n)).slice(0, 12);
+  document.getElementById('quick-chips').innerHTML = chips.map(n =>
+    `<div class="quick-chip" onclick="quickAdd('${n}')">${n}</div>`
+  ).join('');
+}
+
+function toggleExercise(i) {
+  State.exercises[i].checked = !State.exercises[i].checked;
+  renderExerciseList();
+}
+
+function quickAdd(name) {
+  State.exercises.push({
+    ...(EXERCISE_DEFAULTS[name] || { type:'repetition', sets:3, reps:10, rest:60, muscleGroup:'full' }),
+    name, checked: true, actualReps: [],
+  });
+  renderExerciseList();
+  renderQuickChips();
+}
+
+function addCustomExercise() {
+  const inp = document.getElementById('custom-ex-input');
+  const name = inp.value.trim();
+  if (!name) return;
+  State.exercises.push({ name, type:'repetition', sets:3, reps:10, rest:60, muscleGroup:'full', checked:true, actualReps:[] });
+  inp.value = '';
+  renderExerciseList();
+  renderQuickChips();
+}
+
+async function startSession() {
+  const selected = State.exercises.filter(e => e.checked);
+  if (selected.length === 0) { alert('เลือก exercise อย่างน้อย 1 ตัว'); return; }
+
+  State.exercises = selected.map(ex => ({
+    ...ex,
+    actualReps:   Array(ex.sets).fill(ex.type === 'timed' ? ex.duration : ex.reps),
+    setDone:      Array(ex.sets).fill(false),
+    completed:    false,
+    skipped:      false,
+  }));
+
+  State.currentEx = 0;
+  State.startTime = Date.now();
+  // Capture fatigueAtStart from FatigueEngine before session begins
+  let fatigueAtStart = 0;
+  try {
+    if (typeof FatigueEngine !== 'undefined') {
+      const allLogs = await Storage.Logs.getAll().catch(() => []);
+      const fi = FatigueEngine.calcFatigueIndex(allLogs);
+      fatigueAtStart = fi.index || 0;
+    }
+  } catch(e) {}
+
+  State.session = {
+    id: `log_${Date.now()}`,
+    date: new Date().toISOString().split('T')[0],
+    dayOfWeek: new Date().getDay(),
+    sessionType: 'full',
+    focus: State.focus,
+    startTime: new Date().toISOString(),
+    endTime: null,
+    durationMinutes: 0,
+    exercises: [],
+    completionPct: 0,
+    notes: '',
+    fatigueAtStart,
+    volumeLoad: 0,
+  };
+
+  showScreen('screen-active');
+  startClock();
+  renderActive();
+  beepSuccess();
+  // Phase 1: Wake Lock + Haptic + Audio
+  if (window.Phase1Training) Phase1Training.onSessionStart();
+
+  // Phase 4 — Session 2.0: store mode config + launch interval modes
+  ModeState.config = getSessionModeConfig();
+  if (ModeState.mode !== 'standard' && ModeState.mode !== 'superset') {
+    setTimeout(() => launchIntervalMode(), 800);
+  }
+  // Show pep talk from LiveCoach on start
+  if (window.LiveCoach) {
+    const pep = LiveCoach.pepTalk(0, 0, State.exercises.length, 0);
+    if (pep) setTimeout(() => showCoach({ type:'pep', msg: pep }), 1200);
+  }
+}
+
+/* ══════════════════════════════
+   SESSION CLOCK
+══════════════════════════════ */
+function startClock() {
+  const el = document.getElementById('session-clock');
+  State.clockTimer = setInterval(() => {
+    const secs = Math.floor((Date.now() - State.startTime) / 1000);
+    const m = String(Math.floor(secs/60)).padStart(2,'0');
+    const s = String(secs%60).padStart(2,'0');
+    el.textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+/* ══════════════════════════════
+   PHASE 4 — SESSION MODE STATE
+══════════════════════════════ */
+const ModeState = {
+  mode: 'standard',  // standard | superset | amrap | emom | tabata | cluster
+  config: null,
+  intervalReps: 0,
+  tabataRunner: null,
+  amrapTimer: null,
+  emomTimer: null,
+  lastRPE: null,
+};
+
+/* ── Mode selector ── */
+document.addEventListener('DOMContentLoaded', () => {
+  const modeGrid = document.getElementById('mode-grid');
+  if (modeGrid) {
+    modeGrid.addEventListener('click', e => {
+      const card = e.target.closest('.mode-card');
+      if (!card) return;
+      modeGrid.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      ModeState.mode = card.dataset.mode;
+      // show/hide config panels
+      ['amrap','emom','tabata','cluster'].forEach(m => {
+        const el = document.getElementById(`cfg-${m}`);
+        if (el) el.classList.toggle('visible', m === ModeState.mode);
+      });
+    });
+  }
+});
+
+function getSessionModeConfig() {
+  const m = ModeState.mode;
+  if (!window.Session2) return null;
+  if (m === 'amrap')   return Session2.amrapConfig(+document.getElementById('amrap-min').value || 10);
+  if (m === 'emom')    return Session2.emomConfig(+document.getElementById('emom-rounds').value || 10);
+  if (m === 'tabata')  return Session2.tabataConfig(
+    +document.getElementById('tab-rounds').value || 8,
+    +document.getElementById('tab-work').value   || 20,
+    +document.getElementById('tab-rest').value   || 10
+  );
+  if (m === 'cluster') return Session2.clusterConfig(
+    +document.getElementById('clus-reps').value || 30,
+    +document.getElementById('clus-mini').value || 5,
+    +document.getElementById('clus-rest').value || 15
+  );
+  return null;
+}
+
+/* ── Interval mode launcher ── */
+function launchIntervalMode() {
+  const cfg = ModeState.config;
+  if (!cfg) return;
+  const overlay = document.getElementById('interval-overlay');
+  const ivPhase = document.getElementById('iv-phase');
+  const ivTime  = document.getElementById('iv-time');
+  const ivSub   = document.getElementById('iv-sub');
+  const ivRepsRow = document.getElementById('iv-reps-row');
+
+  ModeState.intervalReps = 0;
+  document.getElementById('iv-reps').textContent = '0';
+
+  overlay.classList.add('show');
+
+  if (cfg.mode === 'amrap') {
+    ivPhase.textContent = '// AMRAP — AS MANY REPS AS POSSIBLE';
+    ivSub.textContent   = `${cfg.minutes} MINUTE${cfg.minutes>1?'S':''} — COUNT YOUR REPS`;
+    ivRepsRow.style.display = 'flex';
+
+    let remaining = cfg.durationSec;
+    ModeState.amrapTimer = setInterval(() => {
+      remaining--;
+      const m = Math.floor(remaining/60), s = remaining%60;
+      ivTime.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if (remaining <= 10) ivTime.classList.add('interval-rest');
+      if (remaining <= 0) {
+        clearInterval(ModeState.amrapTimer);
+        const score = Session2.scoreAMRAP(ModeState.intervalReps, cfg.minutes);
+        overlay.classList.remove('show');
+        showCoach({
+          type: 'amrap', icon: '∞',
+          msg: `AMRAP จบแล้ว! ${score.totalReps} reps ใน ${cfg.minutes} นาที — ${score.rph} reps/ชม.`,
+          action: 'บันทึกผลและเริ่ม exercise ถัดไป',
+        });
+      }
+    }, 1000);
+  }
+
+  else if (cfg.mode === 'tabata') {
+    ivRepsRow.style.display = 'flex';
+    let phaseIdx = 0;
+    const phases = cfg.phases;
+
+    function runTabataPhase(idx) {
+      if (idx >= phases.length) {
+        overlay.classList.remove('show');
+        const repsLog = ModeState.tabataRepsLog || [];
+        const score   = Session2.scoreTabata(repsLog);
+        showCoach({
+          type: 'tabata', icon: '🔥',
+          msg: `Tabata จบ! รวม ${score.total} reps · เฉลี่ย ${score.avg}/round · สูงสุด ${score.peak} · ลด ${score.dropPct}%`,
+          action: 'กด DONE เพื่อบันทึก',
+        });
+        return;
+      }
+      const phase = phases[idx];
+      const isWork = phase.type === 'work';
+      ivPhase.textContent = `// TABATA — ROUND ${phase.round}/${cfg.rounds}`;
+      ivSub.textContent   = isWork ? '⚡ WORK' : '💤 REST';
+      ivTime.className    = `interval-time ${isWork ? 'interval-work' : 'interval-rest'}`;
+      ivRepsRow.style.display = isWork ? 'flex' : 'none';
+      if (isWork) { ModeState.intervalReps = 0; document.getElementById('iv-reps').textContent = '0'; }
+
+      if (!ModeState.tabataRepsLog) ModeState.tabataRepsLog = [];
+
+      let remaining = phase.duration;
+      ivTime.textContent = String(remaining).padStart(2,'0');
+      ModeState.tabataTimer = setInterval(() => {
+        remaining--;
+        ivTime.textContent = String(remaining).padStart(2,'0');
+        if (remaining <= 0) {
+          clearInterval(ModeState.tabataTimer);
+          if (isWork) ModeState.tabataRepsLog.push(ModeState.intervalReps);
+          runTabataPhase(idx + 1);
+        }
+      }, 1000);
+    }
+
+    ModeState.tabataRepsLog = [];
+    runTabataPhase(0);
+  }
+
+  else if (cfg.mode === 'emom') {
+    ivRepsRow.style.display = 'none';
+    let round = 1;
+    function runEMOMRound() {
+      if (round > cfg.rounds) {
+        overlay.classList.remove('show');
+        showCoach({ type:'emom', icon:'⏱', msg:`EMOM จบ! ${cfg.rounds} rounds เสร็จสิ้น`, action:'MISSION ACCOMPLISHED' });
+        return;
+      }
+      ivPhase.textContent = `// EMOM — ROUND ${round} / ${cfg.rounds}`;
+      ivSub.textContent   = 'ทำให้เสร็จก่อนนาทีหมด แล้วพักที่เหลือ';
+      let remaining = 60;
+      ModeState.emomTimer = setInterval(() => {
+        remaining--;
+        ivTime.textContent = String(remaining).padStart(2,'0');
+        if (remaining <= 0) {
+          clearInterval(ModeState.emomTimer);
+          round++;
+          runEMOMRound();
+        }
+      }, 1000);
+    }
+    runEMOMRound();
+  }
+}
+
+function ivAdjReps(d) {
+  ModeState.intervalReps = Math.max(0, ModeState.intervalReps + d);
+  document.getElementById('iv-reps').textContent = ModeState.intervalReps;
+}
+
+function stopIntervalMode() {
+  clearInterval(ModeState.amrapTimer);
+  clearInterval(ModeState.emomTimer);
+  clearInterval(ModeState.tabataTimer);
+  document.getElementById('interval-overlay').classList.remove('show');
+}
+
+/* ══════════════════════════════
+   LIVE COACH (Phase 4 System A)
+══════════════════════════════ */
+let _coachTimer = null;
+
+function showCoach(advice) {
+  if (!advice) return;
+  const panel = document.getElementById('coach-panel');
+  const iconMap = { pr:'🏆', momentum:'💥', fatigue:'⚠️', form:'📐', recovery:'💤', pep:'🔥', amrap:'∞', tabata:'🔥', emom:'⏱', normal:'🧠' };
+  document.getElementById('coach-icon').textContent   = advice.icon || iconMap[advice.type] || '🧠';
+  document.getElementById('coach-type').textContent   = `// LIVE COACH — ${(advice.type||'').toUpperCase()}`;
+  document.getElementById('coach-msg').textContent    = advice.msg || advice.message || '';
+  document.getElementById('coach-action').textContent = advice.action ? `→ ${advice.action}` : '';
+  panel.classList.add('show');
+
+  if (_coachTimer) clearTimeout(_coachTimer);
+  _coachTimer = setTimeout(() => dismissCoach(), 6000);
+}
+
+function dismissCoach() {
+  document.getElementById('coach-panel').classList.remove('show');
+}
+
+/* ── RPE input bar (appended after set-done) ── */
+function showRPEBar(setIdx) {
+  const oldBar = document.getElementById('rpe-bar-el');
+  if (oldBar) oldBar.remove();
+
+  const bar = document.createElement('div');
+  bar.id = 'rpe-bar-el';
+  bar.className = 'rpe-bar show';
+  bar.innerHTML = `
+    <span class="rpe-label">RPE</span>
+    <div class="rpe-btns">
+      ${[6,7,8,9,10].map(v => `<button class="rpe-btn" onclick="selectRPE(${v},${setIdx})">${v}</button>`).join('')}
+    </div>
+  `;
+  const setRow = document.getElementById(`set-row-${setIdx}`);
+  if (setRow) setRow.after(bar);
+}
+
+function selectRPE(val, setIdx) {
+  ModeState.lastRPE = val;
+  document.querySelectorAll('.rpe-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+
+  // Run LiveCoach analysis if available
+  if (window.LiveCoach) {
+    const ex = State.exercises[State.currentEx];
+    if (ex) {
+      const advice = LiveCoach.analyzeSet(ex, setIdx, val, State.pr);
+      if (advice) showCoach(advice);
+    }
+  }
+}
+
+/* ── Override toggleSetDone to fire LiveCoach ── */
+const _origToggleSetDone = toggleSetDone;
+// We'll redefine after the original is parsed via a post-init hook
+
+
+  renderSidebar();
+  renderCurrentExercise();
+  updateProgress();
+}
+
+function renderSidebar() {
+  const sb = document.getElementById('ex-sidebar');
+  sb.innerHTML = State.exercises.map((ex, i) => {
+    const cls = i === State.currentEx ? 'current' : ex.completed || ex.skipped ? 'done' : '';
+    const icon = ex.completed ? '✓' : ex.skipped ? '—' : '';
+    return `<div class="ex-sidebar-item ${cls}" onclick="jumpToExercise(${i})">
+      <span class="ex-si-num">${String(i+1).padStart(2,'0')}</span>
+      <span class="ex-si-name">${ex.name}</span>
+      ${icon ? `<span class="ex-si-check">${icon}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderCurrentExercise() {
+  const main = document.getElementById('active-main');
+  const ex = State.exercises[State.currentEx];
+  if (!ex) return;
+
+  const focusTitle = State.focus.split(' ').map((w,i) => i===0 ? w : `<span>${w}</span>`).join(' ');
+  document.getElementById('active-focus-title').innerHTML = focusTitle;
+
+  const isLast   = State.currentEx === State.exercises.length - 1;
+  const metaSub  = ex.type === 'timed' ? `${ex.sets} SETS × ${ex.duration} SEC HOLD`
+    : ex.type === 'distance' ? `${(ex.distance/1000).toFixed(1)} KM RUN`
+    : `${ex.sets} SETS × ${ex.reps} REPS TARGET`;
+
+  const setsHTML = buildSetsHTML(ex);
+
+  main.innerHTML = `
+    <div class="ex-header-card hud-frame">
+      <div class="ex-num-badge">// EXERCISE ${State.currentEx+1} OF ${State.exercises.length}</div>
+      <div class="ex-title">${ex.name.toUpperCase()}</div>
+      <div class="ex-desc">${metaSub} · REST ${ex.rest}s</div>
+    </div>
+
+    <div class="sets-section">
+      <div class="sets-header">
+        <span class="sets-title">// SETS</span>
+        <span class="sets-progress" id="sets-progress">0 / ${ex.sets} DONE</span>
+      </div>
+      <div id="sets-list">${setsHTML}</div>
+    </div>
+
+    <div class="ex-nav-row">
+      <button class="btn" onclick="skipExercise()">SKIP ›</button>
+      <button class="btn btn-primary" onclick="completeExercise()">DONE — NEXT ⚡</button>
+    </div>
+  `;
+
+  updateSetsProgress();
+}
+
+function buildSetsHTML(ex) {
+  return Array.from({length: ex.sets}, (_, i) => {
+    const done = ex.setDone[i];
+
+    // Distance (run) — input mm:ss time
+    if (ex.type === 'distance') {
+      const stored = ex.actualReps[i] || 0;
+      const mm = String(Math.floor(stored/60)).padStart(2,'0');
+      const ss = String(stored%60).padStart(2,'0');
+      return `<div class="set-row" id="set-row-${i}">
+        <span class="set-num">🏃 ${(ex.distance/1000).toFixed(1)}km</span>
+        <span class="set-target">บันทึกเวลา</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="run-mm-${i}" value="${mm}" min="0" max="99" style="width:40px;font-family:var(--head);font-size:16px;background:var(--bg3);border:1px solid var(--border2);color:var(--green);text-align:center;padding:4px;border-radius:3px" oninput="saveRunTime(${i})" placeholder="00">
+          <span style="color:var(--gray);font-family:var(--head)">:</span>
+          <input type="number" id="run-ss-${i}" value="${ss}" min="0" max="59" style="width:40px;font-family:var(--head);font-size:16px;background:var(--bg3);border:1px solid var(--border2);color:var(--green);text-align:center;padding:4px;border-radius:3px" oninput="saveRunTime(${i})" placeholder="00">
+        </div>
+        <button class="set-done-btn ${done?'confirmed':''}" onclick="toggleSetDone(${i})" id="set-btn-${i}">
+          ${done ? '✓ DONE' : 'LOG RUN'}
+        </button>
+      </div>`;
+    }
+
+    if (ex.type === 'timed') {
+      return `<div class="set-row" id="set-row-${i}">
+        <span class="set-num">SET ${i+1}</span>
+        <span class="set-target">TARGET ${ex.duration}s</span>
+        <span class="timed-val" id="timed-${i}">${ex.actualReps[i]}s</span>
+        <button class="set-done-btn ${done?'confirmed':''}" onclick="toggleSetDone(${i})" id="set-btn-${i}">
+          ${done ? '✓ DONE' : 'MARK DONE'}
+        </button>
+      </div>`;
+    }
+    return `<div class="set-row" id="set-row-${i}">
+      <span class="set-num">SET ${i+1}</span>
+      <span class="set-target">TARGET ${ex.reps} reps</span>
+      <div class="reps-spinner">
+        <button class="spin-btn left" onclick="adjustReps(${i},-1)">−</button>
+        <div class="spin-val" id="reps-val-${i}">${ex.actualReps[i]}</div>
+        <button class="spin-btn right" onclick="adjustReps(${i},+1)">+</button>
+      </div>
+      <button class="set-done-btn ${done?'confirmed':''}" onclick="toggleSetDone(${i})" id="set-btn-${i}">
+        ${done ? '✓ DONE' : 'LOG SET'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function saveRunTime(setIdx) {
+  const ex = State.exercises[State.currentEx];
+  if (!ex || ex.type !== 'distance') return;
+  const mm = parseInt(document.getElementById('run-mm-'+setIdx)?.value || '0') || 0;
+  const ss = parseInt(document.getElementById('run-ss-'+setIdx)?.value || '0') || 0;
+  ex.actualReps[setIdx] = mm * 60 + ss;
+}
+
+function adjustReps(setIdx, delta) {
+  const ex = State.exercises[State.currentEx];
+  ex.actualReps[setIdx] = Math.max(0, (ex.actualReps[setIdx]||0) + delta);
+  const el = document.getElementById(`reps-val-${setIdx}`);
+  if (el) el.textContent = ex.actualReps[setIdx];
+}
+
+function toggleSetDone(setIdx) {
+  const ex = State.exercises[State.currentEx];
+  ex.setDone[setIdx] = !ex.setDone[setIdx];
+  const btn = document.getElementById(`set-btn-${setIdx}`);
+  if (btn) {
+    btn.classList.toggle('confirmed', ex.setDone[setIdx]);
+    btn.textContent = ex.setDone[setIdx] ? '✓ DONE' : (ex.type==='distance' ? 'LOG RUN' : ex.type==='timed' ? 'MARK DONE' : 'LOG SET');
+  }
+  if (ex.setDone[setIdx]) beepSuccess();
+  updateSetsProgress();
+
+  // Phase 4 — LiveCoach: show RPE bar + coach advice
+  if (ex.setDone[setIdx]) {
+    showRPEBar(setIdx);
+    if (window.LiveCoach) {
+      const advice = LiveCoach.analyzeSet(ex, setIdx, ModeState.lastRPE, State.pr);
+      if (advice && advice.priority === 'high') showCoach(advice);
+    }
+  }
+
+  // Auto-start rest if not last set and all current done
+  const doneSets = ex.setDone.filter(Boolean).length;
+  if (ex.setDone[setIdx] && setIdx < ex.sets - 1) {
+    const nextLabel = `SET ${setIdx+2} OF ${ex.sets}`;
+    startRest(ex.rest, nextLabel);
+  }
+}
+
+function updateSetsProgress() {
+  const ex = State.exercises[State.currentEx];
+  if (!ex) return;
+  const done = ex.setDone.filter(Boolean).length;
+  const el = document.getElementById('sets-progress');
+  if (el) el.textContent = `${done} / ${ex.sets} DONE`;
+}
+
+function completeExercise() {
+  const ex = State.exercises[State.currentEx];
+  ex.completed = true;
+  beepSuccess();
+
+  if (State.currentEx < State.exercises.length - 1) {
+    const nextEx = State.exercises[State.currentEx + 1];
+    startRest(ex.rest, nextEx.name.toUpperCase(), () => {
+      State.currentEx++;
+      renderActive();
+    });
+  } else {
+    finishSession();
+  }
+}
+
+function skipExercise() {
+  const ex = State.exercises[State.currentEx];
+  ex.skipped = true;
+  if (State.currentEx < State.exercises.length - 1) {
+    State.currentEx++;
+    renderActive();
+  } else {
+    finishSession();
+  }
+}
+
+function jumpToExercise(i) {
+  State.currentEx = i;
+  renderActive();
+}
+
+function updateProgress() {
+  const done = State.exercises.filter(e => e.completed || e.skipped).length;
+  const total = State.exercises.length;
+  const pct = total > 0 ? Math.round((done/total)*100) : 0;
+  document.getElementById('prog-count').textContent = `${done} / ${total}`;
+  document.getElementById('prog-fill').style.width = pct + '%';
+}
+
+/* ══════════════════════════════
+   REST TIMER
+══════════════════════════════ */
+let _restCallback = null;
+
+function startRest(secs, nextLabel = '', onDone = null) {
+  if (!secs || secs <= 0) { if (onDone) onDone(); return; }
+
+  _restCallback = onDone;
+  State.restSecs = secs;
+
+  const overlay = document.getElementById('rest-overlay');
+  const numEl   = document.getElementById('rest-num');
+  const nextEl  = document.getElementById('rest-next-label');
+  const ring    = document.getElementById('rest-ring-fill');
+
+  overlay.classList.add('show');
+  nextEl.textContent = nextLabel ? `NEXT: ${nextLabel}` : '';
+
+  const circumference = State.restCirc; // 2π×80
+  ring.style.strokeDasharray  = circumference;
+  ring.style.strokeDashoffset = 0;
+
+  let remaining = secs;
+  numEl.textContent = remaining;
+
+  if (State.restTimer) clearInterval(State.restTimer);
+
+  State.restTimer = setInterval(() => {
+    remaining--;
+    numEl.textContent = remaining;
+    beepCountdown(remaining);
+
+    const offset = circumference * (1 - remaining/secs);
+    ring.style.strokeDashoffset = offset;
+
+    if (remaining <= 0) {
+      clearInterval(State.restTimer);
+      State.restTimer = null;
+      overlay.classList.remove('show');
+      beepDone();
+      if (_restCallback) { _restCallback(); _restCallback = null; }
+    }
+  }, 1000);
+}
+
+function skipRest() {
+  if (State.restTimer) { clearInterval(State.restTimer); State.restTimer = null; }
+  document.getElementById('rest-overlay').classList.remove('show');
+  beep(440,.1,.2);
+  if (_restCallback) { _restCallback(); _restCallback = null; }
+}
+
+/* ══════════════════════════════
+   ABORT
+══════════════════════════════ */
+function confirmAbort() {
+  if (confirm('ยกเลิก session นี้?')) {
+    clearInterval(State.clockTimer);
+    if (State.restTimer) clearInterval(State.restTimer);
+    document.getElementById('rest-overlay').classList.remove('show');
+    showScreen('screen-setup');
+  }
+}
+
+/* ══════════════════════════════
+   FINISH SESSION → SUMMARY
+══════════════════════════════ */
+function finishSession() {
+  clearInterval(State.clockTimer);
+  if (State.restTimer) clearInterval(State.restTimer);
+  document.getElementById('rest-overlay').classList.remove('show');
+
+  const elapsed = Math.floor((Date.now() - State.startTime) / 1000);
+  const minutes = Math.round(elapsed / 60);
+
+  // Calculate totals
+  let totalReps = 0;
+  let volumeLoad = 0;
+  const completedExes = State.exercises.filter(e => e.completed);
+
+  State.exercises.forEach(ex => {
+    const reps = ex.actualReps.reduce((s, r, i) => s + (ex.setDone[i] ? r : 0), 0);
+    totalReps += reps;
+    volumeLoad += reps * (ex.muscleGroup === 'upper' ? 1.2 : 1);
+  });
+
+  const completionPct = Math.round((completedExes.length / State.exercises.length) * 100);
+
+  // Grade
+  let grade = 'C', icon = '🎯', label = 'GOOD EFFORT';
+  if (completionPct >= 95) { grade='S'; icon='🏆'; label='OUTSTANDING'; }
+  else if (completionPct >= 80) { grade='A'; icon='🎖'; label='EXCELLENT'; }
+  else if (completionPct >= 60) { grade='B'; icon='✅'; label='GOOD WORK'; }
+
+  // Store in state for save
+  State.session.endTime = new Date().toISOString();
+  State.session.durationMinutes = minutes;
+  State.session.exercises = State.exercises;
+  State.session.completionPct = completionPct;
+  State.session.volumeLoad = Math.round(volumeLoad);
+
+  // Check PRs
+  State.newPRs = [];
+  if (State.pr) {
+    State.exercises.forEach(ex => {
+      const bestReps = Math.max(...ex.actualReps.filter((r,i) => ex.setDone[i]||true));
+      if (ex.name === 'Push-up'   && bestReps > (State.pr.pushup?.value||0)) State.newPRs.push(`Push-up: ${bestReps} reps`);
+      if (ex.name === 'Pull-up'   && bestReps > (State.pr.pullup?.value||0)) State.newPRs.push(`Pull-up: ${bestReps} reps`);
+      if (ex.name === 'Sit-up'    && bestReps > (State.pr.situp?.value||0))  State.newPRs.push(`Sit-up: ${bestReps} reps`);
+    });
+  }
+
+  // Phase 1: Release Wake Lock + celebration
+  if (window.Phase1Training) {
+    Phase1Training.onSessionEnd();
+    if (State.newPRs && State.newPRs.length > 0) Phase1Training.onNewPR();
+  }
+
+  // Render summary
+  showScreen('screen-summary');
+
+  document.getElementById('sum-icon').textContent  = icon;
+  const gradeEl = document.getElementById('sum-grade');
+  gradeEl.textContent  = grade;
+  gradeEl.className    = `summary-grade ${grade}`;
+  document.getElementById('sum-label').textContent = `${completionPct}% COMPLETION — ${label}`;
+  document.getElementById('sum-duration').textContent    = minutes;
+  document.getElementById('sum-exercises').textContent   = completedExes.length;
+  document.getElementById('sum-total-reps').textContent  = totalReps;
+
+  // PRs
+  if (State.newPRs.length > 0) {
+    document.getElementById('pr-alert').style.display = 'flex';
+    document.getElementById('pr-alert-text').innerHTML =
+      `🏆 NEW PERSONAL RECORD!<br>${State.newPRs.join('  ·  ')}`;
+  }
+
+  // Exercise breakdown
+  document.getElementById('ex-summary-list').innerHTML = State.exercises.map(ex => {
+    const doneSets  = ex.setDone ? ex.setDone.filter(Boolean).length : 0;
+    const totalR    = ex.type === 'timed'
+      ? ex.actualReps.reduce((s,r) => s+r, 0) + 's total'
+      : ex.actualReps.filter((_,i) => ex.setDone && ex.setDone[i]).reduce((s,r)=>s+r,0) + ' reps';
+    const statusCls = ex.skipped ? 'skip' : '';
+    const badge     = ex.skipped ? 'SKIPPED' : ex.completed ? 'DONE' : `${doneSets}/${ex.sets} SETS`;
+    const exIcon = ex.muscleGroup === 'upper' ? '💪' : ex.muscleGroup === 'lower' ? '🦵' : ex.muscleGroup === 'core' ? '🧱' : '🏃';
+
+    return `<div class="ex-sum-row">
+      <span class="ex-sum-icon">${exIcon}</span>
+      <span class="ex-sum-name">${ex.name}</span>
+      <span class="ex-sum-sets">${totalR}</span>
+      <span class="ex-sum-badge ${statusCls}">${badge}</span>
+    </div>`;
+  }).join('');
+
+  beepDone();
+}
+
+/* ══════════════════════════════
+   SAVE SESSION
+══════════════════════════════ */
+async function saveSession() {
+  try {
+    State.session.notes = document.getElementById('session-notes').value;
+
+    // Save workout log
+    // Compute sessionLoad via FatigueEngine before saving
+    try {
+      if (typeof FatigueEngine !== 'undefined') {
+        State.session.sessionLoad = FatigueEngine.calcSessionLoad(State.session);
+      } else {
+        State.session.sessionLoad = State.session.volumeLoad || 0;
+      }
+    } catch(e) { State.session.sessionLoad = State.session.volumeLoad || 0; }
+
+    await Storage.Logs.save(State.session);
+
+    // Update user stats
+    const profile = State.profile || await Storage.User.get();
+    if (profile) {
+      const today = new Date().toISOString().split('T')[0];
+      const last  = profile.lastTrainedDate;
+      const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+      const yStr = yesterday.toISOString().split('T')[0];
+
+      const newStreak = (last === yStr || last === today)
+        ? (profile.currentStreak || 0) + (last === today ? 0 : 1)
+        : 1;
+
+      await Storage.User.update({
+        totalDaysActive:  (profile.totalDaysActive||0) + (last === today ? 0 : 1),
+        currentStreak:    newStreak,
+        longestStreak:    Math.max(profile.longestStreak||0, newStreak),
+        lastTrainedDate:  today,
+      });
+    }
+
+    // Update PRs — รองรับทุก exercise type รวมถึงวิ่ง (distance)
+    const pr = State.pr || await Storage.PR.get();
+    if (pr) {
+      for (const ex of State.exercises) {
+        if (ex.skipped) continue;
+
+        // Repetition / timed — best set
+        const doneSets = ex.actualReps.filter((_, i) => !ex.setDone || ex.setDone[i] || true);
+        const best = doneSets.length ? Math.max(...doneSets) : 0;
+
+        if (ex.name === 'Push-up')  await Storage.PR.update('pushup', best);
+        if (ex.name === 'Pull-up')  await Storage.PR.update('pullup', best);
+        if (ex.name === 'Sit-up')   await Storage.PR.update('situp',  best);
+        if (ex.name === 'Plank')    await Storage.PR.update('plank',  Math.max(...ex.actualReps));
+
+        // Distance exercises — save run time (actualReps[0] = seconds, lower=better)
+        if (ex.type === 'distance' && ex.actualReps[0] > 0) {
+          const timeSec = ex.actualReps[0];
+          const dist    = ex.distance || 0;
+          if (dist >= 4500 && dist <= 5500) await Storage.PR.update('run5km', timeSec);
+          if (dist >= 1800 && dist <= 2200) await Storage.PR.update('run2km', timeSec);
+          if (dist >= 2800 && dist <= 3200) await Storage.PR.update('run3km', timeSec);
+        }
+      }
+    }
+
+    // Award XP via UltimateEngine.XPSystem
+    try {
+      if (typeof UltimateEngine !== 'undefined') {
+        const app     = (await Storage.App.get()) || {};
+        const profile2 = await Storage.User.get();
+        const plan = { mode: 'standard' }; // session mode
+        const xp = UltimateEngine.XPSystem.calcSessionXP(
+          plan,
+          State.session.completionPct >= 80 ? 5 : 3, // feedback proxy from completion
+          profile2?.currentStreak || 0
+        );
+        app.totalXP = (app.totalXP || 0) + xp;
+        await Storage.App.set(app);
+      }
+    } catch(e) { console.warn('[Training] XP award failed:', e); }
+
+    window.location.href = 'dashboard.html';
+  } catch(err) {
+    console.error('[Training] Save error:', err);
+    alert('บันทึกไม่สำเร็จ — ' + err.message);
+  }
+}
+
+/* ══════════════════════════════
+   BOOTSTRAP
+══════════════════════════════ */
+async function bootstrap() {
+  try {
+    await Storage.init();
+    State.profile = await Storage.User.get();
+    State.pr      = await Storage.PR.get();
+
+    if (State.profile && !State.profile.onboardingComplete) {
+      window.location.href = 'onboarding.html';
+      return;
+    }
+  } catch(e) {
+    console.warn('[Training] DB not ready, continuing anyway');
+  }
+
+  renderSetup();
+
+  // Handle Enter key on custom input
+  document.getElementById('custom-ex-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addCustomExercise();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', bootstrap);
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

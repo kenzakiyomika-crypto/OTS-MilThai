@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>TACTICAL FITNESS — COMMAND CENTER</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+
+/* ═══════════════════════════════════════════
+   PHASE 1 — HERO DASHBOARD
+   2-Tap Rule: Every feature in ≤2 taps
+   Mobile-first, gesture-driven
+═══════════════════════════════════════════ */
+
+/* ── LAYOUT ── */
+.shell { display:flex; flex-direction:column; min-height:100vh; position:relative; overflow-x:hidden; }
+
+/* ── RISK STATUS BAR (top strip) ── */
+.risk-bar {
+  height: 3px;
+  width: 100%;
+  background: var(--green);
+  box-shadow: 0 0 12px var(--green-glow);
+  transition: background .5s, box-shadow .5s;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+}
+.risk-bar.amber { background: var(--amber); box-shadow: 0 0 12px rgba(255,170,0,.5); }
+.risk-bar.red   { background: var(--red);   box-shadow: 0 0 12px rgba(255,45,45,.6); animation: risk-pulse 1s ease infinite; }
+@keyframes risk-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 52px;
+  background: rgba(8,8,8,.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 12px;
+  position: fixed; top: 3px; left: 0; right: 0; z-index: 100;
+}
+.topbar-logo { font-family: var(--head); font-size: 18px; letter-spacing: 4px; color: var(--green); text-shadow: 0 0 12px var(--green-glow); }
+.topbar-callsign { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 2px; }
+.topbar-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+.topbar-clock { font-family: var(--mono); font-size: 13px; color: var(--amber); letter-spacing: 2px; }
+.live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── CONTENT ── */
+.content { padding-top: 58px; min-height: 100vh; }
+
+/* ── HERO SECTION ── */
+.hero {
+  padding: 20px 16px 0;
+  position: relative;
+}
+
+/* ── READINESS RING ── */
+.readiness-block {
+  display: flex; align-items: center; gap: 20px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.readiness-block::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 0% 50%, rgba(0,255,136,.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.ring-svg { flex-shrink: 0; }
+.ring-svg circle { transition: stroke-dashoffset 1s var(--ease-out); }
+.ring-center {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-wrap { position:relative; flex-shrink:0; }
+.ring-score { font-family: var(--head); font-size: 28px; color: var(--white); line-height:1; }
+.ring-label { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--gray); margin-top:2px; }
+.readiness-info { flex: 1; min-width: 0; }
+.readiness-status {
+  font-family: var(--head); font-size: 20px; letter-spacing: 2px;
+  color: var(--green); text-shadow: 0 0 16px var(--green-glow);
+}
+.readiness-status.amber { color: var(--amber); text-shadow: 0 0 16px rgba(255,170,0,.4); }
+.readiness-status.red   { color: var(--red);   text-shadow: 0 0 16px rgba(255,45,45,.4); }
+.readiness-detail { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 1px; margin-top: 4px; line-height: 1.5; }
+.readiness-rank { margin-top: 8px; display:flex; align-items:center; gap:8px; }
+.rank-badge {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
+  padding: 3px 8px; border-radius: 3px;
+  background: var(--green-dim); border: 1px solid rgba(0,255,136,.2);
+  color: var(--green);
+}
+.streak-chip {
+  font-family: var(--mono); font-size: 9px;
+  color: var(--amber); letter-spacing: 1px;
+}
+
+/* ── 3 HERO BUTTONS (2-Tap Core) ── */
+.hero-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 0 16px;
+}
+.hero-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 16px 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer; text-decoration: none;
+  transition: all .15s;
+  position: relative; overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.hero-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(0,255,136,.08), transparent 70%);
+  opacity: 0; transition: opacity .2s;
+}
+.hero-btn:hover::before, .hero-btn:active::before { opacity: 1; }
+.hero-btn:active { transform: scale(.96); border-color: rgba(0,255,136,.3); }
+.hero-btn-icon { font-size: 26px; margin-bottom: 6px; line-height: 1; }
+.hero-btn-label { font-family: var(--head); font-size: 13px; letter-spacing: 2px; color: var(--white); }
+.hero-btn-sub   { font-family: var(--mono); font-size: 8px; color: var(--gray); margin-top: 2px; letter-spacing: 1px; }
+.hero-btn.primary { border-color: rgba(0,255,136,.3); background: var(--green-dim); }
+.hero-btn.primary .hero-btn-label { color: var(--green); }
+.hero-btn-badge {
+  position: absolute; top: 8px; right: 8px;
+  font-family: var(--mono); font-size: 8px;
+  background: var(--red); color: white;
+  padding: 1px 5px; border-radius: 10px;
+  font-weight: 700;
+}
+
+/* ── SECTION HEADER ── */
+.section-h {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 3px;
+  color: var(--gray2);
+  padding: 0 16px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-h::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── PR STRIP (horizontal scroll) ── */
+.pr-strip {
+  display: flex; gap: 8px;
+  overflow-x: auto; padding: 0 16px 4px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+}
+.pr-strip::-webkit-scrollbar { display:none; }
+.pr-chip {
+  flex-shrink: 0;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px;
+  min-width: 100px;
+  transition: border-color .15s;
+  cursor: pointer; text-decoration: none;
+}
+.pr-chip:hover { border-color: rgba(0,255,136,.25); }
+.pr-chip-label { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--gray2); }
+.pr-chip-val { font-family: var(--head); font-size: 22px; color: var(--white); line-height: 1.1; margin-top: 2px; }
+.pr-chip-unit { font-family: var(--mono); font-size: 8px; color: var(--gray); }
+.pr-chip-trend { font-family: var(--mono); font-size: 8px; margin-top: 3px; }
+.pr-chip-trend.up   { color: var(--green); }
+.pr-chip-trend.down { color: var(--red); }
+.pr-chip-trend.same { color: var(--gray); }
+
+/* ── MISSION CARD ── */
+.mission-cards { padding: 0 16px; margin-bottom: 16px; display:flex; flex-direction:column; gap:8px; }
+.mission-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; text-decoration: none;
+  transition: all .15s; position: relative; overflow: hidden;
+}
+.mission-card:hover { border-color: rgba(0,255,136,.2); }
+.mission-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--green); border-radius: 3px 0 0 3px;
+}
+.mission-card.amber::before { background: var(--amber); }
+.mission-card.red::before   { background: var(--red); }
+.mission-icon-lg { font-size: 22px; flex-shrink: 0; }
+.mission-body-text { flex: 1; min-width: 0; }
+.mission-name-text { font-family: var(--body); font-size: 14px; font-weight: 600; color: var(--white); }
+.mission-desc-text { font-family: var(--mono); font-size: 9px; color: var(--gray); margin-top: 2px; }
+.mission-prog-wrap { margin-top: 6px; }
+.mission-prog-bar { height: 3px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+.mission-prog-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width .6s var(--ease-out); }
+.mission-pct-text { font-family: var(--mono); font-size: 8px; color: var(--gray); margin-top: 3px; }
+.mission-xp { font-family: var(--mono); font-size: 10px; color: var(--amber); flex-shrink: 0; }
+.mission-empty-state { text-align:center; padding: 20px; color: var(--gray); font-family: var(--mono); font-size: 10px; }
+
+/* ── WEEK GRID ── */
+.week-strip { padding: 0 16px; margin-bottom: 16px; }
+.week-cells { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; }
+.wday {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 4px; cursor: default;
+}
+.wday.trained { background: var(--green-dim); border-color: rgba(0,255,136,.3); }
+.wday.today   { border-color: rgba(0,255,136,.5); }
+.wday-name { font-family: var(--mono); font-size: 8px; color: var(--gray2); letter-spacing: 1px; }
+.wday-num  { font-family: var(--head); font-size: 16px; color: var(--white); line-height:1; margin: 2px 0; }
+.wday.trained .wday-num { color: var(--green); }
+.wday-dot  { width: 4px; height: 4px; border-radius: 50%; background: var(--border2); }
+.wday.trained .wday-dot { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.wday.today .wday-dot   { background: var(--amber); box-shadow: 0 0 4px var(--amber); }
+
+/* ── BOTTOM STAT ROW ── */
+.bottom-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; margin-bottom: 20px; }
+.bstat {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  position: relative; overflow: hidden;
+}
+.bstat::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.bstat.green::after { background: var(--green); }
+.bstat.amber::after { background: var(--amber); }
+.bstat.red::after   { background: var(--red); }
+.bstat.blue::after  { background: #00b4ff; }
+.bstat-label { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--gray2); margin-bottom: 6px; }
+.bstat-val   { font-family: var(--head); font-size: 28px; color: var(--white); line-height: 1; }
+.bstat-sub   { font-family: var(--mono); font-size: 9px; color: var(--gray); margin-top: 4px; }
+
+/* ── XP BAR ── */
+.xp-strip {
+  margin: 0 16px 16px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 16px;
+}
+.xp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.xp-rank-label { font-family: var(--head); font-size: 14px; letter-spacing: 2px; color: var(--green); }
+.xp-nums { font-family: var(--mono); font-size: 9px; color: var(--gray); }
+.xp-track { height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--green), #00d4ff); border-radius: 3px; transition: width 1s var(--ease-out); }
+
+/* ── RISK ALERT BANNER ── */
+.risk-banner {
+  margin: 0 16px 14px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 10px;
+  display: none;
+}
+.risk-banner.amber { background: rgba(255,170,0,.08); border: 1px solid rgba(255,170,0,.25); color: var(--amber); }
+.risk-banner.red   { background: rgba(255,45,45,.08);  border: 1px solid rgba(255,45,45,.25);  color: var(--red); animation: risk-pulse 2s ease infinite; }
+.risk-banner-icon { font-size: 18px; flex-shrink: 0; }
+
+/* ── BOTTOM NAV (Mobile) ── */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(8,8,8,.96);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: env(safe-area-inset-bottom, 0) 0 0;
+}
+.bnav-inner { display: grid; grid-template-columns: repeat(5,1fr); }
+.bnav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 10px 4px 12px;
+  text-decoration: none; color: var(--gray);
+  transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.bnav-item:active { color: var(--green); }
+.bnav-item.active { color: var(--green); }
+.bnav-icon { font-size: 20px; line-height: 1; }
+.bnav-label { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; margin-top: 3px; }
+
+/* ── OVERLAY ── */
+#overlay {
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; }
+
+/* ── SIDEBAR (desktop only) ── */
+.sidebar {
+  width: 200px; min-height: 100vh;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; left:0; top:0; bottom:0; z-index: 100;
+  transform: translateX(-100%);
+  transition: transform .3s var(--ease-out);
+}
+.sidebar.open { transform: translateX(0); box-shadow: 4px 0 30px rgba(0,0,0,.8); }
+.sidebar-logo { padding: 18px 16px 14px; border-bottom: 1px solid var(--border); }
+.sidebar-logo-mark { font-family: var(--head); font-size: 20px; letter-spacing: 4px; color: var(--green); text-shadow: 0 0 16px var(--green-glow); }
+.sidebar-logo-sub { font-family: var(--mono); font-size: 8px; color: var(--gray2); letter-spacing: 2px; margin-top: 2px; }
+.nav-section { padding: 12px 10px 4px; }
+.nav-label { font-family: var(--mono); font-size: 8px; color: var(--gray2); letter-spacing: 3px; padding: 0 6px; margin-bottom: 3px; }
+.nav-item { display:flex; align-items:center; gap:8px; padding: 8px 8px; border-radius: 4px; cursor: pointer; text-decoration: none; color: var(--gray); font-family: var(--body); font-size: 12px; font-weight: 500; letter-spacing: .3px; transition: all .15s; border: 1px solid transparent; margin-bottom: 1px; }
+.nav-item:hover { background: var(--bg3); color: var(--white); border-color: var(--border); }
+.nav-item.active { background: var(--green-dim); color: var(--green); border-color: rgba(0,255,136,.2); }
+.nav-icon { font-size: 13px; width: 16px; text-align: center; }
+.sidebar-footer { margin-top: auto; padding: 12px 14px; border-top: 1px solid var(--border); }
+
+/* ── HAMBURGER ── */
+.hamburger-btn {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.hamburger-btn span { display: block; width: 18px; height: 2px; background: var(--gray); border-radius: 1px; transition: .2s; }
+.hamburger-btn:hover span { background: var(--white); }
+
+/* ── MOBILE ── */
+@media (max-width: 700px) {
+  .bottom-nav { display: block; }
+  .content { padding-bottom: 70px; }
+  .sidebar { width: 240px; }
+}
+@media (min-width: 701px) {
+  .content { padding-left: 0; }
+  .bottom-nav { display: none; }
+  .sidebar { transform: translateX(0); }
+  .content { padding-left: 200px; }
+  .topbar { left: 200px; }
+  .risk-bar { left: 200px; }
+  .hamburger-btn { display: none; }
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.anim-1 { animation: fadeInUp .4s var(--ease-out) .05s both; }
+.anim-2 { animation: fadeInUp .4s var(--ease-out) .12s both; }
+.anim-3 { animation: fadeInUp .4s var(--ease-out) .18s both; }
+.anim-4 { animation: fadeInUp .4s var(--ease-out) .24s both; }
+.anim-5 { animation: fadeInUp .4s var(--ease-out) .30s both; }
+.anim-6 { animation: fadeInUp .4s var(--ease-out) .36s both; }
+
+/* ── PR NEW PULSE ── */
+@keyframes pr-new { 0%{box-shadow:0 0 0 0 rgba(0,255,136,.6)} 100%{box-shadow:0 0 0 12px rgba(0,255,136,0)} }
+.pr-chip.new-pr { animation: pr-new .6s ease 3; border-color: rgba(0,255,136,.5); }
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+/* Mobile hero layout */
+@media(max-width:480px){
+  .hero-btns{grid-template-columns:1fr 1fr;gap:8px}
+  .readiness-block{flex-direction:column;text-align:center;gap:12px}
+  .readiness-block .readiness-rank{justify-content:center}
+  .bstats{grid-template-columns:1fr 1fr}
+  .bstat-val{font-size:22px}
+}
+@media(max-width:360px){
+  .hero-btns{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Risk Bar -->
+<div class="risk-bar" id="risk-bar"></div>
+
+<!-- Sidebar (desktop + mobile drawer) -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">⬡ TACTICAL</div>
+    <div class="sidebar-logo-sub">FITNESS SYSTEM v1.0</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// COMMAND</div>
+    <a href="dashboard.html" class="nav-item active"><span class="nav-icon">◈</span> COMMAND CENTER</a>
+    <a href="training.html"  class="nav-item"><span class="nav-icon">⚡</span> TODAY TRAINING</a>
+    <a href="planner.html"   class="nav-item"><span class="nav-icon">◻</span> MONTHLY PLANNER</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// INTELLIGENCE</div>
+    <a href="intel-center.html"    class="nav-item"><span class="nav-icon">📊</span> INTEL CENTER</a>
+    <a href="ops-hub.html"         class="nav-item"><span class="nav-icon">🎖</span> OPS HUB</a>
+    <a href="ultimate-coach.html"  class="nav-item"><span class="nav-icon">🧠</span> ULTIMATE COACH</a>
+    <a href="science-planner.html" class="nav-item"><span class="nav-icon">⚗</span> SCIENCE PLANNER</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// INTEL</div>
+    <a href="performance.html"  class="nav-item"><span class="nav-icon">▲</span> PERFORMANCE LOG</a>
+    <a href="rank.html"         class="nav-item"><span class="nav-icon">◆</span> RANK & CAPABILITY</a>
+    <a href="missions.html"     class="nav-item"><span class="nav-icon">⚔</span> MISSIONS</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// SYSTEM</div>
+    <a href="import-export.html" class="nav-item"><span class="nav-icon">⇅</span> IMPORT / EXPORT</a>
+    <a href="settings.html"      class="nav-item"><span class="nav-icon">◎</span> SETTINGS</a>
+  </div>
+  <div class="sidebar-footer">
+    <div style="font-family:var(--head);font-size:14px;color:var(--green)" id="sf-rank">—</div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:2px" id="sf-callsign">OPERATOR</div>
+  </div>
+</aside>
+
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Main -->
+<div class="shell">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <button class="hamburger-btn" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <div>
+      <div class="topbar-logo">⬡ TACTICAL</div>
+      <div class="topbar-callsign" id="tb-sub">// LOADING...</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-clock" id="tb-clock">—:—:—</div>
+      <div class="live-dot"></div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- Risk Banner -->
+    <div class="risk-banner" id="risk-banner">
+      <div class="risk-banner-icon" id="risk-icon">⚠</div>
+      <div id="risk-msg">—</div>
+    </div>
+
+    <!-- Hero: Readiness Ring -->
+    <div class="hero anim-1">
+      <div class="readiness-block">
+        <div class="ring-wrap">
+          <svg class="ring-svg" width="90" height="90" viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="38" fill="none" stroke="var(--border2)" stroke-width="6"/>
+            <circle id="ring-fill" cx="45" cy="45" r="38" fill="none"
+              stroke="var(--green)" stroke-width="6" stroke-linecap="round"
+              stroke-dasharray="239" stroke-dashoffset="239"
+              transform="rotate(-90 45 45)"/>
+          </svg>
+          <div class="ring-center" style="inset:0;position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div class="ring-score" id="ring-score">—</div>
+            <div class="ring-label">READY</div>
+          </div>
+        </div>
+        <div class="readiness-info">
+          <div class="readiness-status" id="readiness-status">LOADING...</div>
+          <div class="readiness-detail" id="readiness-detail">กำลังโหลดข้อมูล...</div>
+          <div class="readiness-rank">
+            <span class="rank-badge" id="rank-badge">—</span>
+            <span class="streak-chip" id="streak-chip">🔥 0 days</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 Hero Buttons -->
+    <div class="hero-btns anim-2">
+      <a href="training.html" class="hero-btn primary" id="btn-mission">
+        <div class="hero-btn-icon">⚡</div>
+        <div class="hero-btn-label">MISSION</div>
+        <div class="hero-btn-sub" id="btn-mission-sub">START</div>
+      </a>
+      <a href="performance.html" class="hero-btn">
+        <div class="hero-btn-icon">📊</div>
+        <div class="hero-btn-label">LOG</div>
+        <div class="hero-btn-sub">BATTLE LOG</div>
+      </a>
+      <a href="rank.html" class="hero-btn">
+        <div class="hero-btn-icon" id="btn-rank-icon">⭐</div>
+        <div class="hero-btn-label">RANK</div>
+        <div class="hero-btn-sub" id="btn-rank-sub">—</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--gray);letter-spacing:.5px;margin-top:2px" id="btn-rank-pct"></div>
+      </a>
+    </div>
+
+    <!-- PROMOTION BANNER (shown by RankEngine when ready) -->
+    <a href="rank.html" id="promo-banner" style="display:none;align-items:center;gap:10px;background:var(--green-dim);border:1px solid rgba(0,255,136,.3);border-radius:4px;padding:12px 16px;text-decoration:none;animation:fadeInUp .4s var(--ease-out) both">
+      <span style="font-size:20px">⭐</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:1px;line-height:1.5" id="promo-banner-text"></span>
+      <span style="margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--green)">→</span>
+    </a>
+
+    <!-- XP Bar -->
+    <div class="xp-strip anim-3">
+      <div class="xp-row">
+        <div class="xp-rank-label" id="xp-rank-label">—</div>
+        <div class="xp-nums" id="xp-nums">— XP</div>
+      </div>
+      <div class="xp-track">
+        <div class="xp-fill" id="xp-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- PR Strip -->
+    <div class="section-h anim-4">// PERSONAL RECORDS</div>
+    <div class="pr-strip anim-4" id="pr-strip">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- Active Missions -->
+    <div class="section-h anim-5">// ACTIVE MISSIONS</div>
+    <div class="mission-cards anim-5" id="mission-cards">
+      <div class="mission-empty-state">กำลังโหลด...</div>
+    </div>
+
+    <!-- Week Grid -->
+    <div class="section-h anim-5">// THIS WEEK</div>
+    <div class="week-strip anim-5">
+      <div class="week-cells" id="week-cells"></div>
+    </div>
+
+    <!-- Bottom Stats -->
+    <div class="section-h anim-6">// OPERATOR STATUS</div>
+    <div class="bottom-stats anim-6">
+      <div class="bstat green">
+        <div class="bstat-label">STREAK</div>
+        <div class="bstat-val" id="bs-streak">—</div>
+        <div class="bstat-sub">days</div>
+      </div>
+      <div class="bstat amber" id="bstat-fatigue">
+        <div class="bstat-label">FATIGUE</div>
+        <div class="bstat-val" id="bs-fatigue">—</div>
+        <div class="bstat-sub" id="bs-fatigue-sub">—</div>
+      </div>
+      <div class="bstat blue">
+        <div class="bstat-label">TOTAL DAYS</div>
+        <div class="bstat-val" id="bs-total">—</div>
+        <div class="bstat-sub">active</div>
+      </div>
+      <div class="bstat">
+        <div class="bstat-label">TOTAL SCORE</div>
+        <div class="bstat-val" id="bs-score">—</div>
+        <div class="bstat-sub" id="bs-score-sub">pts</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- Bottom Nav (mobile) -->
+  <nav class="bottom-nav">
+    <div class="bnav-inner">
+      <a href="dashboard.html" class="bnav-item active">
+        <div class="bnav-icon">◈</div>
+        <div class="bnav-label">HOME</div>
+      </a>
+      <a href="training.html" class="bnav-item">
+        <div class="bnav-icon">⚡</div>
+        <div class="bnav-label">TRAIN</div>
+      </a>
+      <a href="intel-center.html" class="bnav-item">
+        <div class="bnav-icon">📊</div>
+        <div class="bnav-label">INTEL</div>
+      </a>
+      <a href="missions.html" class="bnav-item">
+        <div class="bnav-icon">⚔</div>
+        <div class="bnav-label">MISSIONS</div>
+      </a>
+      <a href="rank.html" class="bnav-item">
+        <div class="bnav-icon">◆</div>
+        <div class="bnav-label">RANK</div>
+      </a>
+    </div>
+  </nav>
+
+</div>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/engines/fatigue.js"></script>
+<script src="../js/engines/rank.js"></script>
+<script src="../js/engines/mission.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════
+   DASHBOARD ENGINE — Phase 1
+   Hero Screen + 2-Tap Navigation + Risk System
+══════════════════════════════════════════════ */
+
+const TIER_ICONS = { civilian:'👤', enlisted:'🪖', nco:'⚙️', officer:'⭐', general:'🌟' };
+
+/* ── Clock ── */
+function startClock() {
+  const el = document.getElementById('tb-clock');
+  const tick = () => { el.textContent = new Date().toTimeString().slice(0,8); };
+  tick(); setInterval(tick, 1000);
+}
+
+/* ── Fatigue calculation (ACWR-based) ── */
+function calcFatigueLevel(logs) {
+  if (!logs || !logs.length) return { score: 0, label: 'FRESH', color: 'green', acwr: 1.0 };
+
+  // Use FatigueEngine if available, otherwise fallback
+  if (typeof FatigueEngine !== 'undefined') {
+    const today = new Date().toISOString().split('T')[0];
+    // Use full calcFatigueIndex — includes ACWR + consecutive days + weekly load
+    const fi = FatigueEngine.calcFatigueIndex(logs, today);
+    const acwr = fi.acwr;
+    let label, color;
+    if (acwr < 0.8)        { label = 'UNDERLOAD'; color = 'amber'; }
+    else if (acwr <= 1.3)  { label = 'OPTIMAL';   color = 'green'; }
+    else if (acwr <= 1.5)  { label = 'CAUTION';   color = 'amber'; }
+    else                   { label = 'OVERLOAD';   color = 'red'; }
+    const score = Math.round(Math.min(100, fi.index || acwr * 60));
+    return { score, label, color, acwr, consecutive: fi.consecutive, weeklyLoad: fi.weeklyLoad };
+  }
+
+  // Fallback: simple 7-day count
+  const today = new Date();
+  const week  = new Date(today); week.setDate(today.getDate()-6);
+  const weekStr = week.toISOString().split('T')[0];
+  const count = logs.filter(l => l.date >= weekStr).length;
+  if (count <= 2) return { score: count*12, label: 'FRESH',    color: 'green', acwr: 0.8  };
+  if (count <= 4) return { score: 45 + count*6, label: 'OPTIMAL', color: 'green', acwr: 1.1 };
+  if (count <= 5) return { score: 72,  label: 'CAUTION',  color: 'amber', acwr: 1.4  };
+  return             { score: 90,  label: 'OVERLOAD', color: 'red',   acwr: 1.7  };
+}
+
+/* ── Readiness score (composite) ── */
+function calcReadiness(profile, fatigue) {
+  let score = 80;
+  // Factor in streak (continuity bonus)
+  const streak = profile.currentStreak || 0;
+  if (streak >= 7)  score += 5;
+  if (streak >= 30) score += 5;
+  // Factor in fatigue (ACWR)
+  if (fatigue.acwr > 1.5)      score -= 30;
+  else if (fatigue.acwr > 1.3) score -= 15;
+  else if (fatigue.acwr < 0.8) score -= 5;
+  // Cap
+  return Math.max(10, Math.min(100, score));
+}
+
+/* ── Risk system ── */
+function applyRiskSystem(fatigue, readiness) {
+  const bar    = document.getElementById('risk-bar');
+  const banner = document.getElementById('risk-banner');
+  const msg    = document.getElementById('risk-msg');
+  const icon   = document.getElementById('risk-icon');
+
+  if (fatigue.color === 'red') {
+    bar.className = 'risk-bar red';
+    banner.style.display = 'flex';
+    banner.className = 'risk-banner red';
+    icon.textContent = '🔴';
+    msg.textContent = `ABORT MISSION — ACWR ${fatigue.acwr.toFixed(2)} เกินขีดจำกัด ร่างกายเสี่ยงบาดเจ็บสูง`;
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  } else if (fatigue.color === 'amber' || readiness < 60) {
+    bar.className = 'risk-bar amber';
+    banner.style.display = 'flex';
+    banner.className = 'risk-banner amber';
+    icon.textContent = '⚠️';
+    msg.textContent = `LIGHT DAY — ลด volume 30% วันนี้ (Readiness ${readiness}%)`;
+  } else {
+    bar.className = 'risk-bar';
+    banner.style.display = 'none';
+  }
+}
+
+/* ── Readiness Ring ── */
+function renderReadinessRing(score, fatigue) {
+  const CIRCUMFERENCE = 239;
+  const offset = CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
+  const fill   = document.getElementById('ring-fill');
+
+  // Color
+  const color = fatigue.color === 'green' ? 'var(--green)' : fatigue.color === 'amber' ? 'var(--amber)' : 'var(--red)';
+  fill.setAttribute('stroke', color);
+  setTimeout(() => { fill.style.strokeDashoffset = offset; }, 100);
+
+  document.getElementById('ring-score').textContent = score;
+
+  const statusEl = document.getElementById('readiness-status');
+  statusEl.className = `readiness-status ${fatigue.color}`;
+
+  const statusMap = {
+    FRESH:     { text: 'FULL ASSAULT MODE', detail: 'Bonus missions unlocked • PR window open' },
+    OPTIMAL:   { text: 'OPS READY',         detail: 'Progressive overload ON • ฝึกตามแผน' },
+    UNDERLOAD: { text: 'LIGHT LOAD',        detail: 'เพิ่ม volume ได้ — ร่างกายพักผ่อนเพียงพอ' },
+    CAUTION:   { text: 'LIGHT DAY',         detail: 'ลด volume 30% • เน้น technique' },
+    OVERLOAD:  { text: 'ABORT MISSION',     detail: 'พักผ่อน 24-48ชม • Risk of injury' },
+  };
+  const s = statusMap[fatigue.label] || statusMap.OPTIMAL;
+  statusEl.textContent = s.text;
+  document.getElementById('readiness-detail').textContent = s.detail;
+}
+
+/* ── Hero Buttons ── */
+function renderHeroButtons(profile, todayLogs) {
+  const rank = RANKS[profile.rankIndex || 0];
+  const trainedToday = todayLogs.length > 0;
+  const pct  = todayLogs[0]?.completionPct || 0;
+
+  // Mission button
+  const missionSub = document.getElementById('btn-mission-sub');
+  missionSub.textContent = trainedToday ? (pct >= 100 ? 'COMPLETE ✓' : `${pct}% DONE`) : 'START TODAY';
+
+  const missionBtn = document.getElementById('btn-mission');
+  if (!trainedToday) {
+    const badge = document.createElement('div');
+    badge.className = 'hero-btn-badge';
+    badge.textContent = '!';
+    missionBtn.appendChild(badge);
+  }
+
+  // Rank button
+  document.getElementById('btn-rank-icon').textContent = TIER_ICONS[rank?.tier] || '⭐';
+  document.getElementById('btn-rank-sub').textContent  = rank?.name || '—';
+}
+
+/* ── XP Bar ── */
+function renderXPBar(appState) {
+  const totalXP = appState?.totalXP || 0;
+
+  // Simple XP milestones tied to RANKS
+  const milestones = [0, 200, 500, 1000, 2000, 3500, 5000, 7500, 10000,
+                      13000, 17000, 22000, 28000, 35000, 43000, 52000,
+                      62000, 74000, 87000, 100000, 115000];
+  let currentIdx = 0;
+  for (let i = 0; i < milestones.length; i++) {
+    if (totalXP >= milestones[i]) currentIdx = i;
+    else break;
+  }
+  const nextIdx  = Math.min(currentIdx + 1, milestones.length - 1);
+  const cur  = milestones[currentIdx];
+  const next = milestones[nextIdx];
+  const pct  = cur === next ? 100 : Math.round(((totalXP - cur) / (next - cur)) * 100);
+  const rank = RANKS[Math.min(currentIdx, RANKS.length - 1)];
+
+  document.getElementById('xp-rank-label').textContent = rank?.name || '—';
+  document.getElementById('xp-nums').textContent = `${totalXP.toLocaleString()} XP → ${next.toLocaleString()}`;
+  setTimeout(() => { document.getElementById('xp-fill').style.width = pct + '%'; }, 300);
+}
+
+/* ── PR Strip ── */
+function renderPRStrip(pr, logs) {
+  const strip = document.getElementById('pr-strip');
+  if (!pr) { strip.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--gray);padding:10px 0">ยังไม่มี PR — เริ่ม training</div>'; return; }
+
+  // Calculate trend: compare last 2 PR values
+  const trend = (history, current) => {
+    if (!history || history.length < 2 || !current) return 'same';
+    const prev = history[history.length - 2]?.value;
+    if (!prev) return 'same';
+    return current > prev ? 'up' : current < prev ? 'down' : 'same';
+  };
+
+  const chips = [
+    { label: 'PUSH-UP',  val: pr.pushup?.value, unit: 'REPS', hist: pr.pushup?.history,   isLower: false },
+    { label: 'PULL-UP',  val: pr.pullup?.value, unit: 'REPS', hist: pr.pullup?.history,   isLower: false },
+    { label: 'PLANK',    val: pr.plank?.value,  unit: 'SEC',  hist: pr.plank?.history,    isLower: false },
+    { label: 'SIT-UP',   val: pr.situp?.value,  unit: 'REPS', hist: pr.situp?.history,    isLower: false },
+    { label: 'RUN 2KM',  val: pr.run2km?.value, unit: 'MIN',  hist: pr.run2km?.history,   isLower: true,  fmt: true },
+    { label: 'RUN 5KM',  val: pr.run5km?.value, unit: 'MIN',  hist: pr.run5km?.history,   isLower: true,  fmt: true },
+  ];
+
+  const fmtRun = s => { if (!s) return '—'; return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; };
+
+  strip.innerHTML = chips.map(c => {
+    if (!c.val) return `
+      <div class="pr-chip" style="opacity:.5">
+        <div class="pr-chip-label">${c.label}</div>
+        <div class="pr-chip-val">—</div>
+        <div class="pr-chip-unit">${c.unit}</div>
+        <div class="pr-chip-trend same">· · ·</div>
+      </div>`;
+    const t     = trend(c.hist, c.val);
+    const tInv  = c.isLower ? (t === 'up' ? 'down' : t === 'down' ? 'up' : 'same') : t;
+    const arrow = tInv === 'up' ? '▲ PR UP' : tInv === 'down' ? '▼ DROP' : '● STABLE';
+    const dispVal = c.fmt ? fmtRun(c.val) : c.val;
+    return `
+      <a href="performance.html" class="pr-chip">
+        <div class="pr-chip-label">${c.label}</div>
+        <div class="pr-chip-val">${dispVal}</div>
+        <div class="pr-chip-unit">${c.unit}</div>
+        <div class="pr-chip-trend ${tInv}">${arrow}</div>
+      </a>`;
+  }).join('');
+}
+
+/* ── Mission Cards ── */
+function renderMissions(missions) {
+  const container = document.getElementById('mission-cards');
+  if (!missions || !missions.length) {
+    container.innerHTML = `<div class="mission-empty-state">// ไม่มีภารกิจที่ Active<br><a href="missions.html" style="color:var(--green);font-family:var(--mono);font-size:10px">→ เริ่มภารกิจใหม่</a></div>`;
+    return;
+  }
+  const active = missions.filter(m => m.isActive && !m.isCompleted).slice(0, 3);
+  if (!active.length) {
+    container.innerHTML = `<div class="mission-empty-state">// ภารกิจทั้งหมดสำเร็จแล้ว 🎖<br><a href="missions.html" style="color:var(--green);font-family:var(--mono);font-size:10px">→ รับภารกิจใหม่</a></div>`;
+    return;
+  }
+  container.innerHTML = active.map(m => {
+    // Use MissionEngine.calcProgressPct for correct run-type (inverted) handling
+    const pct  = typeof MissionEngine !== 'undefined'
+      ? MissionEngine.calcProgressPct(m)
+      : Math.min(100, Math.round(((m.current||0) / (m.target||1)) * 100));
+    const color = pct >= 80 ? 'green' : pct >= 40 ? '' : 'amber';
+    return `
+      <a href="missions.html" class="mission-card ${color}">
+        <div class="mission-icon-lg">${m.icon || '⚔'}</div>
+        <div class="mission-body-text">
+          <div class="mission-name-text">${m.name}</div>
+          <div class="mission-desc-text">${m.description || ''}</div>
+          <div class="mission-prog-wrap">
+            <div class="mission-prog-bar"><div class="mission-prog-fill" style="width:${pct}%"></div></div>
+            <div class="mission-pct-text">${m.current} / ${m.target} — ${pct}%</div>
+          </div>
+        </div>
+        <div class="mission-xp">+XP</div>
+      </a>`;
+  }).join('');
+}
+
+/* ── Week Grid ── */
+function renderWeekGrid(weekLogs) {
+  const cells    = document.getElementById('week-cells');
+  const today    = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const trained  = new Set(weekLogs.map(l => l.date));
+  const names    = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+  const dow  = today.getDay();
+  const mon  = new Date(today);
+  mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+
+  cells.innerHTML = Array.from({length:7}, (_,i) => {
+    const d    = new Date(mon); d.setDate(mon.getDate() + i);
+    const ds   = d.toISOString().split('T')[0];
+    const cls  = `wday${trained.has(ds) ? ' trained' : ''}${ds === todayStr ? ' today' : ''}`;
+    return `<div class="${cls}"><div class="wday-name">${names[d.getDay()]}</div><div class="wday-num">${d.getDate()}</div><div class="wday-dot"></div></div>`;
+  }).join('');
+}
+
+/* ── Bottom Stats ── */
+function renderBottomStats(profile, pr, fatigue) {
+  document.getElementById('bs-streak').textContent = profile.currentStreak || 0;
+  document.getElementById('bs-total').textContent  = profile.totalDaysActive || 0;
+  document.getElementById('bs-score').textContent  = pr?.totalScore || 0;
+  document.getElementById('bs-score-sub').textContent = `${RANKS[profile.rankIndex||0]?.name || '—'}`;
+
+  const fEl  = document.getElementById('bs-fatigue');
+  const fSub = document.getElementById('bs-fatigue-sub');
+  const fCard = document.getElementById('bstat-fatigue');
+  fEl.textContent  = fatigue.score;
+  fSub.textContent = fatigue.label;
+  fCard.className  = `bstat ${fatigue.color}`;
+}
+
+/* ── Sidebar / Rank ── */
+function renderSidebar(profile) {
+  const rank = RANKS[profile.rankIndex || 0];
+  document.getElementById('rank-badge').textContent   = rank?.name || '—';
+  document.getElementById('streak-chip').textContent  = `🔥 ${profile.currentStreak || 0} days`;
+  document.getElementById('sf-rank').textContent      = rank?.name || '—';
+  document.getElementById('sf-callsign').textContent  = profile.callsign || 'OPERATOR';
+
+  const now = new Date();
+  const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
+  document.getElementById('tb-sub').textContent =
+    `// ${days[now.getDay()]} ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()+543}  DAY ${(profile.totalDaysActive||0)+1}`;
+}
+
+/* ── Toggle Sidebar ── */
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('overlay');
+  sb.classList.toggle('open');
+  ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').style.display = 'none';
+}
+
+/* ══════════════════════════════
+   MAIN BOOTSTRAP
+══════════════════════════════ */
+(async () => {
+  startClock();
+  try {
+    await Storage.init();
+    const [profile, pr, weekLogs, todayLogs, missions, allLogs, appState] = await Promise.all([
+      Storage.User.get(),
+      Storage.PR.get(),
+      Storage.Logs.getThisWeek(),
+      Storage.Logs.getToday(),
+      Storage.Missions.getAll(),
+      Storage.Logs.getAll(),
+      Storage.App.get(),
+    ]);
+
+    if (!profile || !profile.onboardingComplete) {
+      window.location.href = 'onboarding.html'; return;
+    }
+
+    const fatigue   = calcFatigueLevel(allLogs);
+    const readiness = calcReadiness(profile, fatigue);
+
+    renderSidebar(profile);
+    renderReadinessRing(readiness, fatigue);
+    applyRiskSystem(fatigue, readiness);
+    renderHeroButtons(profile, todayLogs);
+    renderXPBar(appState);
+    renderPRStrip(pr, allLogs);
+    renderWeekGrid(weekLogs);
+    renderBottomStats(profile, pr, fatigue);
+
+    // RankEngine: real rank progress on hero rank button
+    if (typeof RankEngine !== 'undefined') {
+      const realPct = RankEngine.progressToNextRank(pr, profile.rankIndex || 0);
+      const nextRank = RANKS[(profile.rankIndex||0)+1];
+      const rankProgEl = document.getElementById('btn-rank-pct');
+      if (rankProgEl) rankProgEl.textContent = nextRank ? `${realPct}% → ${nextRank.name}` : 'MAX RANK';
+
+      // Check auto-promotion
+      const promoResult = RankEngine.checkPromotion(profile, pr, allLogs);
+      if (promoResult.shouldPromote) {
+        const banner = document.getElementById('promo-banner');
+        if (banner) {
+          banner.style.display = 'flex';
+          document.getElementById('promo-banner-text').textContent =
+            `⭐ พร้อมเลื่อนยศเป็น ${promoResult.newRank?.name}! — ไปหน้า RANK เพื่อยืนยัน`;
+        }
+      }
+    }
+
+    // MissionEngine: run checks after each session load
+    if (typeof MissionEngine !== 'undefined' && allLogs.length) {
+      await MissionEngine.runChecks({ profile, pr, logs: allLogs });
+    }
+
+    // Render missions after engine checks
+    const freshMissions = await Storage.Missions.getAll();
+    renderMissions(freshMissions);
+
+  } catch(err) {
+    console.error('[Dashboard] Bootstrap error', err);
+    document.getElementById('tb-sub').textContent = '// ERROR — RELOAD';
+  }
+})();
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

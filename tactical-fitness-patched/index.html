@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="Tactical Fitness — ระบบติดตามสมรรถภาพแบบทหาร Offline 100%">
+<title>TACTICAL FITNESS</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/responsive.css">
+<style>
+  /* Boot screen */
+  .boot {
+    position: fixed; inset: 0;
+    background: var(--black);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+  }
+
+  .boot.fade-out { opacity: 0; pointer-events: none; }
+
+  .boot-logo {
+    font-family: var(--head);
+    font-size: 48px;
+    letter-spacing: 8px;
+    color: var(--green);
+    text-shadow: 0 0 40px var(--green), 0 0 80px rgba(0,255,136,0.3);
+    animation: fadeInUp 0.6s var(--ease-out) 0.3s both;
+  }
+
+  .boot-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 4px;
+    margin-top: 8px;
+    animation: fadeInUp 0.6s var(--ease-out) 0.5s both;
+  }
+
+  .boot-bar {
+    width: 200px;
+    height: 2px;
+    background: var(--border);
+    margin-top: 32px;
+    position: relative;
+    animation: fadeIn 0.4s ease 0.7s both;
+  }
+
+  .boot-bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    width: 0;
+    transition: width 0.8s ease;
+  }
+
+  .boot-status {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gray2);
+    letter-spacing: 2px;
+    margin-top: 12px;
+    animation: fadeIn 0.4s ease 0.9s both;
+  }
+</style>
+</head>
+<body>
+
+<!-- Boot Screen -->
+<div class="boot" id="boot">
+  <div class="boot-logo">⬡ TACTICAL</div>
+  <div class="boot-sub">FITNESS SYSTEM v1.0</div>
+  <div class="boot-bar">
+    <div class="boot-bar-fill" id="bootFill"></div>
+  </div>
+  <div class="boot-status" id="bootStatus">INITIALIZING...</div>
+</div>
+
+<script src="js/schema.js"></script>
+<script src="js/storage.js"></script>
+<script>
+(async () => {
+  const fill   = document.getElementById('bootFill');
+  const status = document.getElementById('bootStatus');
+  const boot   = document.getElementById('boot');
+
+  const setProgress = (pct, msg) => {
+    fill.style.width = pct + '%';
+    status.textContent = msg;
+  };
+
+  try {
+    setProgress(20, 'LOADING MODULES...');
+    await delay(200);
+
+    setProgress(50, 'CONNECTING STORAGE...');
+    await Storage.init();
+    await delay(200);
+
+    setProgress(80, 'READING PROFILE...');
+    const [user, app] = await Promise.all([
+      Storage.User.get(),
+      Storage.App.get(),
+    ]);
+    await delay(150);
+
+    setProgress(100, 'SYSTEM READY');
+    await delay(300);
+
+    // Route decision
+    boot.classList.add('fade-out');
+    await delay(500);
+
+    if (!user || !user.onboardingComplete) {
+      window.location.href = 'pages/onboarding.html';
+    } else {
+      window.location.href = 'pages/dashboard.html';
+    }
+
+  } catch (err) {
+    console.error('[Boot] Error:', err);
+    setProgress(100, 'ERROR — REDIRECTING...');
+    await delay(800);
+    // If IndexedDB fails (private browsing on iOS), still try onboarding
+    window.location.href = 'pages/onboarding.html';
+  }
+})();
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+
+<script>
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[SW] Registered:', reg.scope))
+      .catch(err => console.warn('[SW] Registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>

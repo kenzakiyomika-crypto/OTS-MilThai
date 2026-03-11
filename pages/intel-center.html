@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<title>TACTICAL FITNESS — INTEL CENTER</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+
+/* ════════════════════════════════════════
+   INTEL CENTER — Phase 2
+   AAR + Overload + Periodization + Medical
+════════════════════════════════════════ */
+
+.shell { display:flex; min-height:100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 200px; min-height: 100vh;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; left:0; top:0; bottom:0; z-index: 100;
+  transition: transform .3s var(--ease-out);
+}
+.sidebar-logo { padding: 18px 16px 14px; border-bottom: 1px solid var(--border); }
+.sidebar-logo-mark { font-family: var(--head); font-size: 20px; letter-spacing: 4px; color: var(--green); text-shadow: 0 0 16px var(--green-glow); }
+.nav-section { padding: 10px 10px 4px; }
+.nav-label { font-family: var(--mono); font-size: 8px; color: var(--gray2); letter-spacing: 3px; padding: 0 6px; margin-bottom: 3px; }
+.nav-item { display:flex; align-items:center; gap:8px; padding: 8px 8px; border-radius: 4px; cursor:pointer; text-decoration:none; color:var(--gray); font-family:var(--body); font-size:12px; font-weight:500; transition:all .15s; border:1px solid transparent; margin-bottom:1px; }
+.nav-item:hover { background:var(--bg3); color:var(--white); border-color:var(--border); }
+.nav-item.active { background:var(--green-dim); color:var(--green); border-color:rgba(0,255,136,.2); }
+.nav-icon { font-size:13px; width:16px; text-align:center; }
+.hamburger-btn { background:none; border:none; cursor:pointer; padding:4px; display:flex; flex-direction:column; gap:4px; }
+.hamburger-btn span { display:block; width:18px; height:2px; background:var(--gray); border-radius:1px; }
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 52px;
+  background: rgba(8,8,8,.96); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 12px;
+  position: fixed; top: 0; left: 200px; right: 0; z-index: 50;
+}
+.topbar-title { font-family: var(--head); font-size: 18px; letter-spacing: 3px; color: var(--white); }
+.topbar-title span { color: var(--green); }
+
+/* ── MAIN CONTENT ── */
+.main { margin-left: 200px; padding-top: 52px; min-height: 100vh; }
+.content { padding: 20px 20px 40px; max-width: 960px; }
+
+/* ── TAB NAV ── */
+.tab-nav {
+  display: flex; gap: 4px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 4px; margin-bottom: 20px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.tab-nav::-webkit-scrollbar { display:none; }
+.tab-btn {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 7px; border: none;
+  background: none; color: var(--gray);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.tab-btn:hover { color: var(--white); background: var(--bg3); }
+.tab-btn.active { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,255,136,.2); }
+.tab-panel { display: none; }
+.tab-panel.visible { display: block; }
+
+/* ── SECTION HEADER ── */
+.sec-h { font-family: var(--mono); font-size: 9px; letter-spacing: 3px; color: var(--gray2); margin-bottom: 10px; display:flex; align-items:center; gap:8px; }
+.sec-h::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── CARDS ── */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; }
+.card.green { border-color: rgba(0,255,136,.2); }
+.card.amber { border-color: rgba(255,170,0,.2); }
+.card.red   { border-color: rgba(255,45,45,.2); }
+
+/* ── GRID ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+
+/* ── AAR GRADE ── */
+.aar-header { display:flex; align-items:center; gap:20px; margin-bottom:16px; }
+.aar-grade-ring {
+  width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--head); font-size: 40px;
+  border: 3px solid;
+  position: relative;
+}
+.aar-grade-ring.S { border-color: #00ff88; color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,.6); box-shadow: 0 0 20px rgba(0,255,136,.2); }
+.aar-grade-ring.A { border-color: #ffaa00; color: #ffaa00; text-shadow: 0 0 20px rgba(255,170,0,.6); }
+.aar-grade-ring.B { border-color: #00b4ff; color: #00b4ff; }
+.aar-grade-ring.C { border-color: #888; color: #888; }
+.aar-grade-ring.D { border-color: #ff2d2d; color: #ff2d2d; }
+.aar-info { flex:1; }
+.aar-week { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 1px; margin-bottom: 4px; }
+.aar-score-label { font-family: var(--head); font-size: 22px; letter-spacing: 2px; color: var(--white); }
+.aar-sub { font-family: var(--mono); font-size: 9px; color: var(--gray); margin-top: 3px; }
+
+.aar-metric-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+.aar-metric { text-align: center; padding: 10px 8px; background: var(--bg3); border-radius: 6px; }
+.aar-metric-val { font-family: var(--head); font-size: 22px; color: var(--white); line-height:1; }
+.aar-metric-lbl { font-family: var(--mono); font-size: 8px; color: var(--gray2); letter-spacing: 1px; margin-top: 3px; }
+.aar-metric-trend { font-family: var(--mono); font-size: 8px; margin-top: 2px; }
+.aar-metric-trend.up   { color: var(--green); }
+.aar-metric-trend.down { color: var(--red); }
+
+.aar-list { list-style: none; }
+.aar-list li { font-family: var(--body); font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border); display:flex; align-items:flex-start; gap:8px; }
+.aar-list li:last-child { border:none; }
+.aar-bullet { flex-shrink:0; font-size:12px; margin-top:1px; }
+
+/* ── AAR HISTORY ── */
+.aar-hist-row {
+  display: grid; grid-template-columns: 80px 1fr 60px 60px 60px;
+  align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .1s;
+}
+.aar-hist-row:hover { background: rgba(255,255,255,.02); }
+.aar-hist-grade { font-family: var(--head); font-size: 22px; text-align: center; }
+.aar-hist-week  { font-family: var(--mono); font-size: 9px; color: var(--gray); }
+.aar-hist-num   { font-family: var(--head); font-size: 16px; text-align: center; }
+.aar-hist-sub   { font-family: var(--mono); font-size: 8px; color: var(--gray2); text-align: center; }
+
+/* ── OVERLOAD TABLE ── */
+.overload-row {
+  display: grid; grid-template-columns: 120px 60px 60px 60px 1fr;
+  align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.overload-ex    { font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--white); }
+.overload-num   { font-family: var(--head); font-size: 20px; text-align: center; }
+.overload-lbl   { font-family: var(--mono); font-size: 8px; color: var(--gray2); text-align: center; }
+.overload-status { font-family: var(--mono); font-size: 9px; }
+.overload-status.plateau { color: var(--amber); }
+.overload-status.pr      { color: var(--green); }
+.overload-status.normal  { color: var(--gray); }
+.overload-reason { font-family: var(--mono); font-size: 9px; color: var(--gray); }
+
+/* ── PERIODIZATION TIMELINE ── */
+.period-block-wrap { overflow-x: auto; padding-bottom: 8px; }
+.period-timeline { display:flex; gap:0; min-width:600px; }
+.period-week {
+  flex: 1; text-align: center;
+  padding: 10px 4px;
+  border-right: 1px solid var(--border);
+  cursor: pointer; transition: background .1s;
+  position: relative;
+}
+.period-week:last-child { border-right: none; }
+.period-week:hover { background: rgba(255,255,255,.03); }
+.period-week.current { outline: 2px solid var(--green); outline-offset: -2px; }
+.period-week-num { font-family: var(--mono); font-size: 8px; color: var(--gray2); margin-bottom: 4px; }
+.period-week-phase { font-family: var(--head); font-size: 11px; letter-spacing: 1px; }
+.period-week-bar { height: 4px; border-radius: 2px; margin: 4px 4px 0; }
+
+.phase-card { padding: 16px 18px; border-radius: 10px; border-left: 4px solid; margin-bottom: 12px; }
+.phase-name { font-family: var(--head); font-size: 24px; letter-spacing: 3px; }
+.phase-th   { font-family: var(--body); font-size: 14px; font-weight: 600; margin-top: 2px; }
+.phase-cue  { font-family: var(--mono); font-size: 10px; color: var(--gray); margin-top: 6px; }
+.phase-metrics { display:flex; gap:16px; margin-top:10px; }
+.phase-metric-item { font-family: var(--mono); font-size: 10px; color: var(--gray2); }
+.phase-metric-item span { color: var(--white); font-size: 13px; }
+
+/* ── MEDICAL LOG ── */
+.body-map-wrap { position: relative; width: 180px; flex-shrink:0; }
+.body-map-svg  { width: 100%; height: auto; }
+.pain-dot {
+  cursor: pointer;
+  transition: r .15s, opacity .15s;
+}
+.pain-dot:hover { opacity: .8; }
+
+.injury-entry {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.injury-entry:last-child { border:none; }
+.injury-severity {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--head); font-size: 14px; flex-shrink: 0;
+}
+.injury-body { flex: 1; }
+.injury-part { font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--white); }
+.injury-date { font-family: var(--mono); font-size: 9px; color: var(--gray); }
+.injury-rtm  { font-family: var(--mono); font-size: 9px; margin-top: 3px; }
+.rtm-ready   { color: var(--green); }
+.rtm-wait    { color: var(--amber); }
+.btn-resolve { font-family: var(--mono); font-size: 9px; color: var(--gray); background: none; border: 1px solid var(--border); border-radius: 3px; padding: 3px 8px; cursor: pointer; }
+.btn-resolve:hover { border-color: var(--green); color: var(--green); }
+
+/* ── RISK GAUGE ── */
+.risk-gauge-wrap { display:flex; align-items:center; gap:20px; margin-bottom:12px; }
+.risk-gauge-circle {
+  width: 90px; height: 90px; border-radius: 50%;
+  border: 6px solid;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; flex-shrink: 0;
+}
+.risk-gauge-score { font-family: var(--head); font-size: 28px; line-height:1; }
+.risk-gauge-lbl   { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; }
+.risk-factor-row  { font-family: var(--mono); font-size: 9px; color: var(--gray); padding: 3px 0; display:flex; justify-content:space-between; }
+.risk-factor-row span { color: var(--amber); }
+
+/* ── LOG PAIN FORM ── */
+.pain-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-group label { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--gray2); display: block; margin-bottom: 5px; }
+.form-select, .form-input, .form-textarea {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--white); font-family: var(--mono); font-size: 11px;
+  padding: 8px 10px; border-radius: 5px; outline: none;
+  transition: border-color .15s;
+}
+.form-select:focus, .form-input:focus, .form-textarea:focus { border-color: rgba(0,255,136,.4); }
+.form-textarea { resize: vertical; min-height: 60px; }
+.btn-log-pain {
+  width: 100%; padding: 12px; margin-top: 10px;
+  background: rgba(255,45,45,.1); border: 1px solid rgba(255,45,45,.3);
+  color: #ff2d2d; font-family: var(--head); font-size: 14px;
+  letter-spacing: 2px; border-radius: 6px; cursor: pointer;
+  transition: all .15s;
+}
+.btn-log-pain:hover { background: rgba(255,45,45,.15); }
+.btn-log-pain:active { transform: scale(.98); }
+
+/* ── PR TIMELINE chip ── */
+.pr-chip-inline {
+  display: inline-flex; align-items:center; gap:6px;
+  background: var(--green-dim); border: 1px solid rgba(0,255,136,.2);
+  border-radius: 4px; padding: 3px 8px;
+  font-family: var(--mono); font-size: 10px; color: var(--green);
+  margin: 2px;
+}
+
+/* ── MOBILE ── */
+@media (max-width:700px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); box-shadow: 4px 0 30px rgba(0,0,0,.8); }
+  .main { margin-left: 0; }
+  .topbar { left: 0; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .aar-metric-row { grid-template-columns: 1fr 1fr; }
+  .overload-row { grid-template-columns: 1fr 1fr 1fr; }
+  .pain-form { grid-template-columns: 1fr; }
+  .aar-hist-row { grid-template-columns: 60px 1fr 50px; }
+  .bottom-nav { display:block; }
+  .content { padding-bottom: 80px; }
+}
+@media (min-width:701px) {
+  .hamburger-btn { display:none; }
+  .bottom-nav { display:none; }
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:100; background:rgba(8,8,8,.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); }
+.bnav-inner { display:grid; grid-template-columns:repeat(5,1fr); }
+.bnav-item { display:flex; flex-direction:column; align-items:center; padding:10px 4px 12px; text-decoration:none; color:var(--gray); transition:color .15s; }
+.bnav-item.active { color:var(--green); }
+.bnav-icon { font-size:20px; }
+.bnav-label { font-family:var(--mono); font-size:8px; letter-spacing:1px; margin-top:3px; }
+
+/* ── OVERLAY ── */
+#overlay {
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeInUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.anim { animation: fadeInUp .35s var(--ease-out) both; }
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+@media(max-width:480px){
+  .tab-nav{overflow-x:auto;scrollbar-width:none;padding:3px}
+  .tab-nav::-webkit-scrollbar{display:none}
+  .tab-btn{flex-shrink:0;white-space:nowrap;padding:7px 10px}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">⬡ TACTICAL</div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);letter-spacing:2px;margin-top:2px">FITNESS SYSTEM v2.0</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// COMMAND</div>
+    <a href="dashboard.html"  class="nav-item"><span class="nav-icon">◈</span> COMMAND CENTER</a>
+    <a href="training.html"   class="nav-item"><span class="nav-icon">⚡</span> TODAY TRAINING</a>
+    <a href="planner.html"    class="nav-item"><span class="nav-icon">◻</span> MONTHLY PLANNER</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// INTELLIGENCE</div>
+    <a href="intel-center.html"    class="nav-item active"><span class="nav-icon">📊</span> INTEL CENTER</a>
+    <a href="ultimate-coach.html"  class="nav-item"><span class="nav-icon">🧠</span> ULTIMATE COACH</a>
+    <a href="science-planner.html" class="nav-item"><span class="nav-icon">⚗</span> SCIENCE PLANNER</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// INTEL</div>
+    <a href="performance.html" class="nav-item"><span class="nav-icon">▲</span> PERFORMANCE LOG</a>
+    <a href="rank.html"        class="nav-item"><span class="nav-icon">◆</span> RANK</a>
+    <a href="missions.html"    class="nav-item"><span class="nav-icon">⚔</span> MISSIONS</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">// SYSTEM</div>
+    <a href="settings.html"      class="nav-item"><span class="nav-icon">◎</span> SETTINGS</a>
+    <a href="import-export.html" class="nav-item"><span class="nav-icon">⇅</span> IMPORT / EXPORT</a>
+  </div>
+</aside>
+
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<div class="shell">
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="hamburger-btn" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-title">INTEL <span>CENTER</span></div>
+      <div style="margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--gray)" id="tb-date">—</div>
+    </header>
+
+    <div class="content">
+
+      <!-- TAB NAV -->
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('aar')">📋 AAR REPORT</button>
+        <button class="tab-btn" onclick="switchTab('overload')">📈 PROGRESSIVE OVERLOAD</button>
+        <button class="tab-btn" onclick="switchTab('period')">🔄 PERIODIZATION</button>
+        <button class="tab-btn" onclick="switchTab('medical')">🏥 MEDICAL LOG</button>
+      </div>
+
+      <!-- ════════════════════════
+           TAB 1: AAR
+      ════════════════════════ -->
+      <div class="tab-panel visible" id="tab-aar">
+
+        <div class="anim" style="animation-delay:.05s">
+          <div class="sec-h">// THIS WEEK — AFTER ACTION REVIEW</div>
+          <div class="card" id="aar-current">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">กำลังสร้าง AAR...</div>
+          </div>
+        </div>
+
+        <div class="anim" style="animation-delay:.1s">
+          <div class="sec-h">// HISTORY (4 สัปดาห์ล่าสุด)</div>
+          <div class="card" id="aar-history">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">กำลังโหลด...</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ════════════════════════
+           TAB 2: PROGRESSIVE OVERLOAD
+      ════════════════════════ -->
+      <div class="tab-panel" id="tab-overload">
+
+        <div class="anim">
+          <div class="sec-h">// SESSION ถัดไป — TARGET</div>
+          <div class="card">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-bottom:12px">คำนวณจาก PR + session ล่าสุด — เพิ่ม load อัตโนมัติ</div>
+            <div id="overload-table">
+              <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">กำลังคำนวณ...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="anim" style="animation-delay:.1s">
+          <div class="sec-h">// 4-WEEK PROJECTION</div>
+          <div class="card" id="overload-projection">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">กำลังสร้าง projection...</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ════════════════════════
+           TAB 3: PERIODIZATION
+      ════════════════════════ -->
+      <div class="tab-panel" id="tab-period">
+
+        <div class="anim">
+          <div class="sec-h">// CURRENT PHASE</div>
+          <div id="phase-current-card">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">กำลังคำนวณ phase...</div>
+          </div>
+        </div>
+
+        <div class="anim" style="animation-delay:.08s">
+          <div class="sec-h">// 12-WEEK BLOCK TIMELINE</div>
+          <div class="card">
+            <div class="period-block-wrap">
+              <div class="period-timeline" id="period-timeline">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="anim" style="animation-delay:.15s">
+          <div class="sec-h">// CYCLE START DATE</div>
+          <div class="card">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-bottom:10px">ตั้งวันเริ่มต้น 12-week cycle — ระบบจะคำนวณ phase ปัจจุบันให้อัตโนมัติ</div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <input type="date" id="cycle-start-input" style="background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:8px;border-radius:5px;font-family:var(--mono);font-size:11px">
+              <button onclick="saveCycleStart()" style="background:var(--green-dim);border:1px solid rgba(0,255,136,.25);color:var(--green);padding:8px 16px;border-radius:5px;font-family:var(--mono);font-size:10px;cursor:pointer">💾 SAVE</button>
+              <span style="font-family:var(--mono);font-size:9px;color:var(--gray)" id="cycle-saved-lbl"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ════════════════════════
+           TAB 4: MEDICAL LOG
+      ════════════════════════ -->
+      <div class="tab-panel" id="tab-medical">
+
+        <div class="grid-2" style="margin-bottom:14px">
+
+          <!-- Risk Gauge -->
+          <div class="card anim" style="animation-delay:.05s">
+            <div class="sec-h">// INJURY RISK SCORE</div>
+            <div class="risk-gauge-wrap" id="risk-gauge-wrap">
+              <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">กำลังคำนวณ...</div>
+            </div>
+            <div id="risk-action" style="font-family:var(--mono);font-size:10px;padding:8px 10px;border-radius:5px;margin-top:8px"></div>
+          </div>
+
+          <!-- Active Injuries -->
+          <div class="card anim" style="animation-delay:.1s">
+            <div class="sec-h">// ACTIVE INJURIES</div>
+            <div id="active-injuries-list">
+              <div style="text-align:center;padding:20px;font-family:var(--mono);font-size:10px;color:var(--gray)">
+                ✅ ไม่มีอาการบาดเจ็บที่ active
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Log Pain Form -->
+        <div class="card anim" style="animation-delay:.15s">
+          <div class="sec-h">// LOG PAIN / DISCOMFORT</div>
+          <div class="pain-form">
+            <div class="form-group">
+              <label>BODY PART</label>
+              <select class="form-select" id="pain-part">
+                <option value="">-- เลือกตำแหน่ง --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>SEVERITY (1-5)</label>
+              <select class="form-select" id="pain-severity">
+                <option value="1">1 — เจ็บเล็กน้อย</option>
+                <option value="2" selected>2 — เจ็บปานกลาง</option>
+                <option value="3">3 — เจ็บมาก</option>
+                <option value="4">4 — เจ็บรุนแรงมาก</option>
+                <option value="5">5 — ไม่สามารถฝึก</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label>NOTES (optional)</label>
+              <textarea class="form-textarea" id="pain-notes" placeholder="อธิบายอาการเพิ่มเติม..."></textarea>
+            </div>
+          </div>
+          <button class="btn-log-pain" onclick="logPainEntry()">🚨 LOG INJURY / PAIN</button>
+        </div>
+
+        <!-- History -->
+        <div class="card anim" style="animation-delay:.2s">
+          <div class="sec-h">// MEDICAL HISTORY (30 รายการล่าสุด)</div>
+          <div id="medical-history-list">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--gray)">ยังไม่มีประวัติ</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bnav-inner">
+    <a href="dashboard.html" class="bnav-item"><div class="bnav-icon">◈</div><div class="bnav-label">HOME</div></a>
+    <a href="training.html"  class="bnav-item"><div class="bnav-icon">⚡</div><div class="bnav-label">TRAIN</div></a>
+    <a href="intel-center.html" class="bnav-item active"><div class="bnav-icon">📊</div><div class="bnav-label">INTEL</div></a>
+    <a href="missions.html"  class="bnav-item"><div class="bnav-icon">⚔</div><div class="bnav-label">MISSIONS</div></a>
+    <a href="rank.html"      class="bnav-item"><div class="bnav-icon">◆</div><div class="bnav-label">RANK</div></a>
+  </div>
+</nav>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/phase2-engine.js"></script>
+<script>
+'use strict';
+
+let _profile, _pr, _logs;
+
+/* ── Tab switch ── */
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) =>
+    b.classList.toggle('active', ['aar','overload','period','medical'][i] === name));
+  document.querySelectorAll('.tab-panel').forEach((p,i) =>
+    p.classList.toggle('visible', ['aar','overload','period','medical'][i] === name));
+}
+
+/* ── Sidebar ── */
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('overlay');
+  sb.classList.toggle('open');
+  ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').style.display = 'none';
+}
+
+/* ═══════════════════════════════════
+   RENDER AAR
+═══════════════════════════════════ */
+function renderAAR() {
+  const aar = AARGenerator.generate(_logs, _pr, _profile);
+  renderAARCard(aar, 'aar-current');
+
+  const history = AARGenerator.generateHistory(_logs, _pr, _profile, 4);
+  const histEl  = document.getElementById('aar-history');
+
+  const header = `
+    <div class="aar-hist-row" style="cursor:default;border-bottom:2px solid var(--border2)">
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);text-align:center">GRADE</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2)">WEEK</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);text-align:center">SESSION</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);text-align:center">SCORE</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);text-align:center">ACWR</div>
+    </div>`;
+
+  const rows = history.map((a, i) => {
+    const gradeColor = {S:'#00ff88',A:'#ffaa00',B:'#00b4ff',C:'#888',D:'#ff2d2d'}[a.grade] || '#888';
+    const acwrColor  = a.acwr > 1.5 ? '#ff2d2d' : a.acwr > 1.3 ? '#ffaa00' : '#00ff88';
+    return `
+      <div class="aar-hist-row" onclick="showAARDetail(${i})">
+        <div class="aar-hist-grade" style="color:${gradeColor}">${a.grade}</div>
+        <div>
+          <div class="aar-hist-week">${a.weekLabel}</div>
+          ${a.newPRs.length ? `<div>${a.newPRs.map(p => `<span class="pr-chip-inline">🏆 ${p}</span>`).join('')}</div>` : ''}
+        </div>
+        <div>
+          <div class="aar-hist-num">${a.sessionCount}</div>
+          <div class="aar-hist-sub">sessions</div>
+        </div>
+        <div>
+          <div class="aar-hist-num">${a.score}</div>
+          <div class="aar-hist-sub">pts</div>
+        </div>
+        <div>
+          <div class="aar-hist-num" style="color:${acwrColor}">${a.acwr}</div>
+          <div class="aar-hist-sub">ACWR</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  histEl.innerHTML = header + rows;
+  window._aarHistory = history;
+}
+
+function renderAARCard(aar, containerId) {
+  const el = document.getElementById(containerId);
+  const gradeColor = {S:'#00ff88',A:'#ffaa00',B:'#00b4ff',C:'#888',D:'#ff2d2d'}[aar.grade] || '#888';
+  const acwrColor  = aar.acwr > 1.5 ? '#ff2d2d' : aar.acwr > 1.3 ? '#ffaa00' : '#00ff88';
+
+  const trendHtml = (val) => val === null ? '' :
+    `<div class="aar-metric-trend ${val > 0 ? 'up' : val < 0 ? 'down' : ''}">${val > 0 ? '▲' : val < 0 ? '▼' : '●'} ${Math.abs(val)}%</div>`;
+
+  el.innerHTML = `
+    <div class="aar-header">
+      <div class="aar-grade-ring ${aar.grade}">${aar.grade}</div>
+      <div class="aar-info">
+        <div class="aar-week">${aar.weekLabel}</div>
+        <div class="aar-score-label">SCORE: ${aar.score} / 100</div>
+        <div class="aar-sub">ACWR <span style="color:${acwrColor}">${aar.acwr}</span>  •  ${aar.sessionCount} sessions  •  ${aar.avgDuration} min/session</div>
+        ${aar.newPRs.length ? `<div style="margin-top:6px">${aar.newPRs.map(p=>`<span class="pr-chip-inline">🏆 ${p}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="aar-metric-row">
+      <div class="aar-metric">
+        <div class="aar-metric-val">${aar.sessionCount}</div>
+        <div class="aar-metric-lbl">SESSIONS</div>
+        ${trendHtml(aar.sessionTrend)}
+      </div>
+      <div class="aar-metric">
+        <div class="aar-metric-val">${aar.avgCompletion}%</div>
+        <div class="aar-metric-lbl">COMPLETION</div>
+      </div>
+      <div class="aar-metric">
+        <div class="aar-metric-val" style="color:${acwrColor}">${aar.acwr}</div>
+        <div class="aar-metric-lbl">ACWR</div>
+      </div>
+      <div class="aar-metric">
+        <div class="aar-metric-val">${aar.totalDuration}</div>
+        <div class="aar-metric-lbl">TOTAL MIN</div>
+        ${trendHtml(aar.volumeTrend)}
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:12px">
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--green);margin-bottom:6px">✅ STRONG</div>
+        <ul class="aar-list">
+          ${aar.strong.map(s => `<li><span class="aar-bullet">▶</span>${s}</li>`).join('')}
+        </ul>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--amber);margin-bottom:6px">⚠ WEAK</div>
+        <ul class="aar-list">
+          ${aar.weak.map(w => `<li><span class="aar-bullet">◆</span>${w}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gray2);margin-bottom:6px">⚡ NEXT WEEK ACTIONS</div>
+      <ul class="aar-list">
+        ${aar.action.map(a => `<li><span class="aar-bullet" style="color:var(--green)">→</span>${a}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+}
+
+function showAARDetail(idx) {
+  if (!window._aarHistory) return;
+  renderAARCard(window._aarHistory[idx], 'aar-current');
+  // Scroll to top
+  document.getElementById('tab-aar').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ═══════════════════════════════════
+   RENDER PROGRESSIVE OVERLOAD
+═══════════════════════════════════ */
+function renderOverload() {
+  const exercises = ['Push-up', 'Pull-up', 'Sit-up', 'Plank', 'Squat', 'Burpee'];
+  const recentLogs = _logs.slice(-20);
+
+  const tableEl = document.getElementById('overload-table');
+  const header  = `
+    <div class="overload-row" style="border-bottom:2px solid var(--border2)">
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2)">EXERCISE</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);text-align:center">REPS</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);text-align:center">SETS</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2);text-align:center">1RM EST</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--gray2)">STATUS</div>
+    </div>`;
+
+  const rows = exercises.map(ex => {
+    const next = ProgressiveOverload.calcNext(ex, recentLogs, _pr);
+    const statusClass = next.isPlateaued ? 'plateau' : next.isNewPRPossible ? 'pr' : 'normal';
+    const statusText  = next.isPlateaued ? '⚠ PLATEAU — strategy changed' : next.isNewPRPossible ? '🏆 PR POSSIBLE' : '→ normal load';
+    return `
+      <div class="overload-row">
+        <div>
+          <div class="overload-ex">${ex}</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--gray)">PR: ${next.prCurrent || '—'}</div>
+        </div>
+        <div>
+          <div class="overload-num">${ex === 'Plank' ? next.targetDuration+'s' : next.targetReps}</div>
+          <div class="overload-lbl">${ex === 'Plank' ? 'sec' : 'reps'}</div>
+        </div>
+        <div>
+          <div class="overload-num">${next.targetSets}</div>
+          <div class="overload-lbl">sets</div>
+        </div>
+        <div>
+          <div class="overload-num" style="font-size:16px">${next.oneRM}</div>
+          <div class="overload-lbl">est</div>
+        </div>
+        <div>
+          <div class="overload-status ${statusClass}">${statusText}</div>
+          <div class="overload-reason">${next.reason}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  tableEl.innerHTML = header + rows;
+
+  // 4-week projection for Push-up + Pull-up
+  const proj = ProgressiveOverload.generateFourWeekPlan(['Push-up', 'Pull-up'], recentLogs, _pr);
+  const projEl = document.getElementById('overload-projection');
+  projEl.innerHTML = proj.map(p => `
+    <div style="margin-bottom:14px">
+      <div style="font-family:var(--head);font-size:16px;letter-spacing:2px;color:var(--white);margin-bottom:8px">${p.exercise}</div>
+      <div style="display:flex;gap:8px">
+        ${p.weeks.map(w => `
+          <div style="flex:1;text-align:center;background:var(--bg3);border-radius:6px;padding:8px 4px;border:1px solid ${w.isNewPRPossible?'rgba(0,255,136,.2)':'var(--border)'}">
+            <div style="font-family:var(--mono);font-size:8px;color:var(--gray2)">WK ${w.week}</div>
+            <div style="font-family:var(--head);font-size:20px;color:${w.isNewPRPossible?'var(--green)':'var(--white)'}">${w.targetReps}</div>
+            <div style="font-family:var(--mono);font-size:7px;color:var(--gray)">${w.targetSets}s × reps</div>
+            ${w.isNewPRPossible ? '<div style="font-family:var(--mono);font-size:7px;color:var(--green)">🏆PR</div>' : ''}
+          </div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════
+   RENDER PERIODIZATION
+═══════════════════════════════════ */
+function renderPeriodization() {
+  const cycleStart = localStorage.getItem('tf_cycle_start');
+  const startDate  = cycleStart ? new Date(cycleStart) : new Date();
+  const { phase, weekInPhase, blockWeek, weeksRemaining, nextPhase, schedule } = PeriodizationEngine.getCurrentPhase(startDate, _profile?.totalDaysActive || 0);
+
+  // Set input default
+  if (cycleStart) document.getElementById('cycle-start-input').value = cycleStart;
+
+  // Current phase card
+  const phaseEl = document.getElementById('phase-current-card');
+  phaseEl.innerHTML = `
+    <div class="phase-card" style="border-left-color:${phase.color};background:rgba(${_hexToRgb(phase.color)},.04)">
+      <div class="phase-name" style="color:${phase.color}">${phase.name}</div>
+      <div class="phase-th">${phase.thLabel}</div>
+      <div class="phase-cue">${phase.cue}</div>
+      <div class="phase-metrics">
+        <div class="phase-metric-item">WEEK <span>${weekInPhase} / ${phase.weeks}</span></div>
+        <div class="phase-metric-item">BLOCK WEEK <span>${blockWeek} / 12</span></div>
+        <div class="phase-metric-item">REMAINING <span>${weeksRemaining} wk</span></div>
+        <div class="phase-metric-item">RPE TARGET <span>${phase.rpe}</span></div>
+        <div class="phase-metric-item">REST <span>${phase.restSec}s</span></div>
+      </div>
+      <div style="margin-top:10px;font-family:var(--mono);font-size:9px;color:var(--gray2)">
+        FOCUS: ${phase.focus.join(' · ')}
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:rgba(${_hexToRgb(nextPhase.color)},.06);border:1px solid rgba(${_hexToRgb(nextPhase.color)},.2);border-radius:6px;font-family:var(--mono);font-size:9px;color:var(--gray)">
+        NEXT PHASE IN ${weeksRemaining} week${weeksRemaining !== 1 ? 's' : ''}: <span style="color:${nextPhase.color}">${nextPhase.name}</span> — ${nextPhase.thLabel}
+      </div>
+    </div>
+  `;
+
+  // Timeline
+  const timelineEl = document.getElementById('period-timeline');
+  timelineEl.innerHTML = schedule.map(w => `
+    <div class="period-week ${w.week === blockWeek ? 'current' : ''}" title="${w.phaseName}: ${w.thLabel}">
+      <div class="period-week-num">WK${w.week}</div>
+      <div class="period-week-phase" style="color:${w.color}">${w.phaseName.slice(0,3)}</div>
+      <div class="period-week-bar" style="background:${w.color};opacity:${w.week === blockWeek ? 1 : 0.3}"></div>
+    </div>
+  `).join('');
+}
+
+function saveCycleStart() {
+  const val = document.getElementById('cycle-start-input').value;
+  if (val) {
+    localStorage.setItem('tf_cycle_start', val);
+    document.getElementById('cycle-saved-lbl').textContent = '✓ SAVED';
+    setTimeout(() => { document.getElementById('cycle-saved-lbl').textContent = ''; }, 2000);
+    renderPeriodization();
+  }
+}
+
+function _hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+/* ═══════════════════════════════════
+   RENDER MEDICAL
+═══════════════════════════════════ */
+function renderMedical() {
+  // Populate body part select
+  const select = document.getElementById('pain-part');
+  select.innerHTML = '<option value="">-- เลือกตำแหน่ง --</option>' +
+    MedicalSystem.BODY_PARTS.map(p => `<option value="${p.id}">${p.label}</option>`).join('');
+
+  const active  = MedicalSystem.getActive();
+  const riskResult = MedicalSystem.calcInjuryRisk(_logs, _pr, active);
+
+  // Risk gauge
+  const gaugeEl = document.getElementById('risk-gauge-wrap');
+  const rc = riskResult.color;
+  const cssColor = rc === 'green' ? 'var(--green)' : rc === 'amber' ? 'var(--amber)' : 'var(--red)';
+  gaugeEl.innerHTML = `
+    <div class="risk-gauge-circle" style="border-color:${cssColor};color:${cssColor}">
+      <div class="risk-gauge-score">${riskResult.score}</div>
+      <div class="risk-gauge-lbl">${riskResult.level}</div>
+    </div>
+    <div style="flex:1">
+      ${riskResult.factors.map(f => `
+        <div class="risk-factor-row">
+          <span>${f.factor}</span>
+          <span>+${f.impact}</span>
+        </div>`).join('') || '<div style="font-family:var(--mono);font-size:9px;color:var(--gray)">ไม่มี risk factors</div>'}
+    </div>
+  `;
+
+  const actionEl = document.getElementById('risk-action');
+  actionEl.style.background = rc === 'green' ? 'rgba(0,255,136,.06)' : rc === 'amber' ? 'rgba(255,170,0,.06)' : 'rgba(255,45,45,.06)';
+  actionEl.style.color = cssColor;
+  actionEl.style.border = `1px solid ${cssColor}30`;
+  actionEl.textContent = `→ ${riskResult.action}`;
+
+  // Active injuries
+  const activeEl = document.getElementById('active-injuries-list');
+  if (!active.length) {
+    activeEl.innerHTML = '<div style="text-align:center;padding:20px;font-family:var(--mono);font-size:10px;color:var(--gray)">✅ ไม่มีอาการบาดเจ็บที่ active</div>';
+  } else {
+    activeEl.innerHTML = active.map(inj => {
+      const part    = MedicalSystem.BODY_PARTS.find(p => p.id === inj.partId);
+      const sev     = MedicalSystem.SEVERITY[inj.severity];
+      const rtm     = MedicalSystem.getRTMStatus(inj);
+      return `
+        <div class="injury-entry">
+          <div class="injury-severity" style="background:${sev.color}22;color:${sev.color};border:1px solid ${sev.color}44">${inj.severity}</div>
+          <div class="injury-body">
+            <div class="injury-part">${part?.label || inj.partId}</div>
+            <div class="injury-date">${inj.date} ${inj.time} — ${sev.label}</div>
+            ${inj.notes ? `<div style="font-family:var(--mono);font-size:9px;color:var(--gray);margin-top:2px">${inj.notes}</div>` : ''}
+            <div class="injury-rtm ${rtm.ready ? 'rtm-ready' : 'rtm-wait'}">
+              ${rtm.ready ? '✅ RTM: พร้อมฝึกได้' : `⏳ RTM: อีก ${rtm.daysLeft} วัน (${inj.rtmDate})`}
+            </div>
+          </div>
+          <button class="btn-resolve" onclick="resolveInjury('${inj.id}')">✓ RESOLVED</button>
+        </div>`;
+    }).join('');
+  }
+
+  // History
+  const allEntries = MedicalSystem.getAll().slice().reverse().slice(0, 30);
+  const histEl = document.getElementById('medical-history-list');
+  if (!allEntries.length) {
+    histEl.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--gray)">ยังไม่มีประวัติการบาดเจ็บ</div>';
+  } else {
+    histEl.innerHTML = allEntries.map(inj => {
+      const part = MedicalSystem.BODY_PARTS.find(p => p.id === inj.partId);
+      const sev  = MedicalSystem.SEVERITY[inj.severity];
+      return `
+        <div class="injury-entry" style="${inj.resolved ? 'opacity:.45' : ''}">
+          <div class="injury-severity" style="background:${sev.color}22;color:${sev.color};border:1px solid ${sev.color}44">${inj.severity}</div>
+          <div class="injury-body">
+            <div class="injury-part">${part?.label || inj.partId} ${inj.resolved ? '<span style="color:var(--gray);font-size:10px"> ✓ resolved</span>' : ''}</div>
+            <div class="injury-date">${inj.date} — ${sev.label}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+}
+
+function logPainEntry() {
+  const partId   = document.getElementById('pain-part').value;
+  const severity = parseInt(document.getElementById('pain-severity').value);
+  const notes    = document.getElementById('pain-notes').value;
+
+  if (!partId) { alert('กรุณาเลือกตำแหน่งที่เจ็บ'); return; }
+
+  MedicalSystem.logPain(partId, severity, notes);
+  document.getElementById('pain-notes').value = '';
+  document.getElementById('pain-part').value  = '';
+
+  if (window.Haptic) Haptic.riskAlert();
+  renderMedical();
+}
+
+async function resolveInjury(id) {
+  MedicalSystem.resolve(id);
+  renderMedical();
+}
+
+/* ═══════════════════════════════════
+   BOOTSTRAP
+═══════════════════════════════════ */
+(async () => {
+  const now  = new Date();
+  const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
+  document.getElementById('tb-date').textContent =
+    `// ${days[now.getDay()]} ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()+543}`;
+
+  try {
+    await Storage.init();
+    [_profile, _pr, _logs] = await Promise.all([
+      Storage.User.get(),
+      Storage.PR.get(),
+      Storage.Logs.getAll(),
+    ]);
+    if (!_profile || !_profile.onboardingComplete) {
+      window.location.href = 'onboarding.html'; return;
+    }
+    _logs.sort((a,b) => (a.date||'').localeCompare(b.date||''));
+
+    renderAAR();
+    renderOverload();
+    renderPeriodization();
+    renderMedical();
+
+  } catch(err) {
+    console.error('[IntelCenter] Bootstrap error', err);
+  }
+})();
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

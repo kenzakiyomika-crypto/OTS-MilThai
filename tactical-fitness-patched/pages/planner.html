@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>TACTICAL FITNESS — MONTHLY PLANNER</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+
+.shell { display:flex; min-height:100vh; position:relative; z-index:1; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:var(--sidebar-w); min-height:100vh;
+  background:var(--bg2); border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  position:fixed; left:0; top:0; bottom:0; z-index:100;
+  transition:transform .3s var(--ease-out);
+}
+.sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid var(--border); }
+.sidebar-logo-mark { font-family:var(--head); font-size:22px; letter-spacing:4px; color:var(--green); text-shadow:0 0 16px var(--green-glow); }
+.sidebar-logo-sub  { font-family:var(--mono); font-size:9px; color:var(--gray2); letter-spacing:2px; margin-top:2px; }
+.nav-section { padding:16px 12px 4px; }
+.nav-label   { font-family:var(--mono); font-size:9px; color:var(--gray2); letter-spacing:3px; padding:0 8px; margin-bottom:4px; }
+.nav-item {
+  display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:4px;
+  cursor:pointer; text-decoration:none; color:var(--gray); font-family:var(--body);
+  font-size:13px; font-weight:500; letter-spacing:.5px;
+  transition:all .15s; border:1px solid transparent; margin-bottom:1px;
+}
+.nav-item:hover { background:var(--bg3); color:var(--white); border-color:var(--border); }
+.nav-item.active { background:var(--green-dim); color:var(--green); border-color:rgba(0,255,136,.2); }
+.nav-icon { font-size:14px; width:18px; text-align:center; flex-shrink:0; }
+.sidebar-footer { margin-top:auto; padding:14px 16px; border-top:1px solid var(--border); }
+.sf-rank     { font-family:var(--head); font-size:14px; color:var(--green); letter-spacing:1px; }
+.sf-callsign { font-family:var(--mono); font-size:9px; color:var(--gray); letter-spacing:2px; margin-top:2px; }
+
+/* ── MAIN ── */
+.main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; }
+
+.topbar {
+  height:var(--topbar-h); background:var(--bg2); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 24px; gap:16px;
+  position:sticky; top:0; z-index:50;
+}
+.topbar-title { font-family:var(--head); font-size:18px; letter-spacing:3px; color:var(--white); }
+.topbar-title span { color:var(--green); }
+.topbar-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.topbar-dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.hamburger { display:none; flex-direction:column; gap:4px; cursor:pointer; padding:4px; background:none; border:none; }
+.hamburger span { display:block; width:20px; height:2px; background:var(--gray); }
+.sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:99; }
+.sidebar-overlay.show { display:block; }
+
+/* ── CONTENT ── */
+.content { padding:24px; display:flex; flex-direction:column; gap:20px; }
+
+.section-header {
+  font-family:var(--mono); font-size:10px; color:var(--gray);
+  letter-spacing:3px; margin-bottom:14px;
+  display:flex; align-items:center; gap:8px;
+}
+.section-header::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── MONTH NAV ── */
+.month-nav {
+  display:flex; align-items:center; gap:0;
+  background:var(--bg2); border:1px solid var(--border); border-radius:4px;
+  overflow:hidden;
+}
+.month-arrow {
+  width:40px; height:40px; display:flex; align-items:center; justify-content:center;
+  background:none; border:none; color:var(--gray); font-size:16px; cursor:pointer;
+  transition:all .15s; flex-shrink:0;
+}
+.month-arrow:hover { background:var(--bg3); color:var(--green); }
+.month-label {
+  flex:1; text-align:center;
+  font-family:var(--head); font-size:18px; letter-spacing:3px; color:var(--white);
+  border-left:1px solid var(--border); border-right:1px solid var(--border);
+  padding:8px 0;
+}
+.month-label span { color:var(--green); }
+
+/* ── PLAN SUMMARY BAR ── */
+.plan-summary {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+}
+.ps-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:4px;
+  padding:12px 14px; text-align:center;
+  animation:fadeUp .4s var(--ease-out) both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.ps-val  { font-family:var(--head); font-size:26px; color:var(--green); letter-spacing:1px; line-height:1; }
+.ps-val.amber { color:var(--amber); }
+.ps-val.blue  { color:#00b4ff; }
+.ps-unit { font-family:var(--mono); font-size:9px; color:var(--gray); letter-spacing:2px; margin-top:4px; }
+
+/* ── CALENDAR GRID ── */
+.calendar-wrap {
+  background:var(--bg2); border:1px solid var(--border); border-radius:4px;
+  overflow:hidden; animation:fadeUp .4s var(--ease-out) .1s both;
+}
+
+.cal-header {
+  display:grid; grid-template-columns:repeat(7,1fr);
+  border-bottom:1px solid var(--border);
+}
+.cal-day-name {
+  padding:10px 8px; text-align:center;
+  font-family:var(--mono); font-size:9px; color:var(--gray); letter-spacing:2px;
+  border-right:1px solid var(--border);
+}
+.cal-day-name:last-child { border-right:none; }
+
+.cal-grid {
+  display:grid; grid-template-columns:repeat(7,1fr);
+}
+
+.cal-cell {
+  min-height:90px; border-right:1px solid var(--border); border-bottom:1px solid var(--border);
+  padding:6px; cursor:pointer; transition:background .15s; position:relative;
+  display:flex; flex-direction:column;
+}
+.cal-cell:nth-child(7n) { border-right:none; }
+.cal-cell:hover { background:rgba(255,255,255,.02); }
+.cal-cell.other-month { opacity:.3; pointer-events:none; }
+.cal-cell.today { background:rgba(255,170,0,.04); }
+.cal-cell.today .cal-num { color:var(--amber); }
+.cal-cell.past  { opacity:.65; }
+
+.cal-num {
+  font-family:var(--mono); font-size:10px; color:var(--gray2);
+  margin-bottom:4px; flex-shrink:0;
+}
+
+/* Day session chip */
+.day-chip {
+  flex:1; border-radius:3px; padding:5px 6px;
+  font-family:var(--body); font-size:11px; font-weight:600;
+  line-height:1.2; display:flex; flex-direction:column; gap:2px;
+}
+.day-chip.rest {
+  background:var(--bg3); border:1px dashed var(--border2); color:var(--gray2);
+  font-family:var(--mono); font-size:9px; letter-spacing:1px;
+  align-items:center; justify-content:center;
+}
+.day-chip.planned {
+  background:var(--green-dim); border:1px solid rgba(0,255,136,.2); color:var(--green);
+}
+.day-chip.completed {
+  background:rgba(0,255,136,.15); border:1px solid rgba(0,255,136,.4); color:var(--green);
+}
+.day-chip.missed {
+  background:rgba(255,45,45,.06); border:1px dashed rgba(255,45,45,.2); color:var(--red);
+  opacity:.7;
+}
+.day-chip.empty {
+  background:transparent; border:1px dashed var(--border); color:var(--gray2);
+  font-family:var(--mono); font-size:9px; letter-spacing:1px;
+  align-items:center; justify-content:center;
+}
+.chip-focus { font-size:11px; font-weight:700; letter-spacing:.5px; }
+.chip-ex    { font-family:var(--mono); font-size:8px; color:inherit; opacity:.7; margin-top:1px; }
+.chip-done  { font-size:10px; position:absolute; top:4px; right:4px; }
+
+/* ── GENERATE PANEL ── */
+.generate-panel {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:12px; padding:20px;
+  animation:fadeUp .4s var(--ease-out) .15s both;
+  margin-bottom:20px;
+}
+.generate-panel-handle{display:none}
+.gen-title { font-family:var(--head); font-size:18px; letter-spacing:2px; color:var(--white); margin-bottom:4px; }
+.gen-desc  { font-family:var(--mono); font-size:10px; color:var(--gray); letter-spacing:1px; line-height:1.7; margin-bottom:18px; }
+
+.gen-options { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+.gen-opt-label { font-family:var(--mono); font-size:9px; color:var(--gray); letter-spacing:2px; margin-bottom:6px; display:block; }
+.gen-select {
+  font-family:var(--mono); font-size:14px; background:var(--bg3);
+  border:1px solid var(--border2); color:var(--white); padding:9px 12px;
+  width:100%; -webkit-appearance:none; appearance:none; cursor:pointer;
+  border-radius:3px; min-height:40px;
+}
+.gen-select:focus { outline:none; border-color:var(--green); }
+
+.days-picker { display:flex; gap:6px; }
+.day-toggle {
+  flex:1; height:36px; border:1px solid var(--border2); background:var(--bg3);
+  color:var(--gray); font-family:var(--mono); font-size:10px; letter-spacing:1px;
+  cursor:pointer; border-radius:3px; transition:all .15s; text-align:center;
+  display:flex; align-items:center; justify-content:center;
+}
+.day-toggle:hover { border-color:var(--green); color:var(--green); }
+.day-toggle.on { background:var(--green-dim); border-color:rgba(0,255,136,.35); color:var(--green); }
+
+.gen-actions { display:flex; gap:10px; }
+
+/* ── DAY EDIT MODAL ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:300; display:none; align-items:center; justify-content:center; padding:16px; }
+.modal-overlay.show { display:flex; }
+.modal {
+  background:var(--bg2); border:1px solid var(--border); border-radius:4px;
+  width:100%; max-width:440px; max-height:90vh; overflow-y:auto;
+  padding:22px; animation:popIn .25s var(--ease-out) both;
+}
+@keyframes popIn { from{transform:scale(.95);opacity:0} to{transform:scale(1);opacity:1} }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.modal-title { font-family:var(--head); font-size:22px; letter-spacing:2px; color:var(--white); }
+.modal-close { font-size:18px; color:var(--gray); cursor:pointer; background:none; border:none; padding:4px; }
+.modal-close:hover { color:var(--white); }
+
+.focus-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+.focus-chip {
+  padding:6px 12px; border:1px solid var(--border2); background:var(--bg3);
+  color:var(--gray); font-family:var(--mono); font-size:9px; letter-spacing:2px;
+  cursor:pointer; border-radius:3px; transition:all .15s;
+}
+.focus-chip:hover { border-color:var(--green); color:var(--green); }
+.focus-chip.selected { background:var(--green-dim); border-color:rgba(0,255,136,.35); color:var(--green); }
+.focus-chip.rest-chip.selected { background:rgba(255,170,0,.1); border-color:var(--amber); color:var(--amber); }
+
+.modal-ex-list { display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto; }
+.modal-ex-row {
+  display:flex; align-items:center; gap:8px; padding:9px 10px;
+  background:var(--bg3); border:1px solid var(--border); border-radius:3px;
+}
+.mex-name { flex:1; font-family:var(--body); font-size:12px; font-weight:600; color:var(--white); }
+.mex-sets { font-family:var(--mono); font-size:9px; color:var(--gray); }
+.mex-del  { background:none; border:none; color:var(--gray2); cursor:pointer; font-size:14px; padding:2px 6px; }
+.mex-del:hover { color:var(--red); }
+
+.modal-add-row { display:flex; gap:6px; margin-top:10px; }
+.modal-add-row .gen-select { flex:1; }
+
+.modal-actions { display:flex; gap:8px; margin-top:18px; }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(16px);
+  background:var(--bg2); border:1px solid var(--green); border-radius:4px;
+  padding:10px 20px; font-family:var(--mono); font-size:11px; letter-spacing:1px;
+  color:var(--green); z-index:999; opacity:0; transition:all .3s var(--ease-out);
+  white-space:nowrap;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Mobile */
+@media (max-width:900px) {
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; }
+  .topbar { padding:0 16px; }
+  .content { padding:16px; }
+  .hamburger { display:flex; }
+  .plan-summary { grid-template-columns:repeat(2,1fr); }
+  .cal-cell { min-height:64px; }
+  .day-chip .chip-ex { display:none; }
+  .gen-options { grid-template-columns:1fr; }
+}
+@media (max-width:500px) {
+  .cal-cell { min-height:52px; padding:4px; }
+  .cal-num  { font-size:9px; }
+  .chip-focus { font-size:10px; }
+}
+@supports (padding:env(safe-area-inset-bottom)) {
+  .content { padding-bottom:max(24px, env(safe-area-inset-bottom)); }
+}
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">⬡ TACTICAL</div>
+      <div class="sidebar-logo-sub">FITNESS SYSTEM v1.0</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// COMMAND</div>
+      <a href="dashboard.html"  class="nav-item"><span class="nav-icon">◈</span> COMMAND CENTER</a>
+      <a href="training.html"   class="nav-item"><span class="nav-icon">⚡</span> TODAY TRAINING</a>
+      <a href="planner.html"    class="nav-item active"><span class="nav-icon">◻</span> MONTHLY PLANNER</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// INTEL</div>
+      <a href="performance.html"  class="nav-item"><span class="nav-icon">▲</span> PERFORMANCE LOG</a>
+      <a href="rank.html"         class="nav-item"><span class="nav-icon">◆</span> RANK & CAPABILITY</a>
+      <a href="missions.html"     class="nav-item"><span class="nav-icon">⚔</span> MISSIONS</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// SYSTEM</div>
+      <a href="import-export.html" class="nav-item"><span class="nav-icon">⇅</span> IMPORT / EXPORT</a>
+      <a href="settings.html"      class="nav-item"><span class="nav-icon">◎</span> SETTINGS</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sf-rank" id="sb-rank">—</div>
+      <div class="sf-callsign" id="sb-callsign">LOADING...</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div>
+        <div class="topbar-title">MONTHLY <span>PLANNER</span></div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" style="padding:7px 14px;font-size:10px;letter-spacing:2px;min-height:auto" onclick="savePlan()">💾 SAVE</button>
+        <div class="topbar-dot"></div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- Month navigation -->
+      <div class="month-nav">
+        <button class="month-arrow" onclick="changeMonth(-1)">‹</button>
+        <div class="month-label" id="month-label">— <span>—</span></div>
+        <button class="month-arrow" onclick="changeMonth(+1)">›</button>
+      </div>
+
+      <!-- Plan summary -->
+      <div class="plan-summary">
+        <div class="ps-card">
+          <div class="ps-val" id="ps-planned">—</div>
+          <div class="ps-unit">SESSIONS PLANNED</div>
+        </div>
+        <div class="ps-card">
+          <div class="ps-val amber" id="ps-completed">—</div>
+          <div class="ps-unit">COMPLETED</div>
+        </div>
+        <div class="ps-card">
+          <div class="ps-val blue" id="ps-pct">—</div>
+          <div class="ps-unit">% COMPLETION</div>
+        </div>
+        <div class="ps-card">
+          <div class="ps-val" id="ps-remaining">—</div>
+          <div class="ps-unit">DAYS REMAINING</div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="calendar-wrap">
+        <div class="cal-header">
+          <div class="cal-day-name">SUN</div>
+          <div class="cal-day-name">MON</div>
+          <div class="cal-day-name">TUE</div>
+          <div class="cal-day-name">WED</div>
+          <div class="cal-day-name">THU</div>
+          <div class="cal-day-name">FRI</div>
+          <div class="cal-day-name">SAT</div>
+        </div>
+        <div class="cal-grid" id="cal-grid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <!-- Auto-generate section -->
+      <div class="generate-panel" id="gen-panel"><div class="gen-title">⚡ AUTO-GENERATE PLAN</div>
+        <div class="gen-desc">
+          ระบบจะสร้างตารางซ้อม progressive overload ให้อัตโนมัติ
+          โดยคำนวณจาก fitness level และจำนวนวันที่เลือก
+        </div>
+
+        <div class="gen-options">
+          <div>
+            <span class="gen-opt-label">// TRAINING DAYS PER WEEK</span>
+            <div class="days-picker" id="days-picker">
+              <div class="day-toggle" data-d="0" onclick="toggleDay(0)">SUN</div>
+              <div class="day-toggle on" data-d="1" onclick="toggleDay(1)">MON</div>
+              <div class="day-toggle" data-d="2" onclick="toggleDay(2)">TUE</div>
+              <div class="day-toggle on" data-d="3" onclick="toggleDay(3)">WED</div>
+              <div class="day-toggle" data-d="4" onclick="toggleDay(4)">THU</div>
+              <div class="day-toggle on" data-d="5" onclick="toggleDay(5)">FRI</div>
+              <div class="day-toggle" data-d="6" onclick="toggleDay(6)">SAT</div>
+            </div>
+          </div>
+          <div>
+            <span class="gen-opt-label">// PROGRAM TYPE</span>
+            <select class="gen-select" id="gen-program">
+              <option value="fullbody">Full Body 3x/week</option>
+              <option value="upper_lower">Upper / Lower Split</option>
+              <option value="push_pull">Push / Pull / Legs</option>
+              <option value="cardio_strength">Strength + Cardio</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="gen-actions">
+          <button class="btn btn-primary" style="flex:1;font-size:11px;letter-spacing:2px" onclick="generatePlan()">
+            ⚡ GENERATE FOR <span id="gen-month-label">—</span>
+          </button>
+          <button class="btn" onclick="clearPlan()" style="font-size:10px;letter-spacing:1px;color:var(--red);border-color:rgba(255,45,45,.25)">
+            CLEAR
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- DAY EDIT MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOuter(event)">
+  <div class="modal" id="modal-inner">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-date-title">1 มกราคม</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="section-header">// SESSION TYPE</div>
+    <div class="focus-chips" id="focus-chips">
+      <div class="focus-chip rest-chip" data-focus="rest" onclick="selectFocus('rest')">🛌 REST DAY</div>
+      <div class="focus-chip selected" data-focus="Full Body" onclick="selectFocus('Full Body')">⚡ FULL BODY</div>
+      <div class="focus-chip" data-focus="Upper Body" onclick="selectFocus('Upper Body')">💪 UPPER</div>
+      <div class="focus-chip" data-focus="Lower Body" onclick="selectFocus('Lower Body')">🦵 LOWER</div>
+      <div class="focus-chip" data-focus="Core" onclick="selectFocus('Core')">🧱 CORE</div>
+      <div class="focus-chip" data-focus="Cardio" onclick="selectFocus('Cardio')">🏃 CARDIO</div>
+      <div class="focus-chip" data-focus="Custom" onclick="selectFocus('Custom')">✏️ CUSTOM</div>
+    </div>
+
+    <div id="exercise-section">
+      <div class="section-header">// EXERCISES</div>
+      <div class="modal-ex-list" id="modal-ex-list"></div>
+      <div class="modal-add-row">
+        <select class="gen-select" id="modal-add-select" style="font-size:13px">
+          <option value="">+ เพิ่ม exercise...</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1;font-size:11px;letter-spacing:2px" onclick="saveDay()">✓ SAVE DAY</button>
+      <button class="btn" style="font-size:11px;letter-spacing:1px;color:var(--red);border-color:rgba(255,45,45,.2)" onclick="clearDay()">CLEAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/engines/planner.js"></script>
+<script>
+'use strict';
+
+/* ════════════════════════════
+   STATE
+════════════════════════════ */
+const S = {
+  year:    new Date().getFullYear(),
+  month:   new Date().getMonth() + 1,  // 1-12
+  plan:    null,   // MonthlyPlan object
+  logs:    [],     // WorkoutLogs for this month (for completion check)
+  profile: null,
+
+  editDate:    null,  // 'YYYY-MM-DD' being edited
+  editFocus:   'Full Body',
+  editExes:    [],    // [{name, sets, reps, type, duration, rest, muscleGroup}]
+
+  trainDays:   [1,3,5], // Mon, Wed, Fri by default
+};
+
+/* ═══ EXERCISE LIBRARY (same as training.html) ═══ */
+const EXERCISE_LIBRARY = {
+  'Full Body':  ['Push-up','Pull-up','Squat','Sit-up','Burpee','Plank'],
+  'Upper Body': ['Push-up','Diamond Push-up','Pike Push-up','Pull-up','Dip'],
+  'Lower Body': ['Squat','Lunge','Step-up','Calf Raise'],
+  'Core':       ['Plank','Sit-up','Leg Raise','Mountain Climber'],
+  'Cardio':     ['วิ่ง 2km','Burpee','วิ่ง 3km'],
+  'Custom':     ['Push-up','Pull-up','Squat','Plank','Sit-up','Burpee','Lunge'],
+};
+const EX_DEFAULTS = {
+  'Push-up':          {type:'repetition',sets:4,reps:15,rest:60, muscleGroup:'upper'},
+  'Diamond Push-up':  {type:'repetition',sets:3,reps:10,rest:60, muscleGroup:'upper'},
+  'Pike Push-up':     {type:'repetition',sets:3,reps:12,rest:60, muscleGroup:'upper'},
+  'Pull-up':          {type:'repetition',sets:4,reps:8, rest:90, muscleGroup:'upper'},
+  'Dip':              {type:'repetition',sets:3,reps:10,rest:90, muscleGroup:'upper'},
+  'Squat':            {type:'repetition',sets:4,reps:15,rest:60, muscleGroup:'lower'},
+  'Lunge':            {type:'repetition',sets:3,reps:12,rest:60, muscleGroup:'lower'},
+  'Step-up':          {type:'repetition',sets:3,reps:12,rest:45, muscleGroup:'lower'},
+  'Calf Raise':       {type:'repetition',sets:3,reps:20,rest:30, muscleGroup:'lower'},
+  'Plank':            {type:'timed',     sets:3,reps:0, duration:60,rest:60, muscleGroup:'core'},
+  'Sit-up':           {type:'repetition',sets:3,reps:20,rest:45, muscleGroup:'core'},
+  'Leg Raise':        {type:'repetition',sets:3,reps:15,rest:45, muscleGroup:'core'},
+  'Mountain Climber': {type:'timed',     sets:3,reps:0, duration:30,rest:30, muscleGroup:'core'},
+  'Burpee':           {type:'repetition',sets:3,reps:10,rest:60, muscleGroup:'cardio'},
+  'วิ่ง 2km':          {type:'distance',  sets:1,reps:0, distance:2000,rest:0, muscleGroup:'cardio'},
+  'วิ่ง 3km':          {type:'distance',  sets:1,reps:0, distance:3000,rest:0, muscleGroup:'cardio'},
+};
+const ALL_EXERCISES = Object.keys(EX_DEFAULTS);
+
+/* ══ PROGRAMS ══ */
+const PROGRAMS = {
+  fullbody: (d) => ({ focus:'Full Body', exercises: EXERCISE_LIBRARY['Full Body'].slice(0,5).map(n=>({...EX_DEFAULTS[n],name:n})) }),
+  upper_lower: (d) => {
+    const isUpper = [1,3,5].includes(d); // Mon/Wed/Fri = upper
+    const focus = isUpper ? 'Upper Body' : 'Lower Body';
+    return { focus, exercises: EXERCISE_LIBRARY[focus].slice(0,4).map(n=>({...EX_DEFAULTS[n],name:n})) };
+  },
+  push_pull: (d) => {
+    const map = {1:'Upper Body',2:'Lower Body',3:'Upper Body',4:'Core',5:'Upper Body',6:'Cardio'};
+    const focus = map[d] || 'Full Body';
+    return { focus, exercises: EXERCISE_LIBRARY[focus].slice(0,4).map(n=>({...EX_DEFAULTS[n],name:n})) };
+  },
+  cardio_strength: (d) => {
+    const isStrength = [1,3,5].includes(d);
+    const focus = isStrength ? 'Full Body' : 'Cardio';
+    return { focus, exercises: EXERCISE_LIBRARY[focus].slice(0,isStrength?5:2).map(n=>({...EX_DEFAULTS[n],name:n})) };
+  },
+};
+
+/* ════════════════════════════
+   HELPERS
+════════════════════════════ */
+function toggleSidebar() { const o=document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); o?_lockScroll():_unlockScroll(); }
+function closeSidebar()  { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+
+function toast(msg, ok=true) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderColor = ok ? 'var(--green)' : 'var(--amber)';
+  el.style.color = ok ? 'var(--green)' : 'var(--amber)';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+const MONTHS_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const DAYS_SHORT = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+function daysInMonth(y,m) { return new Date(y,m,0).getDate(); }
+function firstDayOfMonth(y,m) { return new Date(y,m-1,1).getDay(); } // 0=Sun
+function dateStr(y,m,d) { return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+/* ════════════════════════════
+   MONTH NAVIGATION
+════════════════════════════ */
+function changeMonth(delta) {
+  S.month += delta;
+  if (S.month > 12) { S.month = 1;  S.year++; }
+  if (S.month < 1)  { S.month = 12; S.year--; }
+  loadMonth();
+}
+
+async function loadMonth() {
+  // Update header
+  const months = MONTHS_TH;
+  document.getElementById('month-label').innerHTML =
+    `${months[S.month-1]} <span>${S.year+543}</span>`;
+  document.getElementById('gen-month-label').textContent = months[S.month-1];
+
+  // Load plan and logs for this month
+  const monthStart = dateStr(S.year, S.month, 1);
+  const monthEnd   = dateStr(S.year, S.month, daysInMonth(S.year, S.month));
+
+  [S.plan, S.logs] = await Promise.all([
+    Storage.Plans.get(S.year, S.month),
+    Storage.Logs.getByRange(monthStart, monthEnd),
+  ]);
+
+  if (!S.plan) {
+    S.plan = Schema.createMonthlyPlan({ year:S.year, month:S.month });
+  }
+
+  // Sync completed sessions from logs (PlannerEngine)
+  if (typeof PlannerEngine !== 'undefined' && S.plan._days) {
+    S.plan = PlannerEngine.syncCompleted(S.plan, S.logs);
+  }
+
+  renderCalendar();
+  renderSummary();
+}
+
+/* ════════════════════════════
+   PLAN DATA HELPERS
+════════════════════════════ */
+function getPlanDay(dateString) {
+  // S.plan.weeks is a flat map keyed by date string for simplicity
+  return S.plan._days?.[dateString] || null;
+}
+
+function setPlanDay(dateString, dayData) {
+  if (!S.plan._days) S.plan._days = {};
+  if (dayData === null) {
+    delete S.plan._days[dateString];
+  } else {
+    S.plan._days[dateString] = dayData;
+  }
+}
+
+function isLoggedDate(dateString) {
+  return S.logs.some(l => l.date === dateString);
+}
+
+/* ════════════════════════════
+   CALENDAR RENDER
+════════════════════════════ */
+function renderCalendar() {
+  const grid    = document.getElementById('cal-grid');
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().split('T')[0];
+
+  const totalDays = daysInMonth(S.year, S.month);
+  const firstDay  = firstDayOfMonth(S.year, S.month);  // 0=Sun
+
+  // Prev month fill
+  const prevDays = daysInMonth(S.year, S.month - 1 || 12);
+  const cells = [];
+
+  // Leading empty (prev month)
+  for (let i = 0; i < firstDay; i++) {
+    const d = prevDays - firstDay + 1 + i;
+    cells.push({ day:d, thisMonth:false, date:null });
+  }
+  // This month
+  for (let d = 1; d <= totalDays; d++) {
+    cells.push({ day:d, thisMonth:true, date:dateStr(S.year,S.month,d) });
+  }
+  // Trailing (next month)
+  const remaining = (7 - cells.length % 7) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    cells.push({ day:i, thisMonth:false, date:null });
+  }
+
+  grid.innerHTML = cells.map(cell => {
+    if (!cell.thisMonth) {
+      return `<div class="cal-cell other-month"><div class="cal-num">${cell.day}</div></div>`;
+    }
+
+    const ds       = cell.date;
+    const dtObj    = new Date(ds + 'T00:00:00');
+    const isPast   = dtObj < today;
+    const isToday  = ds === todayStr;
+    const planned  = getPlanDay(ds);
+    const logged   = isLoggedDate(ds);
+
+    let chip = '';
+    if (planned?.isRest) {
+      chip = `<div class="day-chip rest">— REST —</div>`;
+    } else if (planned) {
+      const exNames = (planned.exercises||[]).slice(0,2).map(e=>e.name).join(', ');
+      const status  = logged ? 'completed' : isPast ? 'missed' : 'planned';
+      const doneIcon = logged ? `<span class="chip-done">✓</span>` : isPast ? `<span class="chip-done" style="color:var(--red)">✗</span>` : '';
+      chip = `<div class="day-chip ${status}">
+        ${doneIcon}
+        <div class="chip-focus">${planned.focus}</div>
+        ${exNames ? `<div class="chip-ex">${exNames}</div>` : ''}
+      </div>`;
+    } else {
+      chip = `<div class="day-chip empty">+ ADD</div>`;
+    }
+
+    return `<div class="cal-cell ${isToday?'today':''} ${isPast&&!isToday?'past':''}"
+      onclick="openDayModal('${ds}')">
+      <div class="cal-num">${cell.day}</div>
+      ${chip}
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════
+   SUMMARY
+════════════════════════════ */
+function renderSummary() {
+  const days   = S.plan._days || {};
+  const planned = Object.values(days).filter(d => !d.isRest).length;
+
+  const today  = new Date(); today.setHours(0,0,0,0);
+  const monthEnd = new Date(S.year, S.month, 0);
+  const monthEndStr = dateStr(S.year, S.month, daysInMonth(S.year,S.month));
+
+  const completed = S.logs.length;
+  const pct       = planned > 0 ? Math.round((completed/planned)*100) : 0;
+
+  // Days remaining in month
+  const remaining = today <= monthEnd
+    ? Math.max(0, Math.ceil((monthEnd - today) / 86400000))
+    : 0;
+
+  document.getElementById('ps-planned').textContent   = planned;
+  document.getElementById('ps-completed').textContent = completed;
+  document.getElementById('ps-pct').textContent       = pct + '%';
+  document.getElementById('ps-remaining').textContent = remaining;
+
+  // Update plan object
+  S.plan.totalSessions     = planned;
+  S.plan.completedSessions = completed;
+}
+
+/* ════════════════════════════
+   DAY MODAL
+════════════════════════════ */
+function openDayModal(ds) {
+  S.editDate  = ds;
+  const existing = getPlanDay(ds);
+
+  // Date title
+  const d = new Date(ds + 'T00:00:00');
+  document.getElementById('modal-date-title').textContent =
+    `${d.getDate()} ${MONTHS_TH[d.getMonth()]}`;
+
+  // Set focus
+  if (existing?.isRest) {
+    S.editFocus = 'rest';
+  } else {
+    S.editFocus = existing?.focus || 'Full Body';
+  }
+  updateFocusChips();
+
+  // Set exercises
+  S.editExes = existing?.isRest ? [] : (existing?.exercises || []).map(e=>({...e}));
+  if (S.editExes.length === 0 && S.editFocus !== 'rest') {
+    loadDefaultExercises(S.editFocus);
+  }
+
+  renderModalExercises();
+  populateAddSelect();
+  document.getElementById('modal').classList.add('show');
+}
+
+function updateFocusChips() {
+  document.querySelectorAll('.focus-chip').forEach(c => {
+    c.classList.toggle('selected', c.dataset.focus === S.editFocus);
+  });
+  const isRest = S.editFocus === 'rest';
+  document.getElementById('exercise-section').style.display = isRest ? 'none' : 'block';
+}
+
+function selectFocus(focus) {
+  S.editFocus = focus;
+  updateFocusChips();
+  if (focus !== 'rest') {
+    loadDefaultExercises(focus);
+    renderModalExercises();
+    populateAddSelect();
+  }
+}
+
+function loadDefaultExercises(focus) {
+  const names = (EXERCISE_LIBRARY[focus] || []).slice(0, 4);
+  S.editExes  = names.map(n => ({ name:n, ...(EX_DEFAULTS[n]||{type:'repetition',sets:3,reps:10,rest:60}) }));
+}
+
+function renderModalExercises() {
+  const el = document.getElementById('modal-ex-list');
+  if (S.editExes.length === 0) {
+    el.innerHTML = `<div style="font-family:var(--mono);font-size:10px;color:var(--gray2);padding:12px;text-align:center;letter-spacing:1px">// ยังไม่มี exercise</div>`;
+    return;
+  }
+  el.innerHTML = S.editExes.map((ex,i) => {
+    const meta = ex.type==='timed' ? `${ex.sets}×${ex.duration}s`
+      : ex.type==='distance' ? `${(ex.distance/1000).toFixed(1)}km`
+      : `${ex.sets}×${ex.reps}`;
+    return `<div class="modal-ex-row">
+      <span class="mex-name">${ex.name}</span>
+      <span class="mex-sets">${meta}</span>
+      <button class="mex-del" onclick="removeExercise(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function populateAddSelect() {
+  const existing = new Set(S.editExes.map(e=>e.name));
+  const sel = document.getElementById('modal-add-select');
+  const opts = ALL_EXERCISES.filter(n=>!existing.has(n));
+  sel.innerHTML = `<option value="">+ เพิ่ม exercise...</option>` +
+    opts.map(n=>`<option value="${n}">${n}</option>`).join('');
+  sel.onchange = () => {
+    if (!sel.value) return;
+    S.editExes.push({ name:sel.value, ...(EX_DEFAULTS[sel.value]||{type:'repetition',sets:3,reps:10,rest:60}) });
+    sel.value = '';
+    renderModalExercises();
+    populateAddSelect();
+  };
+}
+
+function removeExercise(i) {
+  S.editExes.splice(i,1);
+  renderModalExercises();
+  populateAddSelect();
+}
+
+function saveDay() {
+  if (S.editFocus === 'rest') {
+    setPlanDay(S.editDate, { isRest:true, focus:'Rest', exercises:[], isCompleted:false, volumeMultiplier:1 });
+  } else {
+    setPlanDay(S.editDate, {
+      focus:      S.editFocus,
+      exercises:  S.editExes,
+      isRest:     false,
+      isCompleted:false,
+      volumeMultiplier:1,
+    });
+  }
+  closeModal();
+  renderCalendar();
+  renderSummary();
+  toast('✓ บันทึกแล้ว');
+}
+
+function clearDay() {
+  setPlanDay(S.editDate, null);
+  closeModal();
+  renderCalendar();
+  renderSummary();
+}
+
+function closeModal()        { document.getElementById('modal').classList.remove('show'); }
+function closeModalOuter(e)  { if (e.target === document.getElementById('modal')) closeModal(); }
+
+/* ════════════════════════════
+   TRAINING DAY TOGGLES
+════════════════════════════ */
+function toggleDay(d) {
+  const idx = S.trainDays.indexOf(d);
+  if (idx > -1) S.trainDays.splice(idx,1);
+  else           S.trainDays.push(d);
+  document.querySelectorAll('.day-toggle').forEach(btn => {
+    btn.classList.toggle('on', S.trainDays.includes(parseInt(btn.dataset.d)));
+  });
+}
+
+/* ════════════════════════════
+   AUTO-GENERATE
+════════════════════════════ */
+function generatePlan() {
+  if (S.trainDays.length === 0) { toast('เลือกอย่างน้อย 1 วัน', false); return; }
+
+  const program = document.getElementById('gen-program').value;
+
+  // Use PlannerEngine.generateMonthlyPlan for full program templates + Progressive Overload
+  if (typeof PlannerEngine !== 'undefined') {
+    const enginePlan = PlannerEngine.generateMonthlyPlan({
+      year:         S.year,
+      month:        S.month,
+      trainingDays: S.trainDays,
+      program:      program,
+      startWeek:    1,
+    });
+    // Merge into current plan (keep metadata, replace _days)
+    S.plan = {
+      ...S.plan,
+      _days:       enginePlan._days,
+      programType: enginePlan.programType,
+      programName: enginePlan.programName,
+      trainingDays: enginePlan.trainingDays,
+      totalSessions: enginePlan.totalSessions,
+    };
+    // Sync completed from existing logs
+    S.plan = PlannerEngine.syncCompleted(S.plan, S.logs);
+  } else {
+    // Fallback: local PROGRAMS (legacy)
+    const total = daysInMonth(S.year, S.month);
+    if (!S.plan._days) S.plan._days = {};
+    for (let d = 1; d <= total; d++) {
+      const ds      = dateStr(S.year, S.month, d);
+      const dayOfWk = new Date(ds + 'T00:00:00').getDay();
+      if (S.trainDays.includes(dayOfWk)) {
+        const session = PROGRAMS[program](dayOfWk);
+        S.plan._days[ds] = { ...session, isRest:false, isCompleted:false, volumeMultiplier:1 };
+      }
+    }
+  }
+
+  renderCalendar();
+  renderSummary();
+  toast(`✓ สร้างแผน ${MONTHS_TH[S.month-1]} ด้วย PlannerEngine (Progressive Overload ON)`);
+}
+
+function clearPlan() {
+  if (!confirm('ล้างแผนเดือนนี้ทั้งหมด?')) return;
+  S.plan._days = {};
+  renderCalendar();
+  renderSummary();
+  toast('✓ ล้างแผนแล้ว', false);
+}
+
+/* ════════════════════════════
+   SAVE PLAN → IndexedDB
+════════════════════════════ */
+async function savePlan() {
+  try {
+    await Storage.Plans.save(S.plan);
+    toast('✓ บันทึกแผนลง IndexedDB แล้ว');
+  } catch(err) {
+    toast('บันทึกไม่สำเร็จ: ' + err.message, false);
+  }
+}
+
+/* ════════════════════════════
+   BOOTSTRAP
+════════════════════════════ */
+async function bootstrap() {
+  try {
+    await Storage.init();
+    S.profile = await Storage.User.get();
+
+    if (S.profile) {
+      const rank = RANKS[S.profile.rankIndex||0];
+      document.getElementById('sb-rank').textContent    = rank?.name || '—';
+      document.getElementById('sb-callsign').textContent = S.profile.callsign||'OPERATOR';
+
+      // Pre-set training days from profile
+      if (S.profile.trainingDaysPerWeek) {
+        const defaults = {3:[1,3,5], 4:[1,2,4,5], 5:[1,2,3,4,5], 2:[1,4], 6:[1,2,3,4,5,6]};
+        S.trainDays = defaults[S.profile.trainingDaysPerWeek] || [1,3,5];
+        document.querySelectorAll('.day-toggle').forEach(btn => {
+          btn.classList.toggle('on', S.trainDays.includes(parseInt(btn.dataset.d)));
+        });
+      }
+    }
+
+    await loadMonth();
+
+  } catch(err) {
+    console.error('[Planner] Bootstrap error:', err);
+    await loadMonth();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', bootstrap);
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

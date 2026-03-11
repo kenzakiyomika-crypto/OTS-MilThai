@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>TACTICAL FITNESS — MISSIONS</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+.shell{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .3s var(--ease-out)}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo-mark{font-family:var(--head);font-size:22px;letter-spacing:4px;color:var(--green);text-shadow:0 0 16px var(--green-glow)}
+.sidebar-logo-sub{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:2px;margin-top:2px}
+.nav-section{padding:16px 12px 4px}
+.nav-label{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:3px;padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;cursor:pointer;text-decoration:none;color:var(--gray);font-family:var(--body);font-size:13px;font-weight:500;letter-spacing:.5px;transition:all .15s;border:1px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--bg3);color:var(--white);border-color:var(--border)}
+.nav-item.active{background:var(--green-dim);color:var(--green);border-color:rgba(0,255,136,.2)}
+.nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border)}
+.sf-rank{font-family:var(--head);font-size:14px;color:var(--green);letter-spacing:1px}
+.sf-callsign{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:2px;margin-top:2px}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column}
+.topbar{height:var(--topbar-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:var(--head);font-size:18px;letter-spacing:3px;color:var(--white)}
+.topbar-title span{color:var(--green)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topbar-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:4px;background:none;border:none}
+.hamburger span{display:block;width:20px;height:2px;background:var(--gray)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.sidebar-overlay.show{display:block}
+.content{padding:24px;display:flex;flex-direction:column;gap:20px}
+.section-header{font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:3px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-header::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:14px;text-align:center;position:relative;overflow:hidden;animation:fadeUp .4s var(--ease-out) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);box-shadow:0 0 8px var(--green-glow)}
+.stat-card.amber::before{background:var(--amber)}
+.stat-card.blue::before{background:#00b4ff}
+.stat-val{font-family:var(--head);font-size:32px;color:var(--green);letter-spacing:1px;line-height:1}
+.stat-val.amber{color:var(--amber)}
+.stat-val.blue{color:#00b4ff}
+.stat-unit{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:2px;margin-top:6px}
+
+/* ── MISSION CARDS ── */
+.missions-list{display:flex;flex-direction:column;gap:10px}
+
+.mission-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  padding:18px;position:relative;overflow:hidden;
+  animation:fadeUp .4s var(--ease-out) .1s both;
+  transition:border-color .15s;
+}
+.mission-card:hover{border-color:var(--border2)}
+.mission-card.completed{opacity:.65;background:rgba(0,255,136,.03)}
+.mission-card.completed::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--green)}
+.mission-card-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:12px}
+.mission-big-icon{font-size:32px;flex-shrink:0;line-height:1}
+.mission-header-info{flex:1}
+.mission-name-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.mission-name{font-family:var(--head);font-size:18px;letter-spacing:1px;color:var(--white)}
+.mission-badge{font-family:var(--mono);font-size:8px;letter-spacing:1px;padding:2px 8px;border:1px solid;border-radius:2px}
+.badge-active{color:var(--green);border-color:var(--green);background:var(--green-dim)}
+.badge-done{color:var(--gray2);border-color:var(--gray2)}
+.badge-new{color:var(--amber);border-color:var(--amber);background:rgba(255,170,0,.08);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+.mission-desc{font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:.5px;line-height:1.7}
+.mission-type-tag{font-family:var(--mono);font-size:8px;color:var(--gray2);letter-spacing:1px;margin-top:4px}
+
+.mission-progress-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.mission-pct{font-family:var(--head);font-size:16px;color:var(--green);letter-spacing:1px;width:48px;text-align:right;flex-shrink:0}
+.mission-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.mission-fill{height:100%;background:var(--green);box-shadow:0 0 6px var(--green-glow);border-radius:3px;transition:width 1s var(--ease-out)}
+.mission-counts{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:1px;margin-top:4px}
+
+.mission-reward-row{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.reward-label{font-family:var(--mono);font-size:9px;color:var(--gray2);letter-spacing:1px}
+.reward-medal-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px}
+.reward-medal-icon{font-size:16px}
+.reward-medal-name{font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:1px}
+
+.mission-complete-stamp{
+  position:absolute;top:12px;right:14px;
+  font-family:var(--head);font-size:11px;letter-spacing:2px;color:var(--green);
+  border:1px solid rgba(0,255,136,.3);padding:3px 10px;border-radius:2px;
+  background:var(--green-dim);
+}
+
+/* ── ADD MISSION PANEL ── */
+.add-panel{
+  position:fixed; bottom:0; left:0; right:0; z-index:400;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  border-radius:16px 16px 0 0;
+  padding:0 16px max(20px,env(safe-area-inset-bottom,20px));
+  transform:translateY(100%);
+  transition:transform .35s var(--ease-out);
+  max-height:85dvh; overflow-y:auto;
+  box-shadow:0 -8px 40px rgba(0,0,0,.8);
+}
+.add-panel.open{transform:translateY(0)}
+.add-panel-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 16px}
+.add-panel-title{font-family:var(--head);font-size:16px;letter-spacing:2px;color:var(--white);margin-bottom:4px}
+.add-panel-desc{font-family:var(--mono);font-size:10px;color:var(--gray);letter-spacing:.5px;line-height:1.7;margin-bottom:16px}
+.preset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.preset-card{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:12px;
+  cursor:pointer;transition:all .15s;text-align:left;
+}
+.preset-card:hover{border-color:var(--green);background:var(--green-dim)}
+.preset-icon{font-size:20px;margin-bottom:6px}
+.preset-name{font-family:var(--body);font-size:12px;font-weight:600;color:var(--white);margin-bottom:2px}
+.preset-desc{font-family:var(--mono);font-size:8px;color:var(--gray);letter-spacing:.5px;line-height:1.5}
+
+/* ── MEDALS WALL ── */
+.medals-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.medal-cell{
+  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  padding:14px;text-align:center;transition:all .15s;
+  animation:fadeUp .4s var(--ease-out) .25s both;
+}
+.medal-cell.earned{background:rgba(255,170,0,.05);border-color:rgba(255,170,0,.25);box-shadow:0 0 12px rgba(255,170,0,.06)}
+.medal-cell:not(.earned){filter:grayscale(1);opacity:.35}
+.medal-icon{font-size:32px;margin-bottom:8px;display:block}
+.medal-name{font-family:var(--mono);font-size:9px;color:var(--gray);letter-spacing:1px;line-height:1.4}
+.medal-cell.earned .medal-name{color:var(--amber)}
+.medal-date{font-family:var(--mono);font-size:8px;color:var(--gray2);margin-top:4px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg2);border:1px solid var(--green);border-radius:4px;padding:10px 20px;font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--green);z-index:999;opacity:0;transition:all .3s var(--ease-out);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .topbar{padding:0 16px}
+  .content{padding:16px}
+  .hamburger{display:flex}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .preset-grid{grid-template-columns:repeat(2,1fr)}
+  .medals-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:480px){
+  .medals-grid{grid-template-columns:repeat(3,1fr)}
+}
+@supports(padding:env(safe-area-inset-bottom)){
+  .content{padding-bottom:max(24px,env(safe-area-inset-bottom))}
+}
+
+/* ═══ RESPONSIVE + SAFE AREA (auto-injected) ═══ */
+.shell { min-height:100dvh; }
+.topbar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-left: max(16px,env(safe-area-inset-left,0px));
+  padding-right: max(16px,env(safe-area-inset-right,0px));
+}
+.main, .content {
+  padding-bottom: max(24px,env(safe-area-inset-bottom,24px));
+}
+.sidebar {
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: sidebar slide-over */
+@media(max-width:768px){
+  .sidebar {
+    width: min(260px,82vw) !important;
+    transform: translateX(-100%);
+    z-index:300;
+  }
+  .sidebar.open { transform:translateX(0); box-shadow:8px 0 40px rgba(0,0,0,.9); }
+  .main, .content { margin-left:0 !important; }
+  .topbar { left:0 !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr 1fr; }
+  .btn { min-height:44px; }
+}
+@media(max-width:480px){
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .topbar-logo, .topbar-title { font-size:16px; letter-spacing:2px; }
+}
+@media(max-width:390px){
+  .topbar-clock { display:none; }
+  .grid-4 { grid-template-columns:1fr 1fr; }
+}
+@media(max-height:500px) and (orientation:landscape){
+  .topbar { height:44px; }
+  .main { padding-top:44px !important; }
+  .content { padding-top:44px !important; }
+}
+
+
+@media(max-width:480px){
+  .mission-grid{grid-template-columns:1fr}
+  .preset-grid{grid-template-columns:1fr}
+  .medal-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">⬡ TACTICAL</div>
+      <div class="sidebar-logo-sub">FITNESS SYSTEM v1.0</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// COMMAND</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">◈</span> COMMAND CENTER</a>
+      <a href="training.html"  class="nav-item"><span class="nav-icon">⚡</span> TODAY TRAINING</a>
+      <a href="planner.html"   class="nav-item"><span class="nav-icon">◻</span> MONTHLY PLANNER</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// INTEL</div>
+      <a href="performance.html" class="nav-item"><span class="nav-icon">▲</span> PERFORMANCE LOG</a>
+      <a href="rank.html"        class="nav-item"><span class="nav-icon">◆</span> RANK & CAPABILITY</a>
+      <a href="missions.html"    class="nav-item active"><span class="nav-icon">⚔</span> MISSIONS</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">// SYSTEM</div>
+      <a href="import-export.html" class="nav-item"><span class="nav-icon">⇅</span> IMPORT / EXPORT</a>
+      <a href="settings.html"      class="nav-item"><span class="nav-icon">◎</span> SETTINGS</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sf-rank" id="sb-rank">—</div>
+      <div class="sf-callsign" id="sb-callsign">LOADING...</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div><div class="topbar-title">MISSIONS <span>& MEDALS</span></div></div>
+      <div class="topbar-right"><div class="topbar-dot"></div></div>
+    </header>
+
+    <div class="content">
+
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-val" id="st-active">—</div>
+          <div class="stat-unit">ACTIVE</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-val amber" id="st-completed">—</div>
+          <div class="stat-unit">COMPLETED</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-val blue" id="st-medals">—</div>
+          <div class="stat-unit">MEDALS EARNED</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="st-streak">—</div>
+          <div class="stat-unit">DAY STREAK</div>
+        </div>
+      </div>
+
+      <!-- Active missions -->
+      <div>
+        <div class="section-header">// ACTIVE MISSIONS</div>
+        <div class="missions-list" id="active-list">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--gray2);padding:20px;text-align:center;letter-spacing:2px">กำลังโหลด...</div>
+        </div>
+      </div>
+
+      <!-- Completed missions -->
+      <div id="completed-section" style="display:none">
+        <div class="section-header">// COMPLETED MISSIONS</div>
+        <div class="missions-list" id="completed-list"></div>
+      </div>
+
+      <!-- Add mission presets -->
+      <div class="add-panel">
+        <div class="add-panel-title">+ START NEW MISSION</div>
+        <div class="add-panel-desc">เลือก mission template หรือสร้าง custom เพื่อเพิ่มเป้าหมายใหม่</div>
+        <div class="preset-grid" id="preset-grid">
+          <!-- filled by JS -->
+        </div>
+        <button class="btn btn-primary btn-full" style="font-size:11px;letter-spacing:2px" onclick="addAllDefault()">
+          ⚡ START ALL DEFAULT MISSIONS
+        </button>
+      </div>
+
+      <!-- Medals wall -->
+      <div>
+        <div class="section-header">// MEDAL WALL</div>
+        <div class="medals-grid" id="medals-grid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/schema.js"></script>
+<script src="../js/storage.js"></script>
+<script src="../js/engines/mission.js"></script>
+<script>
+'use strict';
+
+let _missions=[], _medals=[], _profile=null, _logs=[], _pr=null;
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');_unlockScroll();}
+function toast(msg,ok=true){const el=document.getElementById('toast');el.textContent=msg;el.style.borderColor=ok?'var(--green)':'var(--amber)';el.style.color=ok?'var(--green)':'var(--amber)';el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500)}
+
+function fmtDate(d){if(!d)return'—';const dt=new Date(d);return`${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear()+543}`}
+
+/* ── MISSION PROGRESS — delegates to MissionEngine ── */
+function calcProgress(mission, profile, logs) {
+  const updated = MissionEngine.updateProgress(mission, { profile, pr: _pr, logs });
+  return { current: updated.current || 0, target: mission.target };
+}
+
+function calcProgressPct(mission) {
+  return MissionEngine.calcProgressPct(mission);
+}
+
+/* ── RENDER MISSIONS ── */
+function renderAll(){
+  const active    = _missions.filter(m=>m.isActive&&!m.isCompleted);
+  const completed = _missions.filter(m=>m.isCompleted);
+
+  // Stats
+  document.getElementById('st-active').textContent    = active.length;
+  document.getElementById('st-completed').textContent  = completed.length;
+  document.getElementById('st-medals').textContent     = _medals.filter(m=>m.isEarned).length;
+  document.getElementById('st-streak').textContent     = _profile?.currentStreak||0;
+
+  // Active list
+  document.getElementById('active-list').innerHTML = active.length
+    ? active.map(m=>missionCardHTML(m,false)).join('')
+    : `<div style="font-family:var(--mono);font-size:10px;color:var(--gray2);padding:24px;text-align:center;letter-spacing:2px;background:var(--bg2);border:1px solid var(--border);border-radius:4px">// ไม่มี active mission — เริ่มจาก panel ด้านล่าง</div>`;
+
+  // Completed list
+  const compSec = document.getElementById('completed-section');
+  if(completed.length>0){
+    compSec.style.display='block';
+    document.getElementById('completed-list').innerHTML = completed.map(m=>missionCardHTML(m,true)).join('');
+  } else {
+    compSec.style.display='none';
+  }
+
+  // Presets
+  renderPresets();
+
+  // Medals
+  renderMedals();
+}
+
+function missionCardHTML(m, isDone){
+  const prog  = calcProgress(m, _profile, _logs);
+  const updated = { ...m, current: prog.current };
+  const pct   = MissionEngine.calcProgressPct(updated);
+  const medal = DEFAULT_MEDALS.find(d=>d.id===m.rewardMedal);
+  const typeLabels = {streak:'STREAK',performance:'PERFORMANCE',volume:'VOLUME',test:'TEST'};
+
+  return `<div class="mission-card${isDone?' completed':''}">
+    ${isDone?'<div class="mission-complete-stamp">✓ COMPLETE</div>':''}
+    <div class="mission-card-header">
+      <div class="mission-big-icon">${m.icon||'⚔'}</div>
+      <div class="mission-header-info">
+        <div class="mission-name-row">
+          <div class="mission-name">${m.name}</div>
+          <span class="mission-badge ${isDone?'badge-done':'badge-active'}">${isDone?'DONE':'ACTIVE'}</span>
+        </div>
+        <div class="mission-desc">${m.description}</div>
+        <div class="mission-type-tag">// TYPE: ${typeLabels[m.type]||m.type}</div>
+      </div>
+    </div>
+    <div class="mission-progress-row">
+      <div class="mission-track"><div class="mission-fill" style="width:${pct}%"></div></div>
+      <div class="mission-pct">${pct}%</div>
+    </div>
+    <div class="mission-counts">${prog.current} / ${prog.target} ${m.type==='streak'?'days':m.type==='volume'?'load pts':'pts'}</div>
+    ${medal?`<div class="mission-reward-row">
+      <span class="reward-label">REWARD:</span>
+      <div class="reward-medal-chip">
+        <span class="reward-medal-icon">${medal.icon}</span>
+        <span class="reward-medal-name">${medal.name}</span>
+      </div>
+    </div>`:''}
+    ${!isDone?`<div style="margin-top:10px;display:flex;justify-content:flex-end">
+      <button class="btn" style="font-size:9px;letter-spacing:1px;padding:5px 12px;min-height:32px;color:var(--red);border-color:rgba(255,45,45,.2)" onclick="abandonMission('${m.id}')">ABANDON</button>
+    </div>`:''}
+  </div>`;
+}
+
+/* ── PRESETS ── */
+function renderPresets(){
+  const activeIds = new Set(_missions.map(m=>m.id));
+  const available = DEFAULT_MISSIONS.filter(m=>!activeIds.has(m.id));
+
+  if(available.length===0){
+    document.getElementById('preset-grid').innerHTML=`<div style="grid-column:1/-1;font-family:var(--mono);font-size:10px;color:var(--gray2);text-align:center;padding:12px;letter-spacing:1px">// Mission ทั้งหมด active แล้ว</div>`;
+    return;
+  }
+
+  document.getElementById('preset-grid').innerHTML = available.map(m=>`
+    <div class="preset-card" onclick="startMission('${m.id}')">
+      <div class="preset-icon">${m.icon}</div>
+      <div class="preset-name">${m.name}</div>
+      <div class="preset-desc">${m.description}</div>
+    </div>`).join('');
+}
+
+async function startMission(id){
+  const template = DEFAULT_MISSIONS.find(m=>m.id===id);
+  if(!template) return;
+  // Ensure mission exists in DB first
+  const existing = await Storage.Missions.get(id);
+  if (!existing) {
+    await Storage.Missions.save(Schema.createMission({
+      ...template, startDate: new Date().toISOString().split('T')[0],
+      isActive: false, isCompleted: false, current: 0,
+    }));
+  }
+  await MissionEngine.startMission(id);
+  _missions = await Storage.Missions.getAll();
+  renderAll();
+  toast(`✓ เริ่ม mission: ${template.name}`);
+}
+
+async function addAllDefault(){
+  const activeIds = new Set(_missions.map(m=>m.id));
+  const toAdd = DEFAULT_MISSIONS.filter(m=>!activeIds.has(m.id) && !_missions.find(x=>x.id===m.id&&x.isActive));
+  if(toAdd.length===0){toast('ทุก mission active แล้ว',false);return}
+  // Ensure all missions exist in DB first, then start via MissionEngine
+  await Promise.all(toAdd.map(async m => {
+    const existing = await Storage.Missions.get(m.id).catch(()=>null);
+    if (!existing) {
+      await Storage.Missions.save(Schema.createMission({...m, isActive:false, isCompleted:false, current:0}));
+    }
+  }));
+  await Promise.all(toAdd.map(m => MissionEngine.startMission(m.id).catch(()=>{})));
+  _missions = await Storage.Missions.getAll();
+  renderAll();
+  toast(`✓ เริ่ม ${toAdd.length} missions`);
+}
+
+async function abandonMission(id){
+  if(!confirm('ยกเลิก mission นี้?')) return;
+  await MissionEngine.abandonMission(id);
+  _missions = await Storage.Missions.getAll();
+  renderAll();
+  toast('ยกเลิก mission แล้ว',false);
+}
+
+/* ── MEDALS ── */
+function renderMedals(){
+  const earned = new Map(_medals.map(m=>[m.id,m]));
+  document.getElementById('medals-grid').innerHTML = DEFAULT_MEDALS.map(def=>{
+    const rec      = earned.get(def.id);
+    const isEarned = rec?.isEarned;
+    return `<div class="medal-cell${isEarned?' earned':''}">
+      <span class="medal-icon">${def.icon}</span>
+      <div class="medal-name">${def.name}</div>
+      ${isEarned?`<div class="medal-date">${fmtDate(rec.earnedDate)}</div>`:'<div class="medal-date">—</div>'}
+    </div>`;
+  }).join('');
+}
+
+/* ── AUTO-CHECK via MissionEngine.runChecks ── */
+async function checkCompletions(){
+  const completed = await MissionEngine.runChecks({ profile: _profile, pr: _pr, logs: _logs });
+  if (completed.length) {
+    _medals    = await Storage.Medals.getAll();
+    _missions  = await Storage.Missions.getAll();
+    completed.forEach(({ mission, medal }) => {
+      toast(`🏆 Mission Complete: ${mission.name}!`);
+      if (medal) setTimeout(() => toast(`🥇 เหรียญ: ${medal.name}`), 1500);
+    });
+  }
+}
+
+/* ── BOOTSTRAP ── */
+async function bootstrap(){
+  await Storage.init();
+  [_profile, _missions, _medals, _logs, _pr] = await Promise.all([
+    Storage.User.get(),
+    Storage.Missions.getAll(),
+    Storage.Medals.getAll(),
+    Storage.Logs.getAll(),
+    Storage.PR.get(),
+  ]);
+
+  if(_profile){
+    const rank = RANKS[_profile.rankIndex||0];
+    document.getElementById('sb-rank').textContent    = rank?.name||'—';
+    document.getElementById('sb-callsign').textContent = _profile.callsign||'OPERATOR';
+  }
+
+  // Use MissionEngine.initDefaults to seed missions + medals properly
+  await MissionEngine.initDefaults();
+  _missions = await Storage.Missions.getAll();
+  _medals   = await Storage.Medals.getAll();
+
+  await checkCompletions();
+  // Refresh after completion checks
+  _missions = await Storage.Missions.getAll();
+  _medals   = await Storage.Medals.getAll();
+  renderAll();
+}
+
+document.addEventListener('DOMContentLoaded', bootstrap);
+
+/* ─── Popup helpers ─── */
+function _lockScroll()   { document.body.style.overflow='hidden'; }
+function _unlockScroll() { document.body.style.overflow=''; }
+function _showOverlay(el){ if(el){ el.classList.add('show'); _lockScroll(); } }
+function _hideOverlay(el){ if(el){ el.classList.remove('show'); _unlockScroll(); } }
+// swipe-down to close bottom sheets
+(function(){
+  let startY=0;
+  document.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    if(dy>80){
+      document.querySelectorAll('.bottom-panel.show,.modal-overlay.show').forEach(el=>{
+        el.classList.remove('show'); _unlockScroll();
+      });
+    }
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>
